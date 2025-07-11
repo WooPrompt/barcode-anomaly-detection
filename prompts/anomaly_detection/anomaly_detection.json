@@ -5,7 +5,8 @@
     "principle.llm.txt"
   ],
   "protocol_context": [
-    "prompts/question_loop.llm.txt"
+    "prompts/question_loop.llm.txt",
+    "prompts/Refactoring_Workflow.llm.txt"
   ],
   "requirements": {
     "structure": [

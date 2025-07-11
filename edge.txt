@@ -1,0 +1,25 @@
+## Edge Cases for detect_loc_err
+
+1.  **Circular Movement:** What if a product moves from A -> B -> A? Is the second A -> B movement an error?
+2.  **Missing Location Levels:** What if a `scan_location` does not have a defined level in the `get_location_level` function? How should this be handled?
+3.  **Same-Level Movement:** Is movement between two locations at the same level (e.g., warehouse to warehouse) considered an error?
+4.  **Data Gaps:** What if there is a large time gap between two scans? Could a legitimate return have happened that was not recorded?
+5.  **Incorrect Location Data:** What if a location is mislabeled in the `geo_df` data (e.g., a factory is labeled as a warehouse)?
+6.  **EPC with Single Scan:** How is a journey with only one scan point handled? It cannot have a `locErr`.
+7.  **Simultaneous Scans:** What if a product is scanned at two different locations at the same time (an `epcDup`)? How should `locErr` behave?
+8.  **Null or NaN Location:** What if the `scan_location` is null or NaN for one of the events in a journey?
+9.  **Case Sensitivity:** Are location names case-sensitive? Could 'Factory A' and 'factory a' be treated as different locations with different levels?
+10. **Complex Supply Chains:** What about legitimate but non-linear supply chains, such as products sent for repair or refurbishment?
+
+## Edge Cases for detect_evt_order_err
+
+1.  **Missing Event Types:** What if `event_type` is null, NaN, or an empty string?
+2.  **Unrecognized Event Types:** How should the function handle event types that are not 'Inbound' or 'Outbound' (e.g., 'Aggregation', 'Packing')?
+3.  **Multiple 'Inbound' or 'Outbound' Events:** Is it an error to have two 'Inbound' events in a row at the same location? Or two 'Outbound' events?
+4.  **Case Sensitivity:** Are event types case-sensitive (e.g., 'inbound' vs. 'Inbound')?
+5.  **Events at Different Locations:** The rule should only apply to events at the *same* location. How do we ensure this?
+6.  **Single Event for EPC:** An EPC with only one event cannot have an `evtOrderErr`.
+7.  **Events with Same Timestamp:** What if an 'Inbound' and 'Outbound' event occur at the exact same time at the same location? Is this an error?
+8.  **Partial Keywords:** What if an event type is 'Partial Outbound'? Should this be treated the same as 'Outbound'?
+9.  **Interleaved Events:** What if the sequence is Inbound -> Other -> Outbound? Is this valid?
+10. **Data Sorting:** This rule is highly dependent on the data being correctly sorted by time. What happens if the sort is incorrect?

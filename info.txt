@@ -19,3 +19,8 @@
 - Registry Key Information: If a task involves Windows Registry.  
 - Default Browser: If a task involves opening URLs.
 
+gemini run \
+  --prompt prompts/anomaly_detection_v5/add_epcFake_rule.llm.json \
+  --context prompts/principle.llm.txt
+--prompt: 특정 기능 구현 지시
+--context: 개발 규칙, 배경, 코딩 방식 등 "항상 참고할 기본 전제"
