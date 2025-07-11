@@ -1,0 +1,98 @@
+# Explanation of `svm_anomaly_detection_v2.py`
+
+This script is designed to detect statistical anomalies in supply chain data using a One-Class Support Vector Machine (OCSVM) model. It's refactored to be easily integrated into an API, allowing for both training and prediction.
+
+---
+
+## 1. `save_svm_model(model)` Function
+
+**Purpose:** This function is responsible for persistently saving a trained One-Class SVM model to disk. This allows the model to be reused later without needing to retrain it, which is crucial for a production API.
+
+**Effect:**
+A `.pkl` (pickle) file is created in the `model/` directory. The filename includes a timestamp, ensuring unique identification and versioning of saved models.
+
+**Visual Example:**
+```
+barcode-anomaly-detection/
+└── model/
+    ├── svm_20250709_114352.pkl
+    └── svm_20250710_153000.pkl  <-- This is a newly saved model
+```
+
+---
+
+## 2. `get_svm_anomalies_from_df(input_df, pre_trained_model=None)` Function
+
+**Purpose:** This is the main "anomaly finder" part of the code. You give it a big table of data (like your `input_df`, which is like a spreadsheet of all your LEGO bricks with their colors, sizes, etc.), and it tells you which ones are "weird" or "anomalous." It can either learn what "normal" looks like from scratch, or use what it already learned before.
+
+**How it works (the "sorting" process):**
+
+1.  **Ignoring the "Labels" (Feature Selection/Exclusion):**
+    *   **Imagine:** You're sorting LEGOs, but you don't care about the serial number on the brick or when it was made. You only care about its shape, color, and how many studs it has.
+    *   **Code Effect:** The code first throws away columns that aren't useful for figuring out if something is "normal" or "weird." For example, it ignores the `epc_code` (like a LEGO serial number) or `event_time` (when it was scanned). It only keeps the columns that describe the *characteristics* of the data, like `scan_location` (where the LEGO was found) or `hub_type` (what kind of place it was found in).
+    *   **Why it's smart:** If you include too much irrelevant info, the sorter gets confused. It needs to focus on the important stuff.
+
+2.  **Separating Numbers from Words (Feature Type Separation):**
+    *   **Imagine:** Some LEGO characteristics are numbers (like "number of studs"), and some are words (like "color: red"). The sorter needs to treat them differently.
+    *   **Code Effect:** It figures out which columns have numbers (`numerical_features`) and which have text (`categorical_features`).
+
+3.  **Learning "Normal" vs. Using a "Trained Sorter" (Model Training vs. Loading):**
+    *   **Imagine:**
+        *   **New Sorter:** If you don't have a `pre_trained_model` (meaning, you haven't taught the sorter what "normal" LEGOs look like yet), the function will *train* a brand new sorter. It looks at all your `input_df` data and tries to understand the patterns of "normal" LEGOs.
+        *   **Experienced Sorter:** If you *do* provide a `pre_trained_model` (meaning, you already have an experienced sorter that knows what "normal" LEGOs are), the function just uses that one. This is super fast because it doesn't need to learn again!
+    *   **Why it's smart:** Training takes time. If you already have a smart sorter, just use it! But if you get a whole new batch of LEGOs, you might need to train a new one.
+
+4.  **Making Everything "Understandable" for the Sorter (Preprocessing):**
+    *   **Imagine:** Your LEGO sorter only understands numbers, and it gets confused if some numbers are huge (like "1,000,000 studs") and others are tiny (like "0.5 inches tall"). Also, it doesn't understand words like "red" or "blue."
+    *   **Code Effect:**
+        *   **`StandardScaler` (for numbers):** This is like making all your numerical LEGO characteristics fit on the same scale. So, "1,000,000 studs" might become "1.0" and "0.5 inches" might become "-0.5". It makes sure no single number bullies the others.
+        *   **`OneHotEncoder` (for words):** This is like turning "red" into a number the sorter understands. It creates new columns for each color, and puts a "1" if the LEGO is that color, and a "0" if it's not. So, "red" becomes `[1, 0, 0]`, "blue" becomes `[0, 1, 0]`, etc.
+    *   **Why it's smart:** Machine learning models (like our sorter) work best when all the data is in a consistent, numerical format.
+
+5.  **The "Anomaly Detector" Itself (OneClassSVM):**
+    *   **Imagine:** This is the actual brain of the sorter. It looks at all the "normal" LEGOs you've shown it and draws an invisible fence around them. Anything that falls *outside* this fence is considered "weird" or an "anomaly."
+    *   **Code Effect:** The `OneClassSVM` (One-Class Support Vector Machine) learns what "normal" data looks like. It tries to find a boundary that separates the "normal" stuff from everything else. The `nu=0.01` part means it expects about 1% of the data it sees to be anomalies.
+    *   **Why it's smart:** It's good at finding subtle weirdness that you might not have a specific rule for. Like a LEGO that's perfectly fine but just feels "off" compared to all the others.
+
+6.  **Pointing Out the Weird Ones (Prediction):**
+    *   **Imagine:** Once the sorter has its "fence," you feed it new LEGOs. It quickly checks if each new LEGO falls inside or outside the fence.
+    *   **Code Effect:** The `svm_model.predict(features_df)` line tells the model to look at each row of your prepared data and decide if it's normal (it gives it a `1`) or an anomaly (it gives it a `-1`).
+
+7.  **Showing You the "Weird Pile" (Output):**
+    *   **Imagine:** After all that sorting, you just want to see the pile of weird LEGOs, right?
+    *   **Code Effect:** The function creates a new table (`svm_anomalies_df`) that *only* contains the rows where the `svm_prediction` was `-1` (meaning, it's an anomaly). It then tells you how many weird ones it found.
+    *   **Why it's smart:** You don't want to sift through millions of normal records; you just want to see the problems!
+
+---
+
+## 3. `if __name__ == "__main__":` Block
+
+**Purpose:** This block of code is executed only when `svm_anomaly_detection_v2.py` is run directly (e.g., `python svm_anomaly_detection_v2.py`), not when it's imported as a module into another script (like `api.py`). Its primary purpose is to demonstrate the full workflow of the SVM anomaly detection, including loading data, training/predicting, and saving the results locally.
+
+**Effect:**
+1.  Reads the `all_factories_clean_v2.csv` file (which is assumed to contain cleaned data, potentially after rule-based anomaly detection).
+2.  Calls `get_svm_anomalies_from_df` to perform the SVM anomaly detection. If no pre-trained model is available, it trains a new one and saves it.
+3.  If anomalies are found, it saves a CSV report (`svm_anomalies_report_v1.csv`) containing the anomalous records to the `data/processed/` directory. If no anomalies are found, it creates an empty report file.
+
+**Visual Example (Conceptual Workflow):**
+```
+[all_factories_clean_v2.csv]
+       |
+       V
+[get_svm_anomalies_from_df()]
+       | (If no model exists)
+       V
+[Train New SVM Model] --> [Save Model: svm_YYYYMMDD_HHMMSS.pkl]
+       |
+       V
+[Predict Anomalies]
+       |
+       V
+[svm_anomalies_report_v1.csv] <-- (Contains only the detected SVM anomalies)
+```
+
+---
+
+## Overall Flow
+
+The `svm_anomaly_detection_v2.py` script provides a self-contained mechanism for SVM-based anomaly detection. When run directly, it acts as a standalone process to train a model and generate an anomaly report. When imported into the `api.py` (as intended), its `get_svm_anomalies_from_df` function can be called with incoming data, leveraging either a newly trained model or a previously saved one, to perform real-time anomaly detection as part of the API service.

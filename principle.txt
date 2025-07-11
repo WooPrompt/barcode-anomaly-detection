@@ -1,0 +1,49 @@
+Project Goal: Build a real-time, API-driven anomaly detection system for supply chain barcodes to find forged EPCs, logistical errors, and impossible travel times using rules and ML.
+
+OS:window
+
+Key Files:
+- /src/barcode-anomaly-detection/api.py: FastAPI core.
+- /src/barcode-anomaly-detection/anomaly_detection_v5.py: Rule-based anomaly detection.
+- /src/barcode-anomaly-detection/svm_anomaly_detection_v2.py: SVM-based anomaly detection.
+- /src/barcode-anomaly-detection/transition_time_analyzer_v2.py: Analyzes 'jump' anomalies.
+- /data/: Contains raw, processed, and external datasets.
+- /docs/: Project documentation and notes.
+- /reports/: Generated anomaly reports.
+- requirements.txt: Python dependencies.
+
+Data Schema:
+- scan_location (string): Human-readable physical location where barcode was scanned (e.g., '화성공장').
+- location_id (integer): Unique numerical ID for each scan_location.
+- hub_type (string): Specific type of facility (e.g., 'HWS_Factory', 'SEL_Logi_HUB_Inbound').
+- business_step (string): Logical stage in supply chain (e.g., 'Factory', 'WMS', 'Logistics_HUB', 'W_Stock', 'R_Stock', 'POS_Sell').
+- event_type (string): Specific action that occurred at the location (e.g., 'Aggregation', 'WMS_Inbound', 'HUB_Outbound').
+- epc_code (string): Electronic Product Code, a globally unique identifier. Composite of:
+  - epc_header (string): Constant '001'.
+  - epc_company (string): 7-digit manufacturer code.
+  - epc_product (string): 7-digit product type code.
+  - epc_lot (string): 6-digit production batch number.
+  - epc_manufacture (string): 8-digit manufacturing date (YYYYMMDD).
+  - epc_serial (string): 9-digit unique serial number.
+- product_name (string): Human-readable name of the product.
+- event_time (datetime): Exact timestamp when scan occurred.
+- manufacture_date (datetime): Timestamp of product manufacturing.
+- expiry_date (datetime): Expiration date of the product.
+- factory (string): Factory of origin (e.g., 'hws', 'icn'), added during processing.
+
+Anomaly Types:
+- epcFake: EPC code structure is invalid.
+- epcDup: Same EPC scanned in multiple locations at the exact same time.
+- locErr: Product path violates the logical supply chain flow (e.g., moves backward).
+- evtOrderErr: Illogical sequence of events at a single location (e.g., outbound scan occurs before inbound).
+- jump: Impossibly fast travel time between two locations (statistical outlier).
+- svm_outlier: Data point flagged by the One-Class SVM model as anomalous, not violating other specific rules.
+
+Coding & AI Conventions:
+- Versioning: Use new files for major features (e.g., script_v2.py), edit in-place for minor fixes.
+- Style: Write systematic, automated, reproducible code. Comment the 'why', not the 'what'. Use GPU where beneficial.
+- AI Interaction: At the start of a session, read this file (gemini_briefing.txt) for context.
+- I am a learner, so please be a learner-friendly AI. don't ommit the code write it down very easy understandable way. easy interpreted code is better than short code. 
+
+
+-always correct my sentence for more ai understandable precise phrase, and tell me why this phrase is more efficient.

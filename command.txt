@@ -1,0 +1,7 @@
+
+
+read C:\Users\user\Desktop\barcode-anomaly-detection\principle.txt
+read C:\Users\user\Desktop\barcode-anomaly-detection\info.txt 
+
+(ds) C:\Users\user\Desktop\barcode-anomaly-detection>python src\barcode\anomaly_detection_combined.py
+

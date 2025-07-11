@@ -1,0 +1,65 @@
+이번주 목표  
+베이스 모델 백엔드와 api 붙이기  
+
+오늘 목표  
+svm 모델 csv 입력받기  
+출력값에서 scan_location 대신 location_id로 json 반환  
+코드리뷰  
+
+아침 한상곤 교수님 피드백 요약  
+1. svm nu=0.01 설정 시 입력데이터가 적으면 모두 이상치로 판단될 수 있음. nu를 설정하지 않으면 정상데이터 위주로 학습되어 이상치 판단 어려움  
+2. 백엔드에서 csv 그대로 줄지 json으로 파싱해 줄지? → 설계에 따라 다름. csv 기준이면 그대로 사용  
+3. svm + fastapi 연동 성공(Postman 호출, 로컬 cmd 응답). 현재 csv 입력에서 에러 발생. scan_location 대신 location_id 출력 요청 반영 필요  
+4. 학습에 사용한 원본파일 테스트용 입력 가능 여부 → 문제 없음  
+
+Session Summary: Anomaly Detection Pipeline Development (2025.07.08)  
+
+1. transition_time_analyzer_v2.py  
+- 기존 v1은 순환참조 문제 있었고 dwell time까지 포함  
+- 새로운 v2는 raw 데이터 기준 정확한 travel time 계산  
+- 이동 구간 정의를 scan_location + event_type 기준으로 변경  
+- 결과: business_step_transition_avg_v2.csv 생성 (정확한 평균 이동 시간 룰북)  
+
+2. anomaly_detection_v4.py  
+- 기존 v3는 jump 통계 기반 이상만 포함됨  
+- v4는 epcFake, epcDup, locErr, evtOrderErr, jump 모두 포함  
+- jump는 Z-score(-3.0) 기반으로 탐지, 교수님 피드백에 따라 향후 IQR 등 도입 예정  
+- 현재 데이터에서는 evtOrderErr만 600건 탐지되고 나머지는 0건 → 기준 조정 필요  
+- anomaly_detection_v4.1.py는 테스트용 복사본  
+
+3. SVM 이상 탐지 및 API 연동  
+- svm_anomaly_detection_v2.py: One-Class SVM으로 통계적 이상 탐지 구현  
+- rule기반 이상 제거 후 남은 데이터에 대해 SVM 적용  
+- FastAPI 서버(model_serving_api.py) 구성  
+- /detect_anomalies endpoint: csv 입력 받고 rule + svm 결과 합쳐 json 반환  
+- anomaly_detection_v5.py: rule 기반 이상 탐지 함수화  
+- Postman으로 로컬 API 호출 테스트 완료  
+- csv → json 변환은 백엔드에서 수행, 로컬 테스트는 csv도 허용  
+
+Next Steps  
+- Postman으로 다양한 입력 테스트  
+- anomaly_detection_v6.py에 IQR 및 느린 이동 이상 반영 예정  
+- 백엔드 연동 후 운영 배포 준비  
+
+제출 파일 목록  
+1. transition_time_analyzer_v2.py  
+2. business_step_transition_avg_v2.csv  
+3. anomaly_detection_v4.1.py  
+4. anomalies_report_v2.csv  
+5. all_factories_clean_v2.csv  
+6. svm_anomaly_detection_v2.py  
+7. anomaly_detection_v5.py  
+8. model_serving_api.py  
+9. local_api_server.py (선택)  
+10. project_progress_summary_20250708.txt  
+
+교수님께 보고용 요약  
+교수님 안녕하세요.  
+이번에 바코드 프로젝트 이상 탐지 파이프라인을 다음과 같이 개선했습니다.  
+
+1. 정확한 이동 시간 계산: transition_time_analyzer_v2.py에서 실제 이동시간만 계산하여 평균 이동 시간 기준 생성  
+2. 종합 이상 탐지 시스템 구축: rule 기반 5가지 이상(epcFake, epcDup, locErr, evtOrderErr, jump) 탐지  
+3. SVM 기반 통계적 이상 탐지: One-Class SVM 적용, FastAPI 기반 API 연동 완료. csv 입력 → rule+svm 적용 → json 반환  
+
+향후 계획은 IQR 기반 jump 탐지 및 느린 이동 이상 탐지 도입이며, 현재 로컬 테스트 완료 상태로 백엔드 연동 예정입니다.  
+감사합니다.

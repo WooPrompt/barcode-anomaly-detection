@@ -1,0 +1,21 @@
+- Current Working Directory:   C:\Users\user\Desktop\barcode-anomaly-detection
+- File Paths:  
+- Specific Error Messages: Provides direct insight into problems.  
+- Installed Software Versions: Helps diagnose compatibility and dependency issues.  
+- Command Prompt/PowerShell: I am using anaconda . command is conda activate ds
+- Expected Output: Allows me to verify successful task completion.  
+- User Permissions: Crucial for understanding and resolving access-related errors.  
+- Environment Variables: Important for configuring software and scripts.  
+- System Architecture: Affects software compatibility and performance.  
+- Windows Subsystem for Linux (WSL) Usage: Determines the appropriate command environment.  
+- Network Configuration: (e.g., proxy settings, firewall rules if relevant to a task).  
+- Antivirus/Security Software: If files are being blocked or quarantined.  
+- Disk Space Availability: If dealing with large files or installations.  
+- Desired File Encoding: If creating/reading text files with specific encodings.  
+- Line Endings Preference: (CRLF vs. LF).  
+- Admin Privileges: If a command requires elevated permissions.  
+- Mapped Network Drives: If project files are on a network drive.  
+- USB Device Information: If interacting with hardware connected via USB.  
+- Registry Key Information: If a task involves Windows Registry.  
+- Default Browser: If a task involves opening URLs.
+
