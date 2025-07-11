@@ -1,0 +1,30 @@
+# === 🧠 대용량 CSV 파일 무시 ===
+data/processed/local_rule_clean_test.csv
+data/processed/all_factories_clean_v2.csv
+data/processed/svm_anomalies_report_v1.csv
+data/raw/icn.csv
+
+# === 🧹 Python 캐시 및 바이너리 ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# === 🔒 환경설정 / 비밀 키 ===
+.env
+*.env
+
+# === 🗂 운영체제 / IDE 특수 파일 ===
+.DS_Store
+Thumbs.db
+
+# === 🧠 모델 파일 ===
+*.pkl
+model/
+
+# === ⚙️ Jupyter Notebook 체크포인트 ===
+.ipynb_checkpoints/
+
+# === 🧪 테스트 출력물 ===
+*.log
+*.out
