@@ -1,25 +1,66 @@
 ## Edge Cases for detect_loc_err
 
 1.  **Circular Movement:** What if a product moves from A -> B -> A? Is the second A -> B movement an error?
+-the B->A movement is already flagged as an error, Are you asking whether it's okay for multiple functions to detect errors on the same EPC code without removing it after the first detection? If so,that's my intention.
+
 2.  **Missing Location Levels:** What if a `scan_location` does not have a defined level in the `get_location_level` function? How should this be handled?
+-The scan_location is not a pre-defined location which is not listed in the CSV I gave you, it's an error.
+
 3.  **Same-Level Movement:** Is movement between two locations at the same level (e.g., warehouse to warehouse) considered an error?
+-Are you asking about dwell time? If so, it's not an error.
+
 4.  **Data Gaps:** What if there is a large time gap between two scans? Could a legitimate return have happened that was not recorded?
+-We don't consider the internal logistics process, in any case,it should be flagged and reviewed by a supervisor.
+
 5.  **Incorrect Location Data:** What if a location is mislabeled in the `geo_df` data (e.g., a factory is labeled as a warehouse)?
+-What? That happened? If that happens, shouldn't it be caught by the eventSequence error detection?
+
 6.  **EPC with Single Scan:** How is a journey with only one scan point handled? It cannot have a `locErr`.
+-If it starts from the factory,it's not an error. What anomaly type would be most appropriate for this case? Please suggest one.
+
 7.  **Simultaneous Scans:** What if a product is scanned at two different locations at the same time (an `epcDup`)? How should `locErr` behave?
+-Flag both.
+
 8.  **Null or NaN Location:** What if the `scan_location` is null or NaN for one of the events in a journey?
+-There isn’t a fixed journey for the product. While the expected flow is downstream from the factory — such as Aggregation → WMS_Inbound → WMS_Outbound → HUB_Inbound → HUB_Outbound → W_Stock_Inbound → W_Stock_Outbound → R_Stock_Inbound → R_Stock_Outbound → POS_Sell — the product can stop and be held in stock at any stage if needed, which means the actual process may vary.
+However, any reverse flow, such as from POS back to the factory, is considered an error. In contrast, stopping within the normal downstream path (e.g., factory → WMS → HUB) is not treated as an anomaly.
+
 9.  **Case Sensitivity:** Are location names case-sensitive? Could 'Factory A' and 'factory a' be treated as different locations with different levels?
+-No, location names are not case-sensitive.
+
 10. **Complex Supply Chains:** What about legitimate but non-linear supply chains, such as products sent for repair or refurbishment?
+-We don't care about it, flag it.
+
 
 ## Edge Cases for detect_evt_order_err
 
 1.  **Missing Event Types:** What if `event_type` is null, NaN, or an empty string?
+-Flag it if the row doesn't fulfill the criteria.
+
 2.  **Unrecognized Event Types:** How should the function handle event types that are not 'Inbound' or 'Outbound' (e.g., 'Aggregation', 'Packing')?
+-The full sequence is Aggregation>WMS_Inbound>WMS_Outbound>HUB_Inbound>HUB_Outbound>W_Stock_Inbound>W_Stock_Outbound>R_Stock_Inbound>R_Stock_Outbound>POS_Sell
+However, some products stop mid-sequence and remain in stock.
+
 3.  **Multiple 'Inbound' or 'Outbound' Events:** Is it an error to have two 'Inbound' events in a row at the same location? Or two 'Outbound' events?
+-It's an error.
+
 4.  **Case Sensitivity:** Are event types case-sensitive (e.g., 'inbound' vs. 'Inbound')?
+-No.
+
 5.  **Events at Different Locations:** The rule should only apply to events at the *same* location. How do we ensure this?
+-Could you clarify what this case is referring to?
+
 6.  **Single Event for EPC:** An EPC with only one event cannot have an `evtOrderErr`.
+-If it's factory, ignore it. But it's not, flag it.
+
 7.  **Events with Same Timestamp:** What if an 'Inbound' and 'Outbound' event occur at the exact same time at the same location? Is this an error?
+-You don't need to care about time. That will be detected by Jump(spatial-temporal abnormal) function.
+
 8.  **Partial Keywords:** What if an event type is 'Partial Outbound'? Should this be treated the same as 'Outbound'?
+Some items may be left behind, but the exact quantity isn't important. Focus only on the event sequence. 
+
 9.  **Interleaved Events:** What if the sequence is Inbound -> Other -> Outbound? Is this valid?
+-No, flag it. 
+
 10. **Data Sorting:** This rule is highly dependent on the data being correctly sorted by time. What happens if the sort is incorrect?
+-Stick to the time-based sorting, If the time label is incorrect, it is abnormal anyway. So whether it's flagged multiple times doesn't matter. 

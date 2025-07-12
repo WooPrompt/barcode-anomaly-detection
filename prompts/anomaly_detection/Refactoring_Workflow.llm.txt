@@ -2,7 +2,7 @@
 
 ### 2. Benchmarking
 - For each function (`def`) before refactoring, run performance and correctness benchmarks.
-- Record all benchmark results and notes for future reference.
+- Record all benchmark results (runtime in seconds) and notes for future reference.
 
 ### 3. Automated Refactoring Sequence
 - After benchmarking, proceed directly to refactoring the next function.

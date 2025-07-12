@@ -2,7 +2,8 @@
   "task": "Rule-based anomaly detection modularization",
   "goal": "Enable independent benchmarking of rule-based anomaly detection functions to guide eventual ML replacement.",
   "load_context_files": [
-    "principle.llm.txt"
+    "principle.llm.txt",
+    "edge.txt"
   ],
   "protocol_context": [
     "prompts/question_loop.llm.txt",
