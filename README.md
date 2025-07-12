@@ -1,52 +1,108 @@
-# Supply Chain Anomaly Detection API
+# Barcode Anomaly Detection - Prompt Engineering Learning Project
 
-## 설치 및 실행
+## Project Purpose
 
-이상 감지 시스템을 실행하려면 다음 단계를 따르십시오:
+This project serves as a **learning laboratory for prompt engineering and AI collaboration** in the context of supply chain anomaly detection. As a data analyst, I'm using this real-world use case to experiment with and develop systematic AI interaction methodologies.
 
-1.  **명령 프롬프트(CMD) 또는 터미널 열기:**
-    *   **Windows:** 시작 메뉴에서 "cmd"를 검색하여 명령 프롬프트를 엽니다.
-    *   **macOS/Linux:** "터미널" 앱을 엽니다.
+### Learning Objectives
+- **Prompt Engineering**: Developing reusable, systematic AI interaction patterns
+- **AI Collaboration**: Building frameworks for efficient human-AI workflows  
+- **Domain Application**: Applying prompt engineering to data analysis and ML tasks
+- **Process Documentation**: Creating reproducible methodologies for AI-assisted development
 
-2.  **프로젝트 디렉토리로 이동:**
-    명령 프롬프트/터미널에서 다음 명령을 사용하여 이 프로젝트의 루트 디렉토리로 이동합니다. (예시 경로는 실제 프로젝트 경로로 대체해야 합니다.)
-    ```bash
-        # Replace <path/to/your/downloaded/barcode-anomaly-detection-folder> with the actual path to the directory where you downloaded this project.
-    cd <path/to/your/downloaded/barcode-anomaly-detection-folder>
-    ```
+### My Role
+**Data Analyst** focusing on:
+- Anomaly detection algorithm design and implementation
+- Statistical analysis and model validation
+- AI-assisted code development and optimization
+- Systematic prompt engineering experimentation
 
-3.  **종속성 설치:**
-    Python이 설치되어 있는지 확인하십시오. (Python이 없다면 [python.org](https://www.python.org/downloads/)에서 설치할 수 있습니다.) 그런 다음 pip를 사용하여 필요한 라이브러리를 설치하십시오:
-    ```bash
-    pip install -r requirements.txt
-    ```
+## Technical Implementation
 
-4.  **데이터 전처리 (규칙 기반 이상 감지):**
-    초기 데이터 처리 및 규칙 기반 이상 감지를 위한 스크립트를 실행하십시오. 이 단계는 정제된 데이터를 생성하고 규칙 기반 이상을 식별합니다.
-    ```bash
-    python src/barcode-anomaly-detection/anomaly_detection_v5.py
-    ```
+### Anomaly Detection System
+Real-time API for supply chain barcode anomaly detection featuring:
+- **Rule-based Detection**: 5 anomaly types (epcFake, epcDup, locErr, evtOrderErr, jump)
+- **Machine Learning**: One-Class SVM for statistical outlier detection
+- **Future Scope**: Graph Neural Networks (GNN) for relationship-based anomaly detection
 
-5.  **머신러닝 모델 학습 (SVM 이상 감지):**
-    One-Class SVM 모델을 학습시키기 위한 스크립트를 실행하십시오. 이 모델은 통계적 이상 감지에 사용됩니다.
-    ```bash
-    python src/barcode-anomaly-detection/svm_anomaly_detection_v2.py
-    ```
+### Prompt Engineering Framework
+Systematic AI collaboration system with:
+- **Structured Protocols**: Analysis logs, decision documentation, context management
+- **Automation Templates**: JSON-based command system for reproducible interactions  
+- **Knowledge Accumulation**: Persistent decision history and pattern recognition
+- **Component Classification**: Organized prompts by purpose (project, protocol, tasks, engineering)
 
-6.  **이상 감지 API 시작:**
-    FastAPI 애플리케이션을 시작하십시오. 이 API는 실시간 이상 감지를 위한 인터페이스 역할을 합니다.
-    ```bash
-    python src/barcode-anomaly-detection/api.py
-    ```
-    API는 일반적으로 `http://127.0.0.1:8000`에서 실행됩니다.
+## Quick Start
 
-    API 시작 후 예시 출력:
-    ```
-    INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-    ... (기타 로그 메시지) ...
-    ```
+### Prerequisites
+- Python 3.8+ with conda environment named `ds`
+- Git for version control and collaboration tracking
 
-## Installation and Execution
+### Environment Setup
+```bash
+# Activate conda environment
+conda activate ds
+
+# Navigate to project directory
+cd path/to/barcode-anomaly-detection
+
+# Install dependencies  
+pip install -r requirements.txt
+```
+
+### Running the System
+```bash
+# 1. Rule-based anomaly detection (modularized)
+python src/barcode/anomaly_detection_decomposed.py
+
+# 2. Train SVM model
+python src/barcode/svm_anomaly_detection_v2.py
+
+# 3. Start API server
+python src/barcode/api.py
+```
+
+## Project Structure
+
+### Core Components
+```
+├── src/barcode/                    # Main application code
+├── prompts/                        # AI interaction framework
+│   ├── project/principle.llm.txt   # Project context and guidelines
+│   ├── protocol/                   # AI behavior protocols
+│   ├── tasks/                      # Task-specific configurations
+│   ├── engineering/                # Prompt automation guides
+│   └── log/                        # Conversation analysis history
+├── data/                           # Raw and processed datasets
+└── docs/                           # Project documentation
+```
+
+### Key Learning Artifacts
+- **Analysis Logs**: `prompts/log/` - Documented decision-making process
+- **Automation Guide**: `prompts/engineering/` - Reusable prompt patterns
+- **Protocol Files**: `prompts/protocol/` - Systematic AI interaction rules
+- **Git History**: Detailed commit messages for AI training data
+
+## Learning Outcomes & Applications
+
+### Prompt Engineering Techniques Developed
+1. **Systematic Inquiry Protocol**: 4-step analysis process (motivation → ambiguities → understanding → strategies)
+2. **Context Management**: Persistent knowledge files with automatic loading
+3. **Decision Documentation**: Analysis logs for building cumulative expertise
+4. **Automation Templates**: JSON-based commands for reproducible AI interactions
+
+### Transferable Frameworks
+- **Multi-modal AI Collaboration**: Structured approach applicable to any technical domain
+- **Knowledge Accumulation**: Methods for building persistent AI collaboration expertise
+- **Process Documentation**: Templates for systematic AI-assisted development
+
+### Future Applications
+- Training other developers in effective AI collaboration
+- Building AI-assisted data analysis workflows
+- Developing domain-specific prompt engineering patterns
+- Creating enterprise AI collaboration standards
+
+## Anomaly Detection Results
 
 To run the anomaly detection system, follow these steps:
 
