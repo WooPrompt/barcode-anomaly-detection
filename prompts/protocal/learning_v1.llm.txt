@@ -1,8 +1,0 @@
-## protocol
-learning
-- Always ask me where to insert new code and explain why.
-- Provide 2–3 code options if possible, with short pros/cons so I can learn.
-- Don’t assume I already know the repo or tech.
-- Guide me step-by-step in small, clear plans (plan mode).
-- Help me rollback safely and commit with confidence after success.
-- Never omit the actual code in replies. Show full, readable examples.

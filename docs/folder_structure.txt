@@ -1,0 +1,66 @@
+Project Folder Structure (with Absolute Paths):
+C:\Users\user\Desktop\barcode-anomaly-detection\
+├───command.txt
+├───data\
+│   ├───external\
+│   ├───processed\
+│   │   ├───.keep
+│   │   ├───all_factories_clean_v2.csv
+│   │   ├───all_factories_clean_v2_test.csv
+│   │   ├───anomalies_report_v2.csv
+│   │   ├───business_step_transition_avg_v2.csv
+│   │   ├───local_rule_anomalies_test.csv
+│   │   ├───local_rule_clean_test.csv
+│   │   ├───location_id_withGeospatial - location_id.csv
+│   │   └───svm_anomalies_report_v1.csv
+│   └───raw\
+│       ├───.keep
+│       ├───hws.csv
+│       ├───icn.csv
+│       ├───kum.csv
+│       └───ygs.csv
+├───docs\
+│   └───20250709.txt
+├───folder_structure.txt
+├───info.txt
+├───model\
+│   ├───.keep
+│   ├───svm_20250709_114352.pkl
+│   └───svm_20250709_122328.pkl
+├───principle.txt
+├───README.md
+├───requirements.txt
+├───src\
+│   └───barcode\
+│       ├───anomaly_detection_v5.py
+│       ├───api.py
+│       ├───svm_anomaly_detection_v2.py
+│       └───transition_time_analyzer_v2.py
+└───temp_folder_structure.txt
+
+---
+
+Useful Information for Interacting with Gemini (Windows OS):
+
+When interacting with me on a Windows operating system, providing the following types of information can significantly improve efficiency and accuracy:
+
+1.  **Current Working Directory:** Always provide the full absolute path.
+2.  **File Paths:** Use absolute paths (e.g., `C:\Users\user\project\file.txt`).
+3.  **Specific Error Messages:** Provides direct insight into problems.
+4.  **Installed Software Versions:** Helps diagnose compatibility and dependency issues.
+5.  **Command Prompt/PowerShell:** Informs the correct command syntax to use.
+6.  **Expected Output:** Allows me to verify successful task completion.
+7.  **User Permissions:** Crucial for understanding and resolving access-related errors.
+8.  **Environment Variables:** Important for configuring software and scripts.
+9.  **System Architecture:** Affects software compatibility and performance.
+10. **Windows Subsystem for Linux (WSL) Usage:** Determines the appropriate command environment.
+11. **Network Configuration:** (e.g., proxy settings, firewall rules if relevant to a task).
+12. **Antivirus/Security Software:** If files are being blocked or quarantined.
+13. **Disk Space Availability:** If dealing with large files or installations.
+14. **Desired File Encoding:** If creating/reading text files with specific encodings.
+15. **Line Endings Preference:** (CRLF vs. LF).
+16. **Admin Privileges:** If a command requires elevated permissions.
+17. **Mapped Network Drives:** If project files are on a network drive.
+18. **USB Device Information:** If interacting with hardware connected via USB.
+19. **Registry Key Information:** If a task involves Windows Registry.
+20. **Default Browser:** If a task involves opening URLs.

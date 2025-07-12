@@ -214,3 +214,54 @@ def detect_evt_order_err(df: pd.DataFrame) -> tuple[list[dict], float]:
     duration = end_time - start_time
     
     return anomalies, duration
+
+
+def detect_jump_anomalies(df: pd.DataFrame, transition_stats: pd.DataFrame) -> tuple[list[dict], float]:
+    """
+    Detects statistically impossible travel times between locations (jump).
+
+    Args:
+        df: DataFrame with barcode data, must include 'epc_code', 'event_time', 'scan_location'.
+        transition_stats: DataFrame with travel time statistics between locations.
+
+    Returns:
+        A tuple containing:
+        - A list of dictionaries, where each dict represents a jump anomaly.
+        - The execution time of the function in seconds.
+    """
+    import numpy as np
+    
+    start_time = time.time()
+    Z_SCORE_THRESHOLD = -3.0
+    
+    journeys = df.sort_values(["epc_code", "event_time"]).copy()
+    journeys['from_scan_location'] = journeys.groupby('epc_code')['scan_location'].shift(1)
+    journeys['from_event_time'] = journeys.groupby('epc_code')['event_time'].shift(1)
+    journeys.dropna(subset=['from_scan_location', 'from_event_time'], inplace=True)
+    
+    anomalies = []
+    if not journeys.empty:
+        journeys = journeys.merge(
+            transition_stats,
+            left_on=['from_scan_location', 'scan_location'],
+            right_on=['from_scan_location', 'to_scan_location'],
+            how='left'
+        )
+        
+        journeys['time_taken_hours'] = (journeys['event_time'] - journeys['from_event_time']) / pd.Timedelta(hours=1)
+        journeys['z_score'] = np.nan
+        valid_std = journeys['time_taken_hours_std'] > 0
+        journeys.loc[valid_std, 'z_score'] = (
+            journeys['time_taken_hours'] - journeys['time_taken_hours_mean']
+        ) / journeys['time_taken_hours_std']
+        
+        jump_mask = journeys['z_score'] < Z_SCORE_THRESHOLD
+        if jump_mask.any():
+            anomalous_df = journeys.loc[jump_mask, ['epc_code', 'event_time']].copy()
+            anomalous_df['anomaly'] = 'jump'
+            anomalies = anomalous_df.to_dict(orient='records')
+    
+    end_time = time.time()
+    duration = end_time - start_time
+    
+    return anomalies, duration
