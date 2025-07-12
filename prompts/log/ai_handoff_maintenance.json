@@ -1,0 +1,23 @@
+{
+  "task": "Maintain ai_handoff.txt currency",
+  "target_size": "< 500 tokens",
+  "update_triggers": [
+    "Major decisions made",
+    "New frameworks created", 
+    "Project status changes",
+    "User answers requirements"
+  ],
+  "auto_update_sections": {
+    "PROJECT STATUS": "Update current work and next steps",
+    "KEY DECISIONS CHRONOLOGY": "Add new decision as single line with date",
+    "CURRENT CHALLENGE": "Update active problem/focus",
+    "ESSENTIAL FILES TO LOAD": "Update latest log/analysis files"
+  },
+  "maintenance_rules": [
+    "Keep chronology concise (1 line per decision)",
+    "Archive old details to log/ folder",
+    "Preserve magic phrase and working style",
+    "Date stamp updates"
+  ],
+  "success_metric": "New AI understands project in <2 minutes"
+}

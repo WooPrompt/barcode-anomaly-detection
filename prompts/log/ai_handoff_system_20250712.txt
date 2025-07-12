@@ -1,0 +1,44 @@
+## DECISION: AI Handoff System Design
+
+**Date**: 2025-07-12
+**Problem**: Long conversations, complex folder structures, token inefficiency for AI context
+**Solution**: Single ai_handoff.txt file + simple working/ structure
+
+### WHAT WAS DECIDED
+- Create ai_handoff.txt as THE master context file for any new AI
+- Use working/ folder for daily operations (decisions/, conversations/, requirements/)
+- Target <500 tokens for complete project understanding
+- Auto-update system for maintaining currency
+
+### WHY THIS APPROACH
+- **Token efficiency**: One small file vs multiple large files
+- **Context preservation**: Complete understanding without folder diving
+- **Easy handoff**: "Read @ai_handoff.txt and help with [task]"
+- **Simple maintenance**: Update one file vs complex folder management
+
+### CONVERSATION FLOW THAT LED HERE
+User: "Minor Areas for Enhancement" → Need testing frameworks
+↓
+AI: Proposed complex folder structure for testing
+↓  
+User: "Too complex... want one file for AI understanding"
+↓
+AI: Suggested master_context.txt approach
+↓
+User: Simplified to ai_handoff.txt + working/ folders
+↓
+**DECISION**: Minimal viable solution for AI context handoff
+
+### IMPLEMENTATION
+1. ✅ Created prompts/ai_handoff.txt
+2. ✅ Created working/ folder structure  
+3. ⏳ Auto-JSON for maintenance
+4. ⏳ Move existing files to working/
+
+### SUCCESS CRITERIA
+- New AI can understand project in <500 tokens
+- Context handoff takes one command: "Read @ai_handoff.txt"
+- Maintenance is simple and automated
+- Decision history is preserved but not overwhelming
+
+**This decision itself demonstrates the prompt engineering optimization we're building.**

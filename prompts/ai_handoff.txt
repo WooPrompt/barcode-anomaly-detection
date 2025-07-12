@@ -1,0 +1,37 @@
+# AI HANDOFF - COMPLETE PROJECT CONTEXT [2025-07-12]
+
+## PROJECT STATUS
+Building real-time barcode anomaly detection system. 5 detection functions complete (epcFake, epcDup, locErr, evtOrderErr, jump). Next: SVM/GNN models + automated testing.
+
+## FRAMEWORKS DEVELOPED
+1. **question_loop.llm.txt** - AI must ask clarifying questions before coding
+2. **analysis_log_behavior.llm.txt** - Context accumulation and decision tracking  
+3. **principle.llm.txt** - Project principles and environment setup
+
+## KEY DECISIONS CHRONOLOGY
+- 2025-07-10: Modularized detection into 5 standalone functions
+- 2025-07-11: Statistical approach (Z-score) over pure rule-based
+- 2025-07-12: **CURRENT FOCUS** - Need automated testing for prompt framework effectiveness
+
+## CURRENT CHALLENGE
+Testing whether prompt frameworks actually improve AI performance vs baseline. Move from "seems good" to measurable metrics.
+
+## USER WORKING STYLE
+- Always ask clarifying questions first (use question_loop.llm.txt)
+- Reference previous decisions (check analysis_log_behavior.llm.txt)
+- Build incrementally with performance measurement
+- Use English for technical, Korean for complex explanations
+- Document decisions and commit milestones
+
+## ESSENTIAL FILES TO LOAD
+- @prompts/protocol/question_loop.llm.txt
+- @prompts/log/[latest_analysis].txt
+- @prompts/project/principle.llm.txt
+
+## HOW TO START
+1. Load files above for context
+2. Apply question_loop protocol for any new task
+3. Update this file after major decisions
+4. Keep token usage minimal, decisions measurable
+
+**Magic phrase for new AI:** "Read @ai_handoff.txt and then help me with [current task]"
