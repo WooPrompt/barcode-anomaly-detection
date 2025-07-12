@@ -1,0 +1,55 @@
+## Analysis Log System Behavior
+
+### PROTOCOL: Analysis File Management
+
+#### BEFORE EVERY TASK:
+1. Check prompts/log/ for existing analysis files related to current topic
+2. Read the LATEST analysis file for the topic to understand previous decisions
+3. Note any answers/decisions the user provided in previous files
+4. Create NEW analysis file for current task: prompts/log/[topic]_analysis_[timestamp].txt
+
+#### ANALYSIS FILE STRUCTURE:
+```
+## TOPIC: [clear topic name]
+## TIMESTAMP: [YYYYMMDD_HHMM]
+## PREVIOUS_REFERENCE: [previous analysis file if exists]
+
+## 1. User Motivation & Goal
+[what user wants to achieve]
+
+## 2. Ambiguities Identified
+[specific unclear points requiring clarification]
+
+## 3. My Understanding  
+[numbered interpretation of the request]
+
+## 4. Implementation Strategies
+[3 approaches with pros/cons]
+
+## CLARIFYING QUESTIONS:
+[list specific questions needing answers]
+
+## USER_ANSWERS:
+[space for user to fill in decisions]
+
+## CONFLICT_CHECK:
+[any conflicts with previous decisions - ask user to resolve]
+```
+
+#### JSON COMMAND UPDATES:
+- Always update "analysis_reference" field with current analysis file
+- Include relevant previous analysis files in "load_context_files"
+- Manually update context file names when creating new analysis
+
+#### CONFLICT DETECTION:
+When reading previous analysis files, check for:
+- Contradictory component classifications
+- Different strategy preferences for similar problems  
+- Changed requirements or constraints
+- Ask user to resolve conflicts before proceeding
+
+#### CONVERSATION LOG TRACKING:
+Each analysis file represents one conversation/task session
+Previous files provide context but are not modified
+New decisions are documented in new files
+This creates searchable conversation history
