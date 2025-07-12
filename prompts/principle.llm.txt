@@ -32,13 +32,15 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 
 
 ## key_files
-- /src/barcode-anomaly-detection/api.py: FastAPI core (entry point for the API).
-- /src/barcode-anomaly-detection/anomaly_detection_v5.py: Rule-based anomaly detection logic.
-- /src/barcode-anomaly-detection/svm_anomaly_detection_v2.py: SVM-based machine learning anomaly detector.
-- /src/barcode-anomaly-detection/transition_time_analyzer_v2.py: Analyzes travel-time anomalies ("jump" errors).
+- /src/barcode/api.py: FastAPI core (entry point for the API).
+- /src/barcode/anomaly_detection_v5.py: Monolithic rule-based anomaly detection (API-ready).
+- /src/barcode/anomaly_detection_decomposed.py: Individual standalone functions for each anomaly type (COMPLETE - 4/5 functions implemented).
+- /src/barcode/anomaly_detection_combined.py: Full pipeline combining rule-based + SVM detection.
+- /src/barcode/transition_time_analyzer_v2.py: Analyzes travel-time anomalies ("jump" errors).
+- /data/processed/location_id_withGeospatial.csv: Geospatial reference data for locations.
+- /data/processed/business_step_transition_avg_v2.csv: Statistical baseline for travel time validation.
 - /data/: Contains raw, processed, and external datasets.
 - /docs/: Project documentation and research notes.
-- /reports/: Output reports on detected anomalies.
 - requirements.txt: Python package dependencies.
 
 ## data_schema
@@ -76,6 +78,20 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 - When AI helps with planning, let it explain multiple code options with pros/cons.
 - After finishing a unit of work (function or file), write a test and commit.
 - Limit each request to small changes: ideally ≤1 file, ≤2–3 functions, ≤10 lines per function.
+
+## project_status_update
+MODULARIZATION COMPLETE (95%): Individual anomaly detection functions successfully implemented in anomaly_detection_decomposed.py. Only missing detect_jump_anomalies() function extraction from v5.
+- DONE: detect_epc_fake() - Format validation 
+- DONE: detect_epc_dup() - Duplicate detection
+- DONE: detect_loc_err() - Location hierarchy validation  
+- DONE: detect_evt_order_err() - Event sequence validation
+- PENDING: detect_jump_anomalies() - Statistical travel time analysis (needs extraction)
+
+## data_requirements
+For rule-based anomaly detection, ALWAYS use these specific data files:
+- Geospatial data: data/processed/location_id_withGeospatial.csv
+- Travel time baselines: data/processed/business_step_transition_avg_v2.csv
+- These contain pre-calculated statistics and geospatial coordinates required for location validation and jump detection.
 
 
 ## file_correction_guideline
