@@ -1,0 +1,13 @@
+## knowns
+- Uses statistical baselines from business_step_transition_avg_v2.csv
+- Compares actual travel time vs. expected transition time
+- Requires geospatial coordinates from location_id_withGeospatial.csv
+- Flags travel times that are statistically impossible
+- Uses Z-score or similar statistical methods
+
+## unknowns (answer Yes/No)
+- Should missing location coordinates exclude records from jump detection?
+- Should same-location scans be excluded from travel time analysis?
+- Should weekend/holiday periods use different statistical thresholds?
+- Should the function handle negative time differences?
+- Should travel times beyond 3 standard deviations be automatically flagged?

@@ -1,0 +1,13 @@
+## knowns
+- Location hierarchy: Factory(0) → Logistics(1) → Wholesale(2) → Retail(3)
+- Normal flow is downstream (lower to higher numbers)
+- Reverse flow should be flagged as error
+- Uses scan_location column to determine hierarchy level
+- Korean location names (공장, 물류센터, 도매상, 소매상)
+
+## unknowns (answer Yes/No)
+- Should movement between same-level locations be flagged?
+- Should case sensitivity matter for location names?
+- Should unknown location names default to error level?
+- Should single-scan EPCs be excluded from location error detection?
+- Should the function handle null/NaN location values?

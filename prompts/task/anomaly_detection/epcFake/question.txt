@@ -1,0 +1,15 @@
+## knowns
+- EPC format: 6 parts separated by dots (header.company.product.lot.manufacture.serial)
+- Valid header: "001"
+- Valid company codes: {"8804823", "8805843", "8809437"}
+- Product code: 7 digits
+- Lot code: 6 digits  
+- Serial: 9 digits
+- Manufacture date: YYYYMMDD format, not future, not older than 5 years
+
+## unknowns (answer Yes/No)
+- Should empty/null EPC codes be flagged as fake? 
+- Should EPC codes with extra whitespace be automatically trimmed?
+- Should case sensitivity matter for company codes?
+- Should the function handle Unicode characters in EPC codes?
+- Should partial EPC matches be allowed for damaged barcodes?

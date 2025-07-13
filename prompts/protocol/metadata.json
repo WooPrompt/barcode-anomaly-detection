@@ -2,19 +2,38 @@
   "folder_purpose": "AI behavior rules and personality configurations",
   "created_by": "manual_restructuring_20250713", 
   "derived_from": "original_protocol_folder",
-  "version": "v1.0",
+  "version": "v1.1",
+  "last_updated": "2025-07-13",
+  "file_count": 4,
+  "recent_changes": [
+    "Added question_loop.llm.txt from task/anomaly_detection/ for reusability",
+    "Updated automation system with lifecycle management"
+  ],
   "files": {
     "learning_v1.llm.txt": {
       "purpose": "Educational interaction protocol for learning-focused development",
       "personality": "step_by_step_teacher",
-      "use_case": "code_learning_and_explanation"
+      "use_case": "code_learning_and_explanation",
+      "last_updated": "2025-07-12"
     },
     "analysis_log_behavior.llm.txt": {
       "purpose": "Systematic analysis and decision tracking protocol",
       "personality": "methodical_analyzer",
-      "use_case": "persistent_knowledge_building"
+      "use_case": "persistent_knowledge_building",
+      "last_updated": "2025-07-12"
+    },
+    "question_loop.llm.txt": {
+      "purpose": "Systematic questioning protocol for thorough task analysis",
+      "personality": "methodical_questioner",
+      "use_case": "breaking_down_complex_tasks",
+      "migrated_from": "prompts/task/anomaly_detection/question_loop.llm.txt",
+      "last_updated": "2025-07-13"
     }
   },
   "usage": "Define HOW AI should behave during interactions",
-  "notes": "Switchable AI personalities and interaction styles"
+  "notes": "Switchable AI personalities and interaction styles",
+  "automation_integration": {
+    "referenced_by": ["command.json"],
+    "execution_order": "immediate_tasks"
+  }
 }

@@ -1,0 +1,13 @@
+## knowns
+- Valid event sequence: Inbound → Outbound at same location
+- Multiple consecutive Inbound or Outbound events are errors
+- Event types: Aggregation, WMS_Inbound, WMS_Outbound, HUB_Inbound, etc.
+- Focus on event sequence logic within same location
+- Case insensitive event type matching
+
+## unknowns (answer Yes/No)
+- Should events with null/empty event_type be flagged?
+- Should partial keyword matching be used (e.g., "Partial_Outbound" → "Outbound")?
+- Should unrecognized event types be automatically flagged?
+- Should single-event EPCs be excluded from order error detection?
+- Should the function handle events with identical timestamps?

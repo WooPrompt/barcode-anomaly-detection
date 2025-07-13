@@ -3,11 +3,12 @@
 ## PROJECT OVERVIEW
 Real-time barcode anomaly detection system using rule-based functions and ML models. Built with Python/FastAPI for API-driven supply chain monitoring.
 
-## CURRENT STATUS
-- 5 detection functions: epcFake, epcDup, locErr, evtOrderErr, jump (modularization target)
-- Advanced prompt engineering framework implemented
-- AI handoff system operational
-- Next: Function separation + automated testing framework
+## CURRENT STATUS  
+- 5 detection functions: epcFake, epcDup, locErr, evtOrderErr, jump (COMPLETE - in decomposed.py)
+- Advanced prompt engineering framework implemented with Meta→Templates→Tasks pipeline
+- AI handoff system operational with automation lifecycle management
+- Automation system: command.json entry/exit workflow established
+- Next: Function modularization into separate files + automated testing framework
 
 ## FOLDER STRUCTURE
 
@@ -124,12 +125,12 @@ Each function folder will contain:
 - **Update Documentation**: Run `@automation/update_index.json` to refresh directory structure
 
 ## NEXT PRIORITIES
-1. Function separation into modular structure
-2. Command.json automation system
-3. Automated testing framework
-4. Performance measurement for prompt effectiveness
+1. Function separation into individual files (functions/ folder structure)
+2. Automated testing framework for prompt effectiveness measurement  
+3. Performance benchmarking for API timeout settings
+4. Template-based function generation from prompts/templates/
 
 ## FILE MAINTENANCE
 This index.llm.txt is automatically updated via command.json to reflect current project state and structure changes.
 
-Last Updated: 2025-07-13 by AI automation system (restructured with metadata lineage tracking)
+Last Updated: 2025-07-13 by automation/command.json execution (updated status and automation integration)

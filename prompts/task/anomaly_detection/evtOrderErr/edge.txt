@@ -1,0 +1,32 @@
+## Edge Cases for detect_evt_order_err
+
+1.  **Missing Event Types:** What if `event_type` is null, NaN, or an empty string?
+-Flag it if the row doesn't fulfill the criteria.
+
+2.  **Unrecognized Event Types:** How should the function handle event types that are not 'Inbound' or 'Outbound' (e.g., 'Aggregation', 'Packing')?
+-The full sequence is Aggregation>WMS_Inbound>WMS_Outbound>HUB_Inbound>HUB_Outbound>W_Stock_Inbound>W_Stock_Outbound>R_Stock_Inbound>R_Stock_Outbound>POS_Sell
+However, some products stop mid-sequence and remain in stock.
+
+3.  **Multiple 'Inbound' or 'Outbound' Events:** Is it an error to have two 'Inbound' events in a row at the same location? Or two 'Outbound' events?
+-It's an error.
+
+4.  **Case Sensitivity:** Are event types case-sensitive (e.g., 'inbound' vs. 'Inbound')?
+-No.
+
+5.  **Events at Different Locations:** The rule should only apply to events at the *same* location. How do we ensure this?
+-Could you clarify what this case is referring to?
+
+6.  **Single Event for EPC:** An EPC with only one event cannot have an `evtOrderErr`.
+-If it's factory, ignore it. But it's not, flag it.
+
+7.  **Events with Same Timestamp:** What if an 'Inbound' and 'Outbound' event occur at the exact same time at the same location? Is this an error?
+-You don't need to care about time. That will be detected by Jump(spatial-temporal abnormal) function.
+
+8.  **Partial Keywords:** What if an event type is 'Partial Outbound'? Should this be treated the same as 'Outbound'?
+Some items may be left behind, but the exact quantity isn't important. Focus only on the event sequence. 
+
+9.  **Interleaved Events:** What if the sequence is Inbound -> Other -> Outbound? Is this valid?
+-No, flag it. 
+
+10. **Data Sorting:** This rule is highly dependent on the data being correctly sorted by time. What happens if the sort is incorrect?
+-Stick to the time-based sorting, If the time label is incorrect, it is abnormal anyway. So whether it's flagged multiple times doesn't matter.
