@@ -1,5 +1,14 @@
 {
   "ai_instructions": "When this file is loaded, automatically: 1) Load all context_files, 2) Apply the specified protocol, 3) Run all default_tasks first, 4) Then execute all tasks in order, 5) Update metadata and log everything",
+  "execution_order": ["immediate_tasks", "default_tasks", "tasks"],
+  "immediate_tasks": [
+    {
+      "type": "load_protocol",
+      "protocol": "prompts/protocol/question_loop.llm.txt",
+      "priority": "urgent",
+      "execute": "session_start"
+    }
+  ],
   "session_config": {
     "role": "prompt_engineer",
     "protocol": "prompts/protocol/learning_v1.llm.txt",

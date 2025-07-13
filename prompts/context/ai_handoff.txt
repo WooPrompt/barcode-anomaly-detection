@@ -26,7 +26,7 @@ Testing whether prompt frameworks actually improve AI performance vs baseline. M
 ## ESSENTIAL FILES TO LOAD
 - @prompts/protocol/question_loop.llm.txt
 - @prompts/log/[latest_analysis].txt
-- @prompts/project/principle.llm.txt
+- @prompts/context/principle.llm.txt
 
 ## HOW TO START
 1. Load files above for context

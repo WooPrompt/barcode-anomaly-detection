@@ -67,6 +67,12 @@ python src/barcode/api.py
 
 ### Core Components
 ```
+├── automation/                     # Session lifecycle management
+│   ├── README.md                   # How to use automation system  
+│   ├── command.json               # Entry point (session setup)
+│   ├── ai_handoff.json            # Exit point (task handoff)
+│   ├── update_index.json          # Directory structure maintenance
+│   └── directory_scan.json        # Pure scanning utility
 ├── src/barcode/                    # Main application code
 ├── prompts/                        # AI interaction framework (restructured)
 │   ├── context/                    # WHAT the project is
@@ -76,19 +82,24 @@ python src/barcode/api.py
 │   ├── protocol/                   # HOW AI should behave
 │   │   ├── learning_v1.llm.txt     # Educational interaction
 │   │   ├── analysis_log_behavior.llm.txt # Decision tracking
+│   │   ├── question_loop.llm.txt   # Systematic questioning protocol
 │   │   └── metadata.json           # Lineage tracking
-│   ├── meta/                       # HOW to make prompts (prompt-for-prompt)
+│   ├── meta/                       # HOW to design prompts (prompt-for-prompt)
 │   │   ├── automation_guide.txt    # Meta-automation guidance
+│   │   ├── file_registry.json      # Path tracking design patterns
 │   │   └── metadata.json           # Lineage tracking
-│   ├── templates/                  # REUSABLE patterns (blank forms to copy)
+│   ├── templates/                  # REUSABLE blank forms (copy to customize)
+│   │   ├── function_generation_template.json # Blank form for code generation
+│   │   ├── analysis_template.json  # Blank form for analysis tasks  
 │   │   └── metadata.json           # Lineage tracking
-│   ├── task/                       # WHAT to execute (filled-out forms ready to use)
-│   │   ├── anomaly_detection/      # Function generation tasks
-│   │   ├── update_index.json       # Index maintenance
+│   ├── task/                       # FILLED forms ready to execute (domain-specific)
+│   │   ├── anomaly_detection/      # Current domain: barcode anomalies
+│   │   │   ├── function_generation.json # Filled template for this project
+│   │   │   ├── edge.txt            # Domain-specific edge cases
+│   │   │   └── refactoring_workflow.json # Domain-specific workflow
 │   │   └── metadata.json           # Lineage tracking
 │   └── log/                        # WHAT happened (conversation history)
 │       └── metadata.json           # Lineage tracking
-├── command.json                    # Automated task execution system
 ├── index.llm.txt                   # Project summary for AI consultation
 ├── data/                           # Raw and processed datasets
 └── docs/                           # Project documentation
