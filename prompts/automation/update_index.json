@@ -2,8 +2,8 @@
   "task": "update_project_index",
   "description": "Automatically update index.llm.txt with current project structure and status",
   "load_context_files": [
-    "prompts/ai_handoff.txt",
-    "prompts/project/principle.llm.txt"
+    "prompts/context/ai_handoff.txt",
+    "prompts/context/principle.llm.txt"
   ],
   "protocol_context": [
     "prompts/protocol/analysis_log_behavior.llm.txt"
