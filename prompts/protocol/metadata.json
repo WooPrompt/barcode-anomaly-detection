@@ -1,0 +1,20 @@
+{
+  "folder_purpose": "AI behavior rules and personality configurations",
+  "created_by": "manual_restructuring_20250713", 
+  "derived_from": "original_protocol_folder",
+  "version": "v1.0",
+  "files": {
+    "learning_v1.llm.txt": {
+      "purpose": "Educational interaction protocol for learning-focused development",
+      "personality": "step_by_step_teacher",
+      "use_case": "code_learning_and_explanation"
+    },
+    "analysis_log_behavior.llm.txt": {
+      "purpose": "Systematic analysis and decision tracking protocol",
+      "personality": "methodical_analyzer",
+      "use_case": "persistent_knowledge_building"
+    }
+  },
+  "usage": "Define HOW AI should behave during interactions",
+  "notes": "Switchable AI personalities and interaction styles"
+}

@@ -1,0 +1,18 @@
+{
+  "folder_purpose": "Problem-solving prompts for code generation and execution",
+  "created_by": "manual_restructuring_20250713",
+  "derived_from": "original_tasks_folder", 
+  "version": "v1.0",
+  "subfolders": {
+    "anomaly_detection/": {
+      "purpose": "Anomaly detection function generation prompts",
+      "contains": "5 detection function tasks + questioning protocols"
+    },
+    "update_index.json": {
+      "purpose": "Automatic index.llm.txt maintenance task",
+      "type": "automation_task"
+    }
+  },
+  "usage": "Execute specific problem-solving tasks",
+  "notes": "Task-specific prompts for DOING work, not creating prompts"
+}

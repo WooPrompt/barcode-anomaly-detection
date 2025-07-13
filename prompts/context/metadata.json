@@ -1,0 +1,20 @@
+{
+  "folder_purpose": "Static project knowledge and context",
+  "created_by": "manual_restructuring_20250713",
+  "derived_from": "original_project_folder",
+  "version": "v1.0",
+  "files": {
+    "ai_handoff.txt": {
+      "purpose": "Complete project context for AI sessions",
+      "migrated_from": "prompts/ai_handoff.txt",
+      "last_updated": "2025-07-12"
+    },
+    "principle.llm.txt": {
+      "purpose": "Project goals, schema, environment specifications", 
+      "migrated_from": "prompts/project/principle.llm.txt",
+      "last_updated": "2025-07-10"
+    }
+  },
+  "usage": "Load these files first in any AI session for project context",
+  "notes": "Core project knowledge - rarely changes"
+}

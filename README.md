@@ -26,11 +26,12 @@ Real-time API for supply chain barcode anomaly detection featuring:
 - **Future Scope**: Graph Neural Networks (GNN) for relationship-based anomaly detection
 
 ### Prompt Engineering Framework
-Systematic AI collaboration system with:
+Advanced AI collaboration system with metadata lineage tracking:
 - **Structured Protocols**: Analysis logs, decision documentation, context management
 - **Automation Templates**: JSON-based command system for reproducible interactions  
 - **Knowledge Accumulation**: Persistent decision history and pattern recognition
-- **Component Classification**: Organized prompts by purpose (project, protocol, tasks, engineering)
+- **Metadata Lineage**: Complete tracking of prompt evolution and derivation
+- **Separation of Concerns**: context (WHAT), protocol (HOW), meta (prompt-for-prompt), templates (REUSABLE), task (EXECUTE)
 
 ## Quick Start
 
@@ -67,20 +68,38 @@ python src/barcode/api.py
 ### Core Components
 ```
 ├── src/barcode/                    # Main application code
-├── prompts/                        # AI interaction framework
-│   ├── project/principle.llm.txt   # Project context and guidelines
-│   ├── protocol/                   # AI behavior protocols
-│   ├── tasks/                      # Task-specific configurations
-│   ├── engineering/                # Prompt automation guides
-│   └── log/                        # Conversation analysis history
+├── prompts/                        # AI interaction framework (restructured)
+│   ├── context/                    # WHAT the project is
+│   │   ├── ai_handoff.txt          # Complete project context
+│   │   ├── principle.llm.txt       # Project specifications
+│   │   └── metadata.json           # Lineage tracking
+│   ├── protocol/                   # HOW AI should behave
+│   │   ├── learning_v1.llm.txt     # Educational interaction
+│   │   ├── analysis_log_behavior.llm.txt # Decision tracking
+│   │   └── metadata.json           # Lineage tracking
+│   ├── meta/                       # HOW to make prompts (prompt-for-prompt)
+│   │   ├── automation_guide.txt    # Meta-automation guidance
+│   │   └── metadata.json           # Lineage tracking
+│   ├── templates/                  # REUSABLE patterns
+│   │   └── metadata.json           # Lineage tracking
+│   ├── task/                       # WHAT to execute (problem-solving)
+│   │   ├── anomaly_detection/      # Function generation tasks
+│   │   ├── update_index.json       # Index maintenance
+│   │   └── metadata.json           # Lineage tracking
+│   └── log/                        # WHAT happened (conversation history)
+│       └── metadata.json           # Lineage tracking
+├── command.json                    # Automated task execution system
+├── index.llm.txt                   # Project summary for AI consultation
 ├── data/                           # Raw and processed datasets
 └── docs/                           # Project documentation
 ```
 
 ### Key Learning Artifacts
 - **Analysis Logs**: `prompts/log/` - Documented decision-making process
-- **Automation Guide**: `prompts/engineering/` - Reusable prompt patterns
+- **Automation Guide**: `prompts/meta/` - Meta-prompts for creating new prompts
 - **Protocol Files**: `prompts/protocol/` - Systematic AI interaction rules
+- **Metadata Lineage**: `*/metadata.json` - Complete prompt evolution tracking
+- **Command System**: `command.json` - Automated task execution with logging
 - **Git History**: Detailed commit messages for AI training data
 
 ## Learning Outcomes & Applications
@@ -90,6 +109,9 @@ python src/barcode/api.py
 2. **Context Management**: Persistent knowledge files with automatic loading
 3. **Decision Documentation**: Analysis logs for building cumulative expertise
 4. **Automation Templates**: JSON-based commands for reproducible AI interactions
+5. **Metadata Lineage Tracking**: Complete prompt genealogy and evolution tracking
+6. **Separation of Concerns**: Clear distinction between context, protocol, meta, templates, and tasks
+7. **Command Automation**: Single-command execution of complex AI workflows
 
 ### Transferable Frameworks
 - **Multi-modal AI Collaboration**: Structured approach applicable to any technical domain

@@ -1,0 +1,22 @@
+{
+  "folder_purpose": "Conversation chronology and decision tracking",
+  "created_by": "manual_restructuring_20250713",
+  "derived_from": "original_log_folder",
+  "version": "v1.0",
+  "files": {
+    "ai_handoff_maintenance.json": {
+      "purpose": "Handoff system maintenance log",
+      "created": "2025-07-12"
+    },
+    "ai_handoff_system_20250712.txt": {
+      "purpose": "AI handoff system development log",
+      "created": "2025-07-12"
+    },
+    "anomaly_detection_analysis_20250712.txt": {
+      "purpose": "Anomaly detection analysis conversation log",
+      "created": "2025-07-12"
+    }
+  },
+  "usage": "Track how decisions were made and conversations evolved",
+  "notes": "Historical record of prompt engineering decisions"
+}

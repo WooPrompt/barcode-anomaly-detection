@@ -1,0 +1,44 @@
+{
+  "session_config": {
+    "role": "prompt_engineer",
+    "protocol": "prompts/protocol/learning_v1.llm.txt",
+    "context_files": [
+      "prompts/context/ai_handoff.txt",
+      "prompts/context/principle.llm.txt"
+    ]
+  },
+  "default_tasks": [
+    {
+      "type": "update_metadata",
+      "description": "Auto-update metadata.json files with lineage tracking",
+      "scan_folders": [
+        "prompts/context/",
+        "prompts/protocol/", 
+        "prompts/meta/",
+        "prompts/templates/",
+        "prompts/task/",
+        "prompts/log/"
+      ],
+      "update_fields": ["last_updated", "file_count", "recent_changes"],
+      "log_to": "prompts/log/metadata_updates_YYYYMMDD.txt"
+    },
+    {
+      "type": "update_index",
+      "config": "prompts/task/update_index.json"
+    }
+  ],
+  "tasks": [
+    {
+      "type": "generate_functions",
+      "target": "5_rule_based_anomaly_detection",
+      "use_template": "prompts/templates/function_generation_template.json",
+      "output_folder": "functions/",
+      "log_to": "prompts/log/function_generation_20250713.txt"
+    }
+  ],
+  "execution_settings": {
+    "auto_log": true,
+    "validate_metadata": true,
+    "backup_before_changes": true
+  }
+}

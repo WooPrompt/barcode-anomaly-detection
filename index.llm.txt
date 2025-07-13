@@ -15,24 +15,32 @@ Real-time barcode anomaly detection system using rule-based functions and ML mod
 barcode-anomaly-detection/
 ├── prompts/                    # AI interaction framework
 │   ├── README.md              # Framework documentation
-│   ├── ai_handoff.txt         # Complete project context for AI
-│   ├── project/               # Static project context
-│   │   └── principle.llm.txt  # Project goals, schema, environment
-│   ├── protocol/              # AI behavior rules
+│   ├── context/               # WHAT the project is
+│   │   ├── ai_handoff.txt     # Complete project context for AI
+│   │   ├── principle.llm.txt  # Project goals, schema, environment
+│   │   └── metadata.json      # Lineage tracking
+│   ├── protocol/              # HOW AI should behave
 │   │   ├── learning_v1.llm.txt          # Educational interaction style
-│   │   └── analysis_log_behavior.llm.txt # Decision tracking protocol
-│   ├── tasks/                 # Task-specific configurations
-│   │   └── anomaly_detection/ # Current task: function modularization
-│   │       ├── anomaly_detection.json    # Main task config
-│   │       ├── edge.txt                  # Edge cases
-│   │       ├── question_loop.llm.txt     # Systematic questioning
-│   │       └── Refactoring_Workflow.llm.txt # Benchmarking workflow
-│   ├── engineering/           # Meta-automation guidance
-│   │   └── automation_guide.txt # How to create new prompt automations
-│   └── log/                   # Conversation analysis history
+│   │   ├── analysis_log_behavior.llm.txt # Decision tracking protocol
+│   │   └── metadata.json                # Lineage tracking
+│   ├── meta/                  # HOW to make prompts (prompt-for-prompt)
+│   │   ├── automation_guide.txt # Meta-automation guidance
+│   │   └── metadata.json        # Lineage tracking
+│   ├── templates/             # REUSABLE patterns
+│   │   └── metadata.json      # Lineage tracking
+│   ├── task/                  # WHAT to execute (problem-solving)
+│   │   ├── anomaly_detection/ # Current task: function modularization
+│   │   │   ├── anomaly_detection.json    # Main task config
+│   │   │   ├── edge.txt                  # Edge cases
+│   │   │   ├── question_loop.llm.txt     # Systematic questioning
+│   │   │   └── Refactoring_Workflow.llm.txt # Benchmarking workflow
+│   │   ├── update_index.json  # Index maintenance automation
+│   │   └── metadata.json      # Lineage tracking
+│   └── log/                   # WHAT happened (conversation history)
 │       ├── ai_handoff_maintenance.json
 │       ├── ai_handoff_system_20250712.txt
-│       └── anomaly_detection_analysis_20250712.txt
+│       ├── anomaly_detection_analysis_20250712.txt
+│       └── metadata.json      # Lineage tracking
 ├── functions/ [PLANNED]        # Modularized detection functions
 │   ├── epcFake/               # Fake EPC detection
 │   ├── epcDup/                # Duplicate EPC detection
@@ -54,16 +62,16 @@ Each function folder will contain:
 ## AI FRAMEWORK COMPONENTS
 
 ### Core Files for AI Sessions:
-1. **ai_handoff.txt** - Load first for complete project context
-2. **principle.llm.txt** - Project technical specifications
-3. **question_loop.llm.txt** - Systematic task approach
-4. **analysis_log_behavior.llm.txt** - Decision tracking protocol
+1. **context/ai_handoff.txt** - Load first for complete project context
+2. **context/principle.llm.txt** - Project technical specifications
+3. **task/anomaly_detection/question_loop.llm.txt** - Systematic task approach
+4. **protocol/analysis_log_behavior.llm.txt** - Decision tracking protocol
 
-### Automation Patterns:
-- **Context Loading** - Automatic project context for new AI sessions
-- **Protocol Application** - Consistent AI behavior across tasks
-- **Decision Tracking** - Persistent knowledge through analysis logs
-- **Command Batching** - JSON-driven task execution
+### New Framework Features:
+- **Metadata Lineage Tracking** - Every folder tracks creation, derivation, and evolution
+- **Separation of Concerns** - Clear distinction between context, protocol, meta, templates, tasks
+- **Automated Updates** - command.json system for metadata maintenance
+- **Prompt Genealogy** - Track how prompts evolve from meta → templates → tasks
 
 ## KEY INNOVATIONS
 1. **AI Handoff System** - Seamless context transfer between AI sessions
@@ -73,10 +81,11 @@ Each function folder will contain:
 5. **Automation Framework** - Meta-patterns for creating new prompt systems
 
 ## USAGE FOR AI CONSULTATION
-- **New AI Session**: Start with "Read @ai_handoff.txt and @index.llm.txt"
-- **Specific Task**: Load relevant files from prompts/tasks/[task_name]/
-- **Follow Protocols**: Apply learning_v1.llm.txt for educational interactions
-- **Track Decisions**: Use analysis_log_behavior.llm.txt for persistence
+- **New AI Session**: Start with "Read @prompts/context/ai_handoff.txt and @index.llm.txt"
+- **Specific Task**: Load relevant files from prompts/task/[task_name]/
+- **Follow Protocols**: Apply prompts/protocol/learning_v1.llm.txt for educational interactions
+- **Track Decisions**: Use prompts/protocol/analysis_log_behavior.llm.txt for persistence
+- **Command Execution**: Run "@command.json" for automated task execution with metadata updates
 
 ## NEXT PRIORITIES
 1. Function separation into modular structure
@@ -87,4 +96,4 @@ Each function folder will contain:
 ## FILE MAINTENANCE
 This index.llm.txt is automatically updated via command.json to reflect current project state and structure changes.
 
-Last Updated: 2025-07-13 by AI automation system
+Last Updated: 2025-07-13 by AI automation system (restructured with metadata lineage tracking)
