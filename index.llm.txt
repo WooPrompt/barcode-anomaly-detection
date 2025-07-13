@@ -14,13 +14,13 @@ Real-time barcode anomaly detection system using rule-based functions and ML mod
 
 ```
 barcode-anomaly-detection/
-├── automation/                # Session lifecycle management
-│   ├── README.md             # How to use automation system
-│   ├── command.json          # Entry point (session setup)
-│   ├── ai_handoff.json       # Exit point (task handoff)
-│   ├── update_index.json     # Directory structure maintenance
-│   └── directory_scan.json   # Pure scanning utility
 ├── prompts/                  # AI interaction framework
+│   ├── automation/           # Session lifecycle management
+│   │   ├── README.md        # How to use automation system
+│   │   ├── init.json        # Entry point (session initialization)
+│   │   ├── ai_handoff.json  # Exit point (task handoff)
+│   │   ├── update_index.json # Directory structure maintenance
+│   │   └── directory_scan.json # Pure scanning utility
 │   ├── README.md            # Framework documentation
 │   ├── context/             # WHAT the project is
 │   │   ├── ai_handoff.txt   # Complete project context for AI
@@ -69,10 +69,10 @@ Each function folder will contain:
 
 ## AI FRAMEWORK COMPONENTS
 
-### Session Lifecycle (automation/ folder):
-- **Entry**: `automation/command.json` - Loads context, applies protocols, sets up session
-- **Exit**: `automation/ai_handoff.json` - Updates handoff file, logs decisions
-- **Maintenance**: `automation/update_index.json` - Keeps documentation current
+### Session Lifecycle (prompts/automation/ folder):
+- **Entry**: `prompts/automation/init.json` - Loads context, applies protocols, initializes session
+- **Exit**: `prompts/automation/ai_handoff.json` - Updates handoff file, logs decisions
+- **Maintenance**: `prompts/automation/update_index.json` - Keeps documentation current
 
 ### Core Files for AI Sessions:
 1. **context/ai_handoff.txt** - Load first for complete project context
@@ -114,15 +114,15 @@ Each function folder will contain:
 ## USAGE FOR AI CONSULTATION
 
 ### Session Lifecycle:
-- **Entry**: Run `@automation/command.json` to setup session with context and protocols
+- **Entry**: Run `@prompts/automation/init.json` to initialize session with context and protocols
 - **Work**: Load relevant files from `prompts/task/[domain]/` for specific tasks
-- **Exit**: Run `@automation/ai_handoff.json` to update handoff and log decisions
+- **Exit**: Run `@prompts/automation/ai_handoff.json` to update handoff and log decisions
 
 ### Manual Commands:
 - **New AI Session**: Start with "Read @prompts/context/ai_handoff.txt and @index.llm.txt"  
 - **Follow Protocols**: Apply prompts/protocol/learning_v1.llm.txt for educational interactions
 - **Track Decisions**: Use prompts/protocol/analysis_log_behavior.llm.txt for persistence
-- **Update Documentation**: Run `@automation/update_index.json` to refresh directory structure
+- **Update Documentation**: Run `@prompts/automation/update_index.json` to refresh directory structure
 
 ## NEXT PRIORITIES
 1. Function separation into individual files (functions/ folder structure)
@@ -131,6 +131,6 @@ Each function folder will contain:
 4. Template-based function generation from prompts/templates/
 
 ## FILE MAINTENANCE
-This index.llm.txt is automatically updated via command.json to reflect current project state and structure changes.
+This index.llm.txt is automatically updated via init.json to reflect current project state and structure changes.
 
-Last Updated: 2025-07-13 by automation/command.json execution (updated status and automation integration)
+Last Updated: 2025-07-13 by automation/init.json execution (updated status and automation integration)

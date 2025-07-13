@@ -5,7 +5,7 @@ Session lifecycle management for barcode anomaly detection project.
 ## Files
 
 ### Entry Point
-- **`command.json`** - Session setup automation
+- **`init.json`** - Session initialization automation
   - Loads context files and protocols
   - Executes immediate_tasks, default_tasks, then main tasks
   - Handles metadata updates and lineage tracking
@@ -29,22 +29,22 @@ Session lifecycle management for barcode anomaly detection project.
 
 ### Session Lifecycle
 ```bash
-# Start session
-@automation/command.json
+# Initialize session
+@prompts/automation/init.json
 
 # Work on tasks...
 
 # Exit session  
-@automation/ai_handoff.json
+@prompts/automation/ai_handoff.json
 ```
 
 ### Manual Commands
 ```bash
 # Update documentation
-@automation/update_index.json
+@prompts/automation/update_index.json
 
 # Directory scanning
-@automation/directory_scan.json
+@prompts/automation/directory_scan.json
 ```
 
 ## Integration

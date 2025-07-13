@@ -67,14 +67,14 @@ python src/barcode/api.py
 
 ### Core Components
 ```
-├── automation/                     # Session lifecycle management
-│   ├── README.md                   # How to use automation system  
-│   ├── command.json               # Entry point (session setup)
-│   ├── ai_handoff.json            # Exit point (task handoff)
-│   ├── update_index.json          # Directory structure maintenance
-│   └── directory_scan.json        # Pure scanning utility
 ├── src/barcode/                    # Main application code
 ├── prompts/                        # AI interaction framework (restructured)
+│   ├── automation/                 # Session lifecycle management
+│   │   ├── README.md              # How to use automation system  
+│   │   ├── init.json              # Entry point (session initialization)
+│   │   ├── ai_handoff.json        # Exit point (task handoff)
+│   │   ├── update_index.json      # Directory structure maintenance
+│   │   └── directory_scan.json    # Pure scanning utility
 │   ├── context/                    # WHAT the project is
 │   │   ├── ai_handoff.txt          # Complete project context
 │   │   ├── principle.llm.txt       # Project specifications
