@@ -1,4 +1,5 @@
 {
+  "ai_instructions": "When this file is loaded, automatically: 1) Load all context_files, 2) Apply the specified protocol, 3) Run all default_tasks first, 4) Then execute all tasks in order, 5) Update metadata and log everything",
   "session_config": {
     "role": "prompt_engineer",
     "protocol": "prompts/protocol/learning_v1.llm.txt",

@@ -80,9 +80,9 @@ python src/barcode/api.py
 │   ├── meta/                       # HOW to make prompts (prompt-for-prompt)
 │   │   ├── automation_guide.txt    # Meta-automation guidance
 │   │   └── metadata.json           # Lineage tracking
-│   ├── templates/                  # REUSABLE patterns
+│   ├── templates/                  # REUSABLE patterns (blank forms to copy)
 │   │   └── metadata.json           # Lineage tracking
-│   ├── task/                       # WHAT to execute (problem-solving)
+│   ├── task/                       # WHAT to execute (filled-out forms ready to use)
 │   │   ├── anomaly_detection/      # Function generation tasks
 │   │   ├── update_index.json       # Index maintenance
 │   │   └── metadata.json           # Lineage tracking
