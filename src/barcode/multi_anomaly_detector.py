@@ -1,0 +1,649 @@
+# -*- coding: utf-8 -*-
+"""
+Enhanced Multi-Anomaly Detection System v4.0
+Author: Data Analysis Team
+Date: 2025-07-13
+
+Key Features:
+- Multi-anomaly detection per EPC (one EPC can have multiple anomaly types)
+- Probability scoring (0-100%) for each anomaly type
+- Sequence position identification for problematic steps
+- EventHistory format output for frontend integration
+- CatBoost consideration for categorical data
+
+Based on question.txt specifications from prompts/task/anomaly_detection/
+"""
+
+import pandas as pd
+import numpy as np
+import json
+from datetime import datetime, timedelta
+from typing import List, Dict, Tuple, Any
+
+# Constants for magic numbers
+SCORE_THRESHOLDS = {
+    'HIGH': 80,
+    'MEDIUM': 50, 
+    'LOW': 20,
+    'NORMAL': 0
+}
+
+EPC_VALIDATION_SCORES = {
+    'STRUCTURE_ERROR': 40,
+    'HEADER_ERROR': 20,
+    'COMPANY_ERROR': 25,
+    'DATE_ERROR': 20,
+    'DATE_OLD_ERROR': 15,
+    'SERIAL_ERROR': 10,
+    'MISSING_EVENT': 30,
+    'CONSECUTIVE_EVENT': 25,
+    'LOCATION_UNKNOWN': 20,
+    'LOCATION_REVERSE': 30
+}
+
+VALID_COMPANIES = {"8804823", "8805843", "8809437"}
+VALID_HEADER = "001"
+MAX_PRODUCT_AGE_YEARS = 5
+
+def validate_epc_parts(parts: List[str]) -> Dict[str, bool]:
+    """
+    Validate individual EPC parts for better readability and reusability.
+    
+    Args:
+        parts: List of EPC code parts split by '.'
+    
+    Returns:
+        Dictionary with validation results for each part
+    """
+    if len(parts) != 6:
+        return {'structure': False, 'header': False, 'company': False, 
+                'product': False, 'lot': False, 'date': False, 'serial': False}
+    
+    validations = {
+        'structure': len(parts) == 6,
+        'header': parts[0] == VALID_HEADER,
+        'company': parts[1] in VALID_COMPANIES,
+        'product': parts[2].isdigit() and len(parts[2]) == 7,
+        'lot': parts[3].isdigit() and len(parts[3]) == 6,
+        'serial': parts[5].isdigit() and len(parts[5]) == 9,
+        'date': True  # Will be validated separately due to complexity
+    }
+    
+    return validations
+
+def validate_manufacture_date(date_string: str) -> Tuple[bool, str]:
+    """
+    Validate manufacture date with detailed error reporting.
+    
+    Args:
+        date_string: Date in YYYYMMDD format
+    
+    Returns:
+        Tuple of (is_valid, error_type)
+    """
+    try:
+        manufacture_date = datetime.strptime(date_string, '%Y%m%d')
+        today = datetime.now()
+        
+        if manufacture_date > today:
+            return False, 'future_date'
+        elif (today - manufacture_date).days > (MAX_PRODUCT_AGE_YEARS * 365):
+            return False, 'too_old'
+        else:
+            return True, 'valid'
+    except ValueError:
+        return False, 'invalid_format'
+
+def calculate_epc_fake_score(epc_code: str) -> int:
+    """
+    Calculate probability score for EPC format violations.
+    Based on epcFake/question.txt specifications.
+    
+    Args:
+        epc_code: EPC code string to validate
+    
+    Returns:
+        int: 0-100 probability score (0=valid, 100=definitely fake)
+    """
+    # Pre-validation checks
+    if pd.isna(epc_code) or not epc_code or not isinstance(epc_code, str):
+        return 100
+    
+    total_score = 0
+    parts = epc_code.strip().split('.')
+    
+    # Structure validation - CRITICAL: Early return to prevent IndexError
+    if len(parts) != 6:
+        return 100  # Structural error = definitely fake
+    
+    # Validate individual parts (safe now that we know parts has 6 elements)
+    validations = validate_epc_parts(parts)
+    
+    if not validations['header']:
+        total_score += EPC_VALIDATION_SCORES['HEADER_ERROR']
+    
+    if not validations['company']:
+        total_score += EPC_VALIDATION_SCORES['COMPANY_ERROR']
+    
+    if not validations['product']:
+        total_score += 15  # Product code error
+    
+    if not validations['lot']:
+        total_score += 15  # Lot code error
+    
+    if not validations['serial']:
+        total_score += EPC_VALIDATION_SCORES['SERIAL_ERROR']
+    
+    # Date validation with detailed error handling
+    date_valid, date_error = validate_manufacture_date(parts[4])
+    date_error_occurred = False
+    
+    if not date_valid:
+        date_error_occurred = True
+        if date_error == 'future_date':
+            total_score += EPC_VALIDATION_SCORES['DATE_ERROR']
+        elif date_error == 'too_old':
+            total_score += EPC_VALIDATION_SCORES['DATE_OLD_ERROR']
+        else:  # invalid_format
+            total_score += EPC_VALIDATION_SCORES['DATE_ERROR']
+    
+    # Critical combination check: if 3+ core validations fail
+    critical_failures = sum([
+        not validations['header'], 
+        not validations['company'],
+        date_error_occurred  # Now explicitly tracking date errors
+    ])
+    
+    if critical_failures >= 3:
+        return 100  # Definitely fake
+    
+    return min(100, total_score)
+
+def calculate_duplicate_score(epc_code: str, group_data: pd.DataFrame) -> int:
+    """
+    Calculate probability score for EPC duplicate violations.
+    Based on epcDup/question.txt specifications.
+    
+    Args:
+        epc_code: EPC code being analyzed
+        group_data: DataFrame grouped by EPC and timestamp (same second)
+                   Contains all scans of this EPC at the same timestamp
+    
+    Returns:
+        int: 0-100 probability score
+    """
+    # Efficiency check: early return for single scan
+    if len(group_data) <= 1:
+        return 0
+    
+    # Count unique locations for this timestamp
+    unique_locations = group_data['scan_location'].nunique()
+    
+    if unique_locations <= 1:
+        return 0  # Same location = not impossible (valid duplicate scan)
+    
+    # Multiple locations at same time = physically impossible
+    base_score = 80
+    location_penalty = (unique_locations - 1) * 10
+    
+    # Cap at 100 to prevent overflow
+    return min(100, base_score + location_penalty)
+
+def calculate_time_jump_score(time_diff_hours: float, expected_hours: float, std_hours: float) -> int:
+    """
+    Calculate probability score for impossible travel times.
+    Based on jump/question.txt specifications.
+    """
+    if expected_hours == 0 or std_hours == 0:
+        return 0
+    
+    if time_diff_hours < 0:
+        return 95  # Negative time = impossible
+    
+    # Statistical Z-score approach
+    z_score = abs(time_diff_hours - expected_hours) / std_hours
+    
+    if z_score <= 2:
+        return 0  # Within normal range
+    elif z_score <= 3:
+        return 60  # Suspicious
+    elif z_score <= 4:
+        return 80  # Highly suspicious
+    else:
+        return 95  # Almost certainly impossible
+
+def classify_event_type(event: str) -> str:
+    """
+    Classify event into inbound/outbound/other categories.
+    
+    Args:
+        event: Event type string
+    
+    Returns:
+        str: 'inbound', 'outbound', or 'other'
+    """
+    if pd.isna(event) or not event:
+        return 'missing'
+    
+    event_lower = event.lower()
+    
+    # Inbound event patterns
+    inbound_keywords = ['inbound', 'aggregation', 'receiving', 'arrival']
+    if any(keyword in event_lower for keyword in inbound_keywords):
+        return 'inbound'
+    
+    # Outbound event patterns  
+    outbound_keywords = ['outbound', 'shipping', 'dispatch', 'departure']
+    if any(keyword in event_lower for keyword in outbound_keywords):
+        return 'outbound'
+    
+    return 'other'  # inspection, return, etc.
+
+def calculate_event_order_score(event_sequence: List[str]) -> int:
+    """
+    Calculate probability score for event order violations.
+    Based on evtOrderErr/question.txt specifications.
+    
+    Args:
+        event_sequence: List of event types in chronological order
+    
+    Returns:
+        int: 0-100 probability score
+    """
+    if len(event_sequence) <= 1:
+        return 0  # Single event = no sequence to analyze
+    
+    total_score = 0
+    consecutive_inbound = 0
+    consecutive_outbound = 0
+    
+    for event in event_sequence:
+        event_type = classify_event_type(event)
+        
+        if event_type == 'missing':
+            total_score += EPC_VALIDATION_SCORES['MISSING_EVENT']
+            continue
+        elif event_type == 'inbound':
+            consecutive_inbound += 1
+            consecutive_outbound = 0
+            
+            if consecutive_inbound > 1:
+                total_score += EPC_VALIDATION_SCORES['CONSECUTIVE_EVENT']
+                
+                # Progressive penalty for 3+ consecutive events
+                if consecutive_inbound >= 3:
+                    total_score += (consecutive_inbound - 2) * 15
+                    
+        elif event_type == 'outbound':
+            consecutive_outbound += 1
+            consecutive_inbound = 0
+            
+            if consecutive_outbound > 1:
+                total_score += EPC_VALIDATION_SCORES['CONSECUTIVE_EVENT']
+                
+                # Progressive penalty for 3+ consecutive events
+                if consecutive_outbound >= 3:
+                    total_score += (consecutive_outbound - 2) * 15
+        else:
+            # Other events reset the consecutive counters
+            consecutive_inbound = 0
+            consecutive_outbound = 0
+    
+    return min(100, total_score)
+
+# Location hierarchy constants
+LOCATION_HIERARCHY = {
+    # Factory level (0)
+    '공장': 0, 'factory': 0, '제조': 0, 'manufacturing': 0,
+    # Logistics center level (1) 
+    '물류센터': 1, '물류': 1, 'logistics': 1, 'hub': 1, '센터': 1, 'center': 1,
+    # Wholesale level (2)
+    '도매상': 2, '도매': 2, 'wholesale': 2, 'w_stock': 2, '창고': 2, 'warehouse': 2,
+    # Retail level (3)
+    '소매상': 3, '소매': 3, 'retail': 3, 'r_stock': 3, 'pos': 3, '매장': 3, 'store': 3
+}
+
+def get_location_hierarchy_level(location: str) -> int:
+    """
+    Get hierarchy level for a location with comprehensive keyword matching.
+    
+    Args:
+        location: Location name string
+    
+    Returns:
+        int: Hierarchy level (0-3) or 99 for unknown locations
+    """
+    if pd.isna(location) or not location:
+        return 99
+    
+    location_lower = location.lower().strip()
+    
+    for keyword, level in LOCATION_HIERARCHY.items():
+        if keyword in location_lower:
+            return level
+    
+    return 99
+
+def calculate_location_error_score(location_sequence: List[str]) -> int:
+    """
+    Calculate probability score for location hierarchy violations.
+    Based on locErr/question.txt specifications.
+    
+    Args:
+        location_sequence: List of locations in chronological order
+    
+    Returns:
+        int: 0-100 probability score
+    """
+    if len(location_sequence) <= 1:
+        return 0
+    
+    total_score = 0
+    
+    for i in range(1, len(location_sequence)):
+        current_level = get_location_hierarchy_level(location_sequence[i])
+        previous_level = get_location_hierarchy_level(location_sequence[i-1])
+        
+        if current_level == 99:
+            total_score += EPC_VALIDATION_SCORES['LOCATION_UNKNOWN']
+        if previous_level == 99:
+            total_score += EPC_VALIDATION_SCORES['LOCATION_UNKNOWN']
+        
+        if current_level != 99 and previous_level != 99:
+            if current_level < previous_level:
+                total_score += EPC_VALIDATION_SCORES['LOCATION_REVERSE']
+    
+    return min(100, total_score)
+
+def classify_anomaly_severity(score: int) -> str:
+    """
+    Classify anomaly severity based on score thresholds.
+    
+    Args:
+        score: Anomaly score (0-100)
+    
+    Returns:
+        str: Severity level ('HIGH', 'MEDIUM', 'LOW', 'NORMAL')
+    """
+    if score >= SCORE_THRESHOLDS['HIGH']:
+        return 'HIGH'
+    elif score >= SCORE_THRESHOLDS['MEDIUM']:
+        return 'MEDIUM'
+    elif score >= SCORE_THRESHOLDS['LOW']:
+        return 'LOW'
+    else:
+        return 'NORMAL'
+
+def preprocess_scan_data(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Common preprocessing for all anomaly detection algorithms.
+    
+    Args:
+        df: Raw scan data DataFrame
+    
+    Returns:
+        pd.DataFrame: Preprocessed data (copy, no side effects)
+    """
+    df_processed = df.copy()
+    
+    # 1. Time data normalization (critical shared function)
+    df_processed['event_time'] = pd.to_datetime(df_processed['event_time'])
+    df_processed['event_time_rounded'] = df_processed['event_time'].dt.floor('S')
+    
+    # 2. Missing value handling - avoid inplace to prevent side effects
+    df_processed['event_type'] = df_processed['event_type'].fillna('UNKNOWN')
+    df_processed['scan_location'] = df_processed['scan_location'].fillna('UNKNOWN_LOCATION')
+    
+    # 3. EPC code normalization - handle None values safely
+    df_processed['epc_code'] = df_processed['epc_code'].astype(str).str.strip().str.upper()
+    
+    # 4. Sort by EPC and time for sequence analysis
+    df_processed = df_processed.sort_values(['epc_code', 'event_time']).reset_index(drop=True)
+    
+    return df_processed
+
+def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataFrame, geo_df: pd.DataFrame) -> List[Dict]:
+    """
+    Enhanced multi-anomaly detection with probability scoring.
+    Each EPC is checked against all 5 anomaly types.
+    
+    Args:
+        df: Raw scan data
+        transition_stats: Expected transition times between locations
+        geo_df: Geospatial data for locations
+    
+    Returns:
+        List[Dict]: List of detected anomalies with scores and metadata
+    """
+    # Preprocess data using common function
+    df_processed = preprocess_scan_data(df)
+    
+    detection_results = []
+    
+    # Group by EPC to analyze each product journey
+    for epc_code, epc_group in df_processed.groupby('epc_code'):
+        # Fix: Use drop=True to prevent index column creation
+        epc_group = epc_group.sort_values('event_time').reset_index(drop=True)
+        
+        detected_anomaly_types = []
+        anomaly_score_map = {}
+        problematic_sequence_steps = []
+        
+        # 1. EPC Format Validation (epcFake)
+        fake_detection_score = calculate_epc_fake_score(epc_code)
+        if fake_detection_score > 0:
+            detected_anomaly_types.append('epcFake')
+            anomaly_score_map['epcFake'] = fake_detection_score
+        
+        # 2. Duplicate Scan Detection (epcDup) - with deduplication logic
+        max_duplicate_score = 0
+        for timestamp, time_group in epc_group.groupby('event_time_rounded'):
+            duplicate_score = calculate_duplicate_score(epc_code, time_group)
+            if duplicate_score > 0:
+                max_duplicate_score = max(max_duplicate_score, duplicate_score)
+        
+        # Only add if duplicates were found
+        if max_duplicate_score > 0:
+            detected_anomaly_types.append('epcDup')
+            anomaly_score_map['epcDup'] = max_duplicate_score
+        
+        # 3. Time Jump Detection (jump)
+        for i in range(1, len(epc_group)):
+            current_row = epc_group.iloc[i]
+            previous_row = epc_group.iloc[i-1]
+            
+            # Calculate actual time difference
+            time_diff = (pd.to_datetime(current_row['event_time']) - 
+                        pd.to_datetime(previous_row['event_time'])).total_seconds() / 3600
+            
+            # Look up expected transition time
+            transition_match = transition_stats[
+                (transition_stats['from_scan_location'] == previous_row['scan_location']) &
+                (transition_stats['to_scan_location'] == current_row['scan_location'])
+            ]
+            
+            if not transition_match.empty:
+                expected_time = transition_match.iloc[0]['time_taken_hours_mean']
+                std_time = transition_match.iloc[0]['time_taken_hours_std']
+                
+                jump_score = calculate_time_jump_score(time_diff, expected_time, std_time)
+                if jump_score > 0:
+                    # Fix: Use correct variable names and deduplication
+                    if 'jump' not in detected_anomaly_types:
+                        detected_anomaly_types.append('jump')
+                        anomaly_score_map['jump'] = jump_score
+                        problematic_sequence_steps.append(f"Step_{i}_to_{i+1}")
+                    else:
+                        # Keep highest jump score
+                        anomaly_score_map['jump'] = max(anomaly_score_map['jump'], jump_score)
+        
+        # 4. Event Order Check (evtOrderErr) - with deduplication
+        event_sequence = epc_group['event_type'].tolist()
+        order_score = calculate_event_order_score(event_sequence)
+        if order_score > 0:
+            detected_anomaly_types.append('evtOrderErr')
+            anomaly_score_map['evtOrderErr'] = order_score
+        
+        # 5. Location Hierarchy Check (locErr) - with deduplication
+        location_sequence = epc_group['scan_location'].tolist()
+        location_score = calculate_location_error_score(location_sequence)
+        if location_score > 0:
+            detected_anomaly_types.append('locErr')
+            anomaly_score_map['locErr'] = location_score
+        
+        # Create result entry if any anomalies found
+        if detected_anomaly_types:
+            # Fix: Improved problem position calculation
+            if problematic_sequence_steps:
+                # Extract first problematic step number
+                try:
+                    first_problem_step = int(problematic_sequence_steps[0].split('_')[1])
+                    calculated_position = first_problem_step
+                except (ValueError, IndexError):
+                    calculated_position = len(epc_group) // 2  # Fallback to middle
+            else:
+                # For non-sequence anomalies (epcFake, epcDup)
+                if 'epcFake' in detected_anomaly_types:
+                    calculated_position = 0  # Format errors affect entire sequence
+                elif 'epcDup' in detected_anomaly_types:
+                    calculated_position = 1  # Duplicate usually found at second scan
+                else:
+                    calculated_position = len(epc_group) // 2  # Default to middle
+            
+            # Ensure position is within bounds
+            safe_position = min(calculated_position, len(epc_group) - 1)
+            
+            primary_anomaly = max(anomaly_score_map.items(), key=lambda x: x[1])[0]
+            
+            # Get representative row data
+            rep_row = epc_group.iloc[safe_position]
+            
+            # Multi-scoring analysis
+            max_score = max(anomaly_score_map.values())
+            avg_score = sum(anomaly_score_map.values()) / len(anomaly_score_map)
+            total_score = sum(anomaly_score_map.values())
+            
+            anomaly_result = {
+                'epcCode': epc_code,
+                'productName': rep_row.get('product_name', 'Unknown'),
+                'businessStep': rep_row.get('business_step', rep_row.get('event_type', 'Unknown')),
+                'scanLocation': rep_row['scan_location'],
+                'eventTime': str(rep_row['event_time']),
+                'anomaly': True,
+                'anomalyTypes': detected_anomaly_types,
+                'anomalyScores': anomaly_score_map,
+                'sequencePosition': safe_position + 1,  # 1-indexed for user display
+                'totalSequenceLength': len(epc_group),
+                'primaryAnomaly': primary_anomaly,
+                
+                # Enhanced scoring metrics
+                'maxScore': max_score,
+                'avgScore': round(avg_score, 1),
+                'totalScore': total_score,
+                'severity': classify_anomaly_severity(max_score),
+                
+                'problemSteps': problematic_sequence_steps if problematic_sequence_steps else [f"Step_{safe_position + 1}"],
+                'description': f"Multi-anomaly detected: {', '.join(detected_anomaly_types)} (Primary: {primary_anomaly})"
+            }
+            
+            detection_results.append(anomaly_result)
+    
+    return detection_results
+
+def detect_anomalies_from_json_enhanced(json_input_str: str) -> str:
+    """
+    Main enhanced function with EventHistory format output.
+    """
+    try:
+        input_data = json.loads(json_input_str)
+        raw_df = pd.DataFrame(input_data['data'])
+        transition_stats = pd.DataFrame(input_data['transition_stats'])
+        geo_df = pd.DataFrame(input_data['geo_data'])
+        product_id = input_data.get('product_id')
+        lot_id = input_data.get('lot_id')
+    except (json.JSONDecodeError, KeyError) as e:
+        return json.dumps({"error": f"Invalid JSON input: {e}"}, indent=2, ensure_ascii=False)
+
+    if raw_df.empty:
+        return json.dumps({
+            "EventHistory": [],
+            "summaryStats": {"epcFake": 0, "epcDup": 0, "locErr": 0, "evtOrderErr": 0, "jump": 0},
+            "multiAnomalyCount": 0
+        }, indent=2, ensure_ascii=False)
+
+    # Filter by product and lot if specified
+    if product_id and lot_id:
+        # Parse EPC codes to filter by product and lot
+        raw_df['epc_product'] = raw_df['epc_code'].apply(lambda x: x.split('.')[2] if len(x.split('.')) >= 3 else None)
+        raw_df['epc_lot'] = raw_df['epc_code'].apply(lambda x: x.split('.')[3] if len(x.split('.')) >= 4 else None)
+        filtered_df = raw_df[(raw_df['epc_product'] == product_id) & (raw_df['epc_lot'] == lot_id)]
+    else:
+        filtered_df = raw_df
+
+    # Detect anomalies
+    anomaly_results = detect_multi_anomalies_enhanced(filtered_df, transition_stats, geo_df)
+
+    # Calculate summary statistics
+    summary_stats = {"epcFake": 0, "epcDup": 0, "locErr": 0, "evtOrderErr": 0, "jump": 0}
+    multi_anomaly_count = 0
+    
+    for result in anomaly_results:
+        if len(result['anomalyTypes']) > 1:
+            multi_anomaly_count += 1
+        
+        for anomaly_type in result['anomalyTypes']:
+            if anomaly_type in summary_stats:
+                summary_stats[anomaly_type] += 1
+
+    output = {
+        "EventHistory": anomaly_results,
+        "summaryStats": summary_stats,
+        "multiAnomalyCount": multi_anomaly_count,
+        "totalAnomalyCount": len(anomaly_results)
+    }
+
+    return json.dumps(output, indent=2, ensure_ascii=False)
+
+if __name__ == '__main__':
+    # Test with enhanced multi-anomaly detection
+    test_data = {
+        "product_id": "0000001",
+        "lot_id": "000001",
+        "data": [
+            {
+                "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+                "event_time": "2024-07-02 09:00:00",
+                "scan_location": "서울 공장",
+                "event_type": "Inbound",
+                "product_name": "Product 1"
+            },
+            {
+                "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+                "event_time": "2024-07-02 09:00:00",
+                "scan_location": "부산 공장",
+                "event_type": "Inbound",
+                "product_name": "Product 1"
+            },
+            {
+                "epc_code": "invalid.format.epc",
+                "event_time": "2024-07-02 10:00:00",
+                "scan_location": "인천 물류센터",
+                "event_type": "Outbound",
+                "product_name": "Product 2"
+            }
+        ],
+        "transition_stats": [
+            {
+                "from_scan_location": "서울 공장",
+                "to_scan_location": "부산 공장",
+                "time_taken_hours_mean": 5.0,
+                "time_taken_hours_std": 1.0
+            }
+        ],
+        "geo_data": []
+    }
+    
+    test_json = json.dumps(test_data)
+    result = detect_anomalies_from_json_enhanced(test_json)
+    print("Enhanced Multi-Anomaly Detection Result:")
+    print(result)

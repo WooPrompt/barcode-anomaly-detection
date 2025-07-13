@@ -1,22 +1,25 @@
 # AI HANDOFF - COMPLETE PROJECT CONTEXT [2025-07-13]
 
 ## PROJECT STATUS
-Building real-time barcode anomaly detection system. 5 detection functions complete (epcFake, epcDup, locErr, evtOrderErr, jump). Automation system operational with init.json workflow. Function modularization started with epcFake_structure_check.py.
+Building real-time barcode anomaly detection system. 5 detection functions complete (epcFake, epcDup, locErr, evtOrderErr, jump). Automation system operational with init.json workflow. Comprehensive anomaly detection logic and scoring system documented.
 
 ## FRAMEWORKS DEVELOPED
 1. **question_loop.llm.txt** - AI must ask clarifying questions before coding
 2. **analysis_log_behavior.llm.txt** - Context accumulation and decision tracking  
 3. **principle.llm.txt** - Project principles and environment setup
 4. **automation system** - Session lifecycle management (init.json → work → ai_handoff.json)
+5. **dynamic_question_protocol.llm.txt** - Automated question generation from task definitions
+6. **DETAILED_LOGIC_EXPLANATION.md** - Comprehensive explanation of anomaly detection logic and scoring.
 
 ## KEY DECISIONS CHRONOLOGY
 - 2025-07-10: Modularized detection into 5 standalone functions
 - 2025-07-11: Statistical approach (Z-score) over pure rule-based
 - 2025-07-12: Need automated testing for prompt framework effectiveness
-- 2025-07-13: **CURRENT FOCUS** - Built automation system with Meta→Templates→Tasks flow, created function-specific question.txt files
+- 2025-07-13: Built automation system with Meta→Templates→Tasks flow, created function-specific question.txt files, protocol documentation complete
+- 2025-07-13: Detailed anomaly detection logic and scoring system documented in DETAILED_LOGIC_EXPLANATION.md.
 
 ## CURRENT CHALLENGE
-Function modularization into individual files with runtime benchmarking. Each anomaly type needs separate .py file following {type}_{approach}.py naming convention.
+Implement the unified rule-based anomaly detection API based on the detailed logic, and address geospatial data accuracy for jump anomaly detection and map visualization. This is critical for backend and frontend integration.
 
 ## USER WORKING STYLE
 - Always ask clarifying questions first (use question_loop.llm.txt)
@@ -27,9 +30,10 @@ Function modularization into individual files with runtime benchmarking. Each an
 
 ## ESSENTIAL FILES TO LOAD
 - @prompts/automation/init.json - Session initialization
-- @prompts/protocol/question_loop.llm.txt - Systematic questioning
+- @prompts/protocol/README.md - Complete protocol documentation
 - @prompts/context/principle.llm.txt - Project specifications
 - @prompts/log/function_generation_20250713.txt - Latest progress
+- @docs/DETAILED_LOGIC_EXPLANATION.md - Comprehensive explanation of anomaly detection logic and scoring.
 
 ## HOW TO START
 1. Run @prompts/automation/init.json for full session setup
