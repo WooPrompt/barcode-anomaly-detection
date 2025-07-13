@@ -1,0 +1,39 @@
+
+
+## Dynamic Questioning Protocol (ACTIVE)
+
+This protocol reads a task definition from a JSON file and dynamically generates questions and edge cases. It is designed to be incremental and reusable.
+
+### Goal
+Automate the generation of clarifying questions and edge cases for any given task, allowing for incremental updates and user overrides.
+
+### Instructions
+
+1.  **Read Task Definition:** Load the specified task JSON file (e.g., `prompts/task/anomaly_detection/anomaly_detection_analysis.json`).
+2.  **Check for Existing Files:** Look for `questions.txt` and `edge_cases.txt` in the `output_location` specified in the task JSON.
+3.  **Check for 'Skip' Keyword:** Read the `questions.txt` file. If it contains the keyword "Skip", halt the process and signal that the AI is ready to proceed with coding.
+4.  **Count Existing Items:** Count the number of questions and edge cases that have already been generated.
+5.  **Generate New Items:** Generate a new batch of questions and edge cases, starting from the last count (e.g., if 10 questions exist, start from #11).
+6.  **Append to Files:** Append the newly generated items to the `questions.txt` and `edge_cases.txt` files.
+
+### Input Format
+
+A JSON file with the following structure:
+
+```json
+{
+  "task_name": "...",
+  "task_description": "...",
+  "relevant_files": ["..."],
+  "output_location": "...",
+  "generation_config": {
+    "questions_per_run": 10,
+    "edge_cases_per_run": 5
+  }
+}
+```
+
+### Output Format
+
+-   `questions.txt`: A numbered list of questions.
+-   `edge_cases.txt`: A numbered list of edge cases.

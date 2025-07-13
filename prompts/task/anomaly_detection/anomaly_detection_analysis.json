@@ -1,0 +1,13 @@
+{
+  "task_name": "Anomaly Detection Function Analysis",
+  "task_description": "Analyze the five individual anomaly detection functions (epcFake, epcDup, locErr, evtOrderErr, jump) to understand their runtime performance and anomaly detection rates. This analysis will inform the timeout settings for the frontend API.",
+  "relevant_files": [
+    "src/barcode/anomaly_detection_decomposed.py",
+    "src/barcode/test_anomaly_detection.py"
+  ],
+  "output_location": "prompts/task/anomaly_detection/",
+  "generation_config": {
+    "questions_per_run": 10,
+    "edge_cases_per_run": 5
+  }
+}

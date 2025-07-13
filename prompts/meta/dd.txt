@@ -1,2 +1,0 @@
-i need to make command.json file which always impacting meta folder and templet folder and task folder.  it's for multi line command . 
-anyway made  comment for how to use this.. json at the top of it. 
