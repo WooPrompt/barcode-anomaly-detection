@@ -1,0 +1,42 @@
+{
+  "EventHistory": [
+    {
+      "epcCode": "001.8809437.1203199.150002.20250701.000000001",
+      "productName": "Product A",
+      "businessStep": "Factory",
+      "scanLocation": "인천 공장",
+      "eventTime": "2025-07-01 09:00:00",
+      "anomaly": true,
+      "anomalyTypes": [
+        "epcDup",
+        "jump",
+        "evtOrderErr"
+      ],
+      "anomalyScores": {
+        "epcDup": 90,
+        "jump": 95,
+        "evtOrderErr": 25
+      },
+      "sequencePosition": 2,
+      "totalSequenceLength": 3,
+      "primaryAnomaly": "jump",
+      "maxScore": 95,
+      "avgScore": 70.0,
+      "totalScore": 210,
+      "severity": "HIGH",
+      "problemSteps": [
+        "Step_1_to_2"
+      ],
+      "description": "Multi-anomaly detected: epcDup, jump, evtOrderErr (Primary: jump)"
+    }
+  ],
+  "summaryStats": {
+    "epcFake": 0,
+    "epcDup": 1,
+    "locErr": 0,
+    "evtOrderErr": 1,
+    "jump": 1
+  },
+  "multiAnomalyCount": 1,
+  "totalAnomalyCount": 1
+}
