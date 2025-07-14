@@ -5,6 +5,7 @@ data/processed/svm_anomalies_report_v1.csv
 data/raw/icn.csv
 data/processed/*.csv
 data/raw/*
+data/external/
 ..bfg-report/
 bfg-1.14.0.jar
 # === 🧹 Python 캐시 및 바이너리 ===

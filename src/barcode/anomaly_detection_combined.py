@@ -78,7 +78,13 @@ def get_svm_anomalies(df: pd.DataFrame, product_id: str, lot_id: str):
 
 def detect_anomalies_from_json(json_input_str: str):
     """
-    Main function to detect both rule-based and SVM anomalies from a JSON input.
+    Enhanced function to detect multi-anomaly with probability scores and sequence positions.
+    
+    New features:
+    - Multiple anomaly types per EPC
+    - Probability scores (0-100%) for each anomaly type
+    - Sequence position identification for problematic steps
+    - EventHistory format output for frontend integration
     """
     try:
         input_data = json.loads(json_input_str)

@@ -6,8 +6,8 @@
 - Korean location names (공장, 물류센터, 도매상, 소매상)
 
 ## unknowns (answer Yes/No)
-- Should movement between same-level locations be flagged?
-- Should case sensitivity matter for location names?
-- Should unknown location names default to error level?
-- Should single-scan EPCs be excluded from location error detection?
-- Should the function handle null/NaN location values?
+- Should movement between same-level locations be flagged? **No** - Same level movement allowed
+- Should case sensitivity matter for location names? **No** - Data shows consistent Korean naming
+- Should unknown location names default to error level? **Yes** - Level 99 for unknown
+- Should single-scan EPCs be excluded from location error detection? **Yes** - No sequence to analyze
+- Should the function handle null/NaN location values? **Yes** - Flag as error level

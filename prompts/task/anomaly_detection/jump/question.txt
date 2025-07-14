@@ -6,8 +6,8 @@
 - Uses Z-score or similar statistical methods
 
 ## unknowns (answer Yes/No)
-- Should missing location coordinates exclude records from jump detection?
-- Should same-location scans be excluded from travel time analysis?
-- Should weekend/holiday periods use different statistical thresholds?
-- Should the function handle negative time differences?
-- Should travel times beyond 3 standard deviations be automatically flagged?
+- Should missing location coordinates exclude records from jump detection? **Yes** - Cannot calculate travel time
+- Should same-location scans be excluded from travel time analysis? **Yes** - Zero travel time expected
+- Should weekend/holiday periods use different statistical thresholds? **No** - Business data shows consistent patterns
+- Should the function handle negative time differences? **Yes** - Flag as impossible travel
+- Should travel times beyond 3 standard deviations be automatically flagged? **Yes** - Statistical outlier threshold

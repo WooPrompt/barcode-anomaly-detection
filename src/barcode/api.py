@@ -4,8 +4,9 @@ from pydantic import BaseModel, Field
 import json
 from typing import List, Dict, Any
 
-# Import the core anomaly detection function
-from anomaly_detection_combined import detect_anomalies_from_json
+# Import the enhanced multi-anomaly detection functions
+from multi_anomaly_detector import detect_anomalies_from_json_enhanced
+from legacy_format_detector import detect_anomalies_legacy_format
 
 # Initialize the FastAPI app
 app = FastAPI(
@@ -56,27 +57,87 @@ class AnomalyRequest(BaseModel):
 
 # --- API Endpoint ---
 
-@app.post("/detect-anomalies/", response_model=Dict[str, Any])
-async def detect_anomalies_endpoint(request: AnomalyRequest):
+@app.post("/api/v1/barcode-anomaly-detect", response_model=Dict[str, Any])
+async def detect_anomalies_eventhistory(request: AnomalyRequest):
     """
-    Receives barcode scan data and returns a JSON report of detected anomalies.
+    Enhanced anomaly detection with multi-anomaly support and probability scoring.
 
+    New Features:
+    - **Multi-anomaly detection**: Each EPC can have multiple anomaly types
+    - **Probability scores**: 0-100% confidence for each anomaly type  
+    - **Sequence position**: Identifies which step in the journey has problems
+    - **EventHistory format**: Frontend-ready JSON structure
+
+    Parameters:
     - **product_id**: The specific product ID to filter by.
     - **lot_id**: The specific lot ID to filter by.
     - **data**: A list of all scan events.
     - **transition_stats**: Statistics about travel time between locations.
     - **geo_data**: Geospatial information for each location.
+
+    Returns EventHistory format:
+    ```json
+    {
+      "EventHistory": [
+        {
+          "epcCode": "001.8809437.1203199.150002.20250701.000000002",
+          "anomalyTypes": ["jump", "epcFake"],
+          "anomalyScores": {"jump": 85, "epcFake": 72},
+          "sequencePosition": 3,
+          "primaryAnomaly": "jump"
+        }
+      ],
+      "summaryStats": {"jump": 1, "epcFake": 1},
+      "multiAnomalyCount": 1
+    }
+    ```
     """
     try:
         # Convert the Pydantic model to a dictionary, then to a JSON string
-        # as required by the underlying detection function.
         input_json_str = request.model_dump_json()
 
-        # Call the anomaly detection function
-        result_json_str = detect_anomalies_from_json(input_json_str)
+        # Call the enhanced multi-anomaly detection function
+        result_json_str = detect_anomalies_from_json_enhanced(input_json_str)
 
-        # The result is already a JSON string, so parse it back to a dictionary
-        # to be sent as a valid JSON response by FastAPI.
+        # Parse result back to dictionary for FastAPI response
+        response_data = json.loads(result_json_str)
+
+        return response_data
+
+    except Exception as e:
+        # Catch any unexpected errors during the process
+        raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
+
+@app.post("/api/reports", response_model=Dict[str, Any])
+async def detect_anomalies_legacy(request: AnomalyRequest):
+    """
+    Legacy format anomaly detection with multi-anomaly support.
+    
+    Provides traditional title/details/summaryStats format for existing frontend.
+    Now enhanced with multi-anomaly detection capabilities.
+
+    Returns legacy format:
+    ```json
+    {
+      "title": "제품 0000001-로트 000001 이상 이벤트 감지",
+      "details": [
+        "001.xxx | 2024-07-02 09:23:00 | evtOrderErr,jump | 003 | 서울 공장"
+      ],
+      "summaryStats": {"epcFake": 0, "epcDup": 0, "locErr": 0, "evtOrderErr": 1, "jump": 1},
+      "multiAnomalyCount": 1
+    }
+    ```
+    
+    Multi-anomaly feature: anomaly types are comma-separated in details field.
+    """
+    try:
+        # Convert the Pydantic model to a dictionary, then to a JSON string
+        input_json_str = request.model_dump_json()
+
+        # Call the legacy format detection function
+        result_json_str = detect_anomalies_legacy_format(input_json_str)
+
+        # Parse result back to dictionary for FastAPI response
         response_data = json.loads(result_json_str)
 
         return response_data

@@ -5,8 +5,8 @@
 - Focuses on impossible simultaneous scans
 
 ## unknowns (answer Yes/No)
-- Should scans within the same second be considered duplicates?
-- Should duplicate detection ignore timezone differences?
-- Should same EPC at same location with same time be flagged?
-- Should the function handle missing timestamp values?
-- Should microsecond precision be used for duplicate detection?
+- Should scans within the same second be considered duplicates? **Yes** - Data shows exact timestamps
+- Should duplicate detection ignore timezone differences? **Yes** - Data uses single timezone
+- Should same EPC at same location with same time be flagged? **No** - Not impossible duplicate
+- Should the function handle missing timestamp values? **Yes** - Flag as error
+- Should microsecond precision be used for duplicate detection? **No** - Second precision sufficient

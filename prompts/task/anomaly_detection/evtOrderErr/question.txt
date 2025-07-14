@@ -6,8 +6,8 @@
 - Case insensitive event type matching
 
 ## unknowns (answer Yes/No)
-- Should events with null/empty event_type be flagged?
-- Should partial keyword matching be used (e.g., "Partial_Outbound" → "Outbound")?
-- Should unrecognized event types be automatically flagged?
-- Should single-event EPCs be excluded from order error detection?
-- Should the function handle events with identical timestamps?
+- Should events with null/empty event_type be flagged? **Yes** - Required field for sequence
+- Should partial keyword matching be used (e.g., "Partial_Outbound" → "Outbound")? **Yes** - Data shows keyword patterns
+- Should unrecognized event types be automatically flagged? **No** - Valid intermediate states exist
+- Should single-event EPCs be excluded from order error detection? **Yes** - No sequence to analyze
+- Should the function handle events with identical timestamps? **No** - Jump detection handles timing

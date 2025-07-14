@@ -1,3 +1,1 @@
-read protocol and make readme.md 
-like  To generate new questions and edge cases for this task, you would now run the
-  dynamic_question_protocol.llm.txt and point it to the anomaly_detection_analysis.json file.
+서버실행하라고..
