@@ -20,14 +20,8 @@
       "sequencePosition": 2,
       "totalSequenceLength": 3,
       "primaryAnomaly": "jump",
-      "maxScore": 95,
-      "avgScore": 70.0,
-      "totalScore": 210,
-      "severity": "HIGH",
-      "problemSteps": [
-        "Step_1_to_2"
-      ],
-      "description": "Multi-anomaly detected: epcDup, jump, evtOrderErr (Primary: jump)"
+      "problemStep": "인천 공장_to_서울 물류센터",
+      "description": "다중 이상치 탐지: EPC 복제 + 시간점프 + 이벤트 순서 오류"
     }
   ],
   "summaryStats": {

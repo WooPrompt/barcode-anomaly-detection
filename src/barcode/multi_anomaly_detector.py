@@ -493,22 +493,33 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
         
         # Create result entry if any anomalies found
         if detected_anomaly_types:
-            # Fix: Improved problem position calculation
+            # Calculate problem step for requirements format
             if problematic_sequence_steps:
-                # Extract first problematic step number
+                # Extract first problematic step and create problemStep
                 try:
                     first_problem_step = int(problematic_sequence_steps[0].split('_')[1])
                     calculated_position = first_problem_step
+                    # Create problem step description
+                    if calculated_position < len(epc_group) - 1:
+                        current_loc = epc_group.iloc[calculated_position]['scan_location']
+                        next_loc = epc_group.iloc[calculated_position + 1]['scan_location']
+                        problem_step = f"{current_loc}_to_{next_loc}"
+                    else:
+                        problem_step = f"Step_{calculated_position}_issue"
                 except (ValueError, IndexError):
-                    calculated_position = len(epc_group) // 2  # Fallback to middle
+                    calculated_position = len(epc_group) // 2
+                    problem_step = "Sequence_analysis"
             else:
                 # For non-sequence anomalies (epcFake, epcDup)
                 if 'epcFake' in detected_anomaly_types:
-                    calculated_position = 0  # Format errors affect entire sequence
+                    calculated_position = 0
+                    problem_step = "EPC_Format_Error"
                 elif 'epcDup' in detected_anomaly_types:
-                    calculated_position = 1  # Duplicate usually found at second scan
+                    calculated_position = 1
+                    problem_step = "Duplicate_Scan_Error"
                 else:
-                    calculated_position = len(epc_group) // 2  # Default to middle
+                    calculated_position = len(epc_group) // 2
+                    problem_step = "General_Analysis"
             
             # Ensure position is within bounds
             safe_position = min(calculated_position, len(epc_group) - 1)
@@ -518,10 +529,18 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
             # Get representative row data
             rep_row = epc_group.iloc[safe_position]
             
-            # Multi-scoring analysis
-            max_score = max(anomaly_score_map.values())
-            avg_score = sum(anomaly_score_map.values()) / len(anomaly_score_map)
-            total_score = sum(anomaly_score_map.values())
+            # Get primary anomaly for Korean description
+            primary_anomaly_kr = {
+                'epcFake': 'EPC 형식 위반',
+                'epcDup': 'EPC 복제',
+                'jump': '시간점프',
+                'evtOrderErr': '이벤트 순서 오류',
+                'locErr': '경로 위조'
+            }
+            
+            # Create Korean description as per requirements
+            anomaly_types_kr = [primary_anomaly_kr.get(atype, atype) for atype in detected_anomaly_types]
+            description_kr = f"다중 이상치 탐지: {' + '.join(anomaly_types_kr)}"
             
             anomaly_result = {
                 'epcCode': epc_code,
@@ -535,15 +554,8 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
                 'sequencePosition': safe_position + 1,  # 1-indexed for user display
                 'totalSequenceLength': len(epc_group),
                 'primaryAnomaly': primary_anomaly,
-                
-                # Enhanced scoring metrics
-                'maxScore': max_score,
-                'avgScore': round(avg_score, 1),
-                'totalScore': total_score,
-                'severity': classify_anomaly_severity(max_score),
-                
-                'problemSteps': problematic_sequence_steps if problematic_sequence_steps else [f"Step_{safe_position + 1}"],
-                'description': f"Multi-anomaly detected: {', '.join(detected_anomaly_types)} (Primary: {primary_anomaly})"
+                'problemStep': problem_step,  # Single string as per requirements
+                'description': description_kr  # Korean description as per requirements
             }
             
             detection_results.append(anomaly_result)
