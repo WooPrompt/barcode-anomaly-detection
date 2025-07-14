@@ -447,35 +447,36 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
             detected_anomaly_types.append('epcDup')
             anomaly_score_map['epcDup'] = max_duplicate_score
         
-        # 3. Time Jump Detection (jump)
-        for i in range(1, len(epc_group)):
-            current_row = epc_group.iloc[i]
-            previous_row = epc_group.iloc[i-1]
-            
-            # Calculate actual time difference
-            time_diff = (pd.to_datetime(current_row['event_time']) - 
-                        pd.to_datetime(previous_row['event_time'])).total_seconds() / 3600
-            
-            # Look up expected transition time
-            transition_match = transition_stats[
-                (transition_stats['from_scan_location'] == previous_row['scan_location']) &
-                (transition_stats['to_scan_location'] == current_row['scan_location'])
-            ]
-            
-            if not transition_match.empty:
-                expected_time = transition_match.iloc[0]['time_taken_hours_mean']
-                std_time = transition_match.iloc[0]['time_taken_hours_std']
+        # 3. Time Jump Detection (jump) - only if transition_stats has data
+        if not transition_stats.empty and 'from_scan_location' in transition_stats.columns:
+            for i in range(1, len(epc_group)):
+                current_row = epc_group.iloc[i]
+                previous_row = epc_group.iloc[i-1]
                 
-                jump_score = calculate_time_jump_score(time_diff, expected_time, std_time)
-                if jump_score > 0:
-                    # Fix: Use correct variable names and deduplication
-                    if 'jump' not in detected_anomaly_types:
-                        detected_anomaly_types.append('jump')
-                        anomaly_score_map['jump'] = jump_score
-                        problematic_sequence_steps.append(f"Step_{i}_to_{i+1}")
-                    else:
-                        # Keep highest jump score
-                        anomaly_score_map['jump'] = max(anomaly_score_map['jump'], jump_score)
+                # Calculate actual time difference
+                time_diff = (pd.to_datetime(current_row['event_time']) - 
+                            pd.to_datetime(previous_row['event_time'])).total_seconds() / 3600
+                
+                # Look up expected transition time
+                transition_match = transition_stats[
+                    (transition_stats['from_scan_location'] == previous_row['scan_location']) &
+                    (transition_stats['to_scan_location'] == current_row['scan_location'])
+                ]
+                
+                if not transition_match.empty:
+                    expected_time = transition_match.iloc[0]['time_taken_hours_mean']
+                    std_time = transition_match.iloc[0]['time_taken_hours_std']
+                    
+                    jump_score = calculate_time_jump_score(time_diff, expected_time, std_time)
+                    if jump_score > 0:
+                        # Fix: Use correct variable names and deduplication
+                        if 'jump' not in detected_anomaly_types:
+                            detected_anomaly_types.append('jump')
+                            anomaly_score_map['jump'] = jump_score
+                            problematic_sequence_steps.append(f"Step_{i}_to_{i+1}")
+                        else:
+                            # Keep highest jump score
+                            anomaly_score_map['jump'] = max(anomaly_score_map['jump'], jump_score)
         
         # 4. Event Order Check (evtOrderErr) - with deduplication
         event_sequence = epc_group['event_type'].tolist()
@@ -532,47 +533,111 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
             # Get primary anomaly for Korean description
             primary_anomaly_kr = {
                 'epcFake': 'EPC 형식 위반',
-                'epcDup': 'EPC 복제',
-                'jump': '시간점프',
+                'epcDup': '불가능한 중복 스캔',
+                'jump': '비논리적인 시공간 이동',
                 'evtOrderErr': '이벤트 순서 오류',
-                'locErr': '경로 위조'
+                'locErr': '위치 계층 위반'
             }
             
-            # Create Korean description as per requirements
-            anomaly_types_kr = [primary_anomaly_kr.get(atype, atype) for atype in detected_anomaly_types]
-            description_kr = f"다중 이상치 탐지: {' + '.join(anomaly_types_kr)}"
+            # Get primary anomaly Korean name
+            primary_anomaly_korean = primary_anomaly_kr.get(primary_anomaly, primary_anomaly)
             
+            # Create description based on primary anomaly
+            if primary_anomaly == 'jump':
+                description = f"{rep_row['scan_location']}에서 비논리적 시간점프 이동 발생"
+            elif primary_anomaly == 'evtOrderErr':
+                description = f"{rep_row.get('business_step', '단계')} 이벤트 순서 오류"
+            elif primary_anomaly == 'epcFake':
+                description = f"EPC 코드 형식 위반 감지"
+            elif primary_anomaly == 'epcDup':
+                description = f"동일 시간 다른 위치 중복 스캔 감지"
+            elif primary_anomaly == 'locErr':
+                description = f"위치 계층 순서 위반"
+            else:
+                description = f"{primary_anomaly_korean} 감지"
+            
+            # Backend required format
             anomaly_result = {
                 'epcCode': epc_code,
                 'productName': rep_row.get('product_name', 'Unknown'),
+                'eventType': primary_anomaly,  # Backend required: primary anomaly code
                 'businessStep': rep_row.get('business_step', rep_row.get('event_type', 'Unknown')),
                 'scanLocation': rep_row['scan_location'],
                 'eventTime': str(rep_row['event_time']),
                 'anomaly': True,
-                'anomalyTypes': detected_anomaly_types,
-                'anomalyScores': anomaly_score_map,
-                'sequencePosition': safe_position + 1,  # 1-indexed for user display
+                'anomalyType': primary_anomaly_korean,  # Backend required: Korean description
+                'anomalyCode': primary_anomaly,  # Backend required: code
+                'description': description,  # Backend required: specific description
+                
+                # Additional fields for enhanced functionality (keep multi-anomaly support)
+                'anomalyTypes': detected_anomaly_types,  # All detected anomalies
+                'anomalyScores': anomaly_score_map,      # Scores for each
+                'sequencePosition': safe_position + 1,
                 'totalSequenceLength': len(epc_group),
-                'primaryAnomaly': primary_anomaly,
-                'problemStep': problem_step,  # Single string as per requirements
-                'description': description_kr  # Korean description as per requirements
+                'primaryAnomaly': primary_anomaly,       # For backward compatibility
+                'problemStep': problem_step
             }
             
             detection_results.append(anomaly_result)
     
     return detection_results
 
+def load_csv_data():
+    """
+    Load geo_data and transition_stats from CSV files
+    """
+    import os
+    
+    try:
+        # Load geo data
+        geo_path = "data/processed/location_id_withGeospatial.csv"
+        if os.path.exists(geo_path):
+            geo_df = pd.read_csv(geo_path)
+            # Rename columns to match expected format
+            geo_df = geo_df.rename(columns={
+                'scan_location': 'scan_location',
+                'Latitude': 'Latitude', 
+                'Longitude': 'Longitude'
+            })
+        else:
+            geo_df = pd.DataFrame()
+        
+        # Load transition stats
+        transition_path = "data/processed/business_step_transition_avg_v2.csv"
+        if os.path.exists(transition_path):
+            transition_df = pd.read_csv(transition_path)
+        else:
+            transition_df = pd.DataFrame()
+            
+        return geo_df, transition_df
+        
+    except Exception as e:
+        print(f"Warning: Could not load CSV files: {e}")
+        return pd.DataFrame(), pd.DataFrame()
+
 def detect_anomalies_from_json_enhanced(json_input_str: str) -> str:
     """
     Main enhanced function with EventHistory format output.
+    Auto-loads geo_data and transition_stats from CSV files.
     """
     try:
         input_data = json.loads(json_input_str)
         raw_df = pd.DataFrame(input_data['data'])
-        transition_stats = pd.DataFrame(input_data['transition_stats'])
-        geo_df = pd.DataFrame(input_data['geo_data'])
-        product_id = input_data.get('product_id')
-        lot_id = input_data.get('lot_id')
+        
+        # Auto-load from CSV files if not provided
+        transition_stats = pd.DataFrame(input_data.get('transition_stats', []))
+        geo_df = pd.DataFrame(input_data.get('geo_data', []))
+        
+        # Load from CSV if empty
+        if transition_stats.empty or geo_df.empty:
+            csv_geo_df, csv_transition_df = load_csv_data()
+            
+            if geo_df.empty and not csv_geo_df.empty:
+                geo_df = csv_geo_df
+                
+            if transition_stats.empty and not csv_transition_df.empty:
+                transition_stats = csv_transition_df
+                
     except (json.JSONDecodeError, KeyError) as e:
         return json.dumps({"error": f"Invalid JSON input: {e}"}, indent=2, ensure_ascii=False)
 
@@ -583,14 +648,8 @@ def detect_anomalies_from_json_enhanced(json_input_str: str) -> str:
             "multiAnomalyCount": 0
         }, indent=2, ensure_ascii=False)
 
-    # Filter by product and lot if specified
-    if product_id and lot_id:
-        # Parse EPC codes to filter by product and lot
-        raw_df['epc_product'] = raw_df['epc_code'].apply(lambda x: x.split('.')[2] if len(x.split('.')) >= 3 else None)
-        raw_df['epc_lot'] = raw_df['epc_code'].apply(lambda x: x.split('.')[3] if len(x.split('.')) >= 4 else None)
-        filtered_df = raw_df[(raw_df['epc_product'] == product_id) & (raw_df['epc_lot'] == lot_id)]
-    else:
-        filtered_df = raw_df
+    # Use all data without filtering
+    filtered_df = raw_df
 
     # Detect anomalies
     anomaly_results = detect_multi_anomalies_enhanced(filtered_df, transition_stats, geo_df)
