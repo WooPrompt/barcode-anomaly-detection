@@ -18,9 +18,10 @@ Building real-time barcode anomaly detection system. 5 detection functions compl
 - 2025-07-13: Built automation system with Meta→Templates→Tasks flow, created function-specific question.txt files, protocol documentation complete
 - 2025-07-13: Detailed anomaly detection logic and scoring system documented in DETAILED_LOGIC_EXPLANATION.md.
 - 2025-07-14: Detection modules, tests, and documentation committed (9a9b1d4)
+- 2025-07-14: FastAPI server with Korean documentation, proper uvicorn setup completed (8dd1eef)
 
 ## CURRENT CHALLENGE
-Detection modules completed and committed. Focus on testing and validation of the complete anomaly detection system integration.
+FastAPI server implemented with Korean documentation. System ready for team integration. Focus on production deployment and team training.
 
 ## USER WORKING STYLE
 - Always ask clarifying questions first (use question_loop.llm.txt)
@@ -30,16 +31,16 @@ Detection modules completed and committed. Focus on testing and validation of th
 - Document decisions and commit milestones
 
 ## ESSENTIAL FILES TO LOAD
-- @prompts/automation/init.json - Session initialization
-- @prompts/protocol/README.md - Complete protocol documentation
-- @prompts/context/principle.llm.txt - Project specifications
-- @prompts/log/function_generation_20250713.txt - Latest progress
-- @docs/DETAILED_LOGIC_EXPLANATION.md - Comprehensive explanation of anomaly detection logic and scoring.
+- @fastapi_server.py - Main API server with Korean documentation
+- @real_sample_data.json - Production-ready test data
+- @src/barcode/multi_anomaly_detector.py - Core detection logic
+- @README.md - Updated with FastAPI instructions
+- @docs/COMPLETE_TEAM_REQUIREMENTS.md - Team requirements specification
 
 ## HOW TO START
-1. Run @prompts/automation/init.json for full session setup
-2. Apply question_loop protocol for any new task  
-3. Use automation/ai_handoff.json to update this file after major decisions
+1. Start FastAPI server: `uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload`
+2. Test API: http://localhost:8000/docs (Korean documentation)
+3. Apply question_loop protocol for any new task  
 4. Keep token usage minimal, decisions measurable
 
 ## AUTOMATION WORKFLOW

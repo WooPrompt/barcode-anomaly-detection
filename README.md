@@ -53,17 +53,17 @@ pip install -r requirements.txt
 
 ### Running the System
 ```bash
-# 1. Test multi-anomaly detection system
+# 1. Start FastAPI server (recommended)
+uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload
+
+# 2. Alternative server start
+python fastapi_server.py
+
+# 3. Test multi-anomaly detection system
 python test_anomaly_api.py
 
-# 2. Test built-in examples
+# 4. Test built-in examples
 python src/barcode/multi_anomaly_detector.py
-
-# 3. Start API server
-python src/barcode/api.py
-
-# 4. Run individual anomaly tests
-python src/barcode/anomaly_detection_combined.py
 ```
 
 ## Project Structure
@@ -142,13 +142,23 @@ python src/barcode/anomaly_detection_combined.py
 
 ### Quick Testing (Recommended)
 
-1. **Test with sample data:**
+1. **Start the FastAPI server:**
+   ```bash
+   uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+2. **Test with browser:**
+   - API Documentation: http://localhost:8000/docs
+   - Health Check: http://localhost:8000/health
+   - Quick Test: http://localhost:8000/ 
+
+3. **Test with sample data:**
    ```bash
    python test_anomaly_api.py
    ```
    This uses `test_data_sample.json` and tests all 5 anomaly types.
 
-2. **Test built-in examples:**
+4. **Test built-in examples:**
    ```bash
    python src/barcode/multi_anomaly_detector.py
    ```
@@ -167,14 +177,14 @@ python src/barcode/anomaly_detection_combined.py
 
 3. **Run comprehensive tests:**
    ```bash
-   # Test multi-anomaly detection
+   # Start FastAPI server
+   uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload
+   
+   # Test multi-anomaly detection (in another terminal)
    python test_anomaly_api.py
    
    # Test individual components  
    python src/barcode/anomaly_detection_combined.py
-   
-   # Start API server for real-time testing
-   python src/barcode/api.py
    ```
 
 ### Understanding Test Results
@@ -204,16 +214,20 @@ Summary: {'epcFake': 0, 'epcDup': 1, 'locErr': 0, 'evtOrderErr': 1, 'jump': 1}
 
 ### Using the Detection API
 
-1. **Start the API server:**
+1. **Start the FastAPI server:**
    ```bash
-   python src/barcode/api.py
+   uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload
    ```
 
-2. **Test with sample data:**
+2. **Test with sample data (Postman or curl):**
    ```bash
-   curl -X POST "http://127.0.0.1:8000/detect_anomalies" \
+   # Using curl
+   curl -X POST "http://localhost:8000/api/v1/barcode-anomaly-detect" \
         -H "Content-Type: application/json" \
-        -d @test_data_sample.json
+        -d @real_sample_data.json
+   
+   # Or simple test
+   curl -X POST "http://localhost:8000/api/v1/test-with-sample"
    ```
 
 3. **Expected API response:**
@@ -243,7 +257,9 @@ Summary: {'epcFake': 0, 'epcDup': 1, 'locErr': 0, 'evtOrderErr': 1, 'jump': 1}
 
 2. **Missing Dependencies:**
    ```bash
-   pip install pandas numpy scikit-learn flask fastapi uvicorn
+   pip install -r requirements.txt
+   # Or manually:
+   pip install fastapi uvicorn pandas numpy scikit-learn pydantic
    ```
 
 3. **Module Import Errors:**

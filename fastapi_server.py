@@ -24,11 +24,31 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from src.barcode.multi_anomaly_detector import detect_anomalies_from_json_enhanced
 
 app = FastAPI(
-    title="Barcode Anomaly Detection API",
-    description="Multi-anomaly detection system for supply chain barcode analysis",
+    title="바코드 이상치 탐지 API",
+    description="""
+    ## 공급망 바코드 이상치 탐지 시스템
+    
+    ### 기능
+    - **실시간 이상치 탐지**: 5가지 이상치 유형 동시 탐지
+    - **다중 이상치 지원**: 하나의 EPC에서 여러 이상치 동시 발견 가능
+    - **확률 점수**: 각 이상치 유형별 0-100% 확률 점수 제공
+    - **시퀀스 분석**: 문제 발생 단계 정확히 식별
+    
+    ### 탐지 가능한 이상치 유형
+    1. **epcFake**: EPC 코드 형식 위반 (구조, 회사코드, 날짜 오류)
+    2. **epcDup**: 불가능한 중복 스캔 (동일시간, 다른장소)
+    3. **jump**: 불가능한 이동시간 (물리적으로 불가능한 시공간 점프)
+    4. **evtOrderErr**: 이벤트 순서 오류 (연속 인바운드/아웃바운드)
+    5. **locErr**: 위치 계층 위반 (소매→도매 역순 이동)
+    
+    ### 개발팀
+    - **데이터 분석**: 이상치 탐지 알고리즘 개발
+    - **백엔드**: API 서버 및 데이터베이스 관리  
+    - **프론트엔드**: 웹 UI 및 시각화 구현
+    """,
     version="1.0.0",
-    docs_url="/docs",  # Swagger UI at http://localhost:8000/docs
-    redoc_url="/redoc"  # ReDoc at http://localhost:8000/redoc
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 # Enable CORS for frontend integration
@@ -62,11 +82,9 @@ class GeoData(BaseModel):
     Longitude: float
 
 class AnomalyDetectionRequest(BaseModel):
-    product_id: Optional[str] = None
-    lot_id: Optional[str] = None
     data: List[ScanRecord]
-    transition_stats: List[TransitionStat]
-    geo_data: List[GeoData]
+    transition_stats: Optional[List[TransitionStat]] = []
+    geo_data: Optional[List[GeoData]] = []
 
 class EventHistoryItem(BaseModel):
     epcCode: str
@@ -110,43 +128,43 @@ reports_storage = {}
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
+    """루트 엔드포인트 - API 정보 제공"""
     return {
-        "message": "Barcode Anomaly Detection API",
+        "message": "바코드 이상치 탐지 API",
         "version": "1.0.0",
         "docs": "/docs",
         "endpoints": {
-            "detect": "POST /api/v1/barcode-anomaly-detect",
-            "reports": "GET /api/reports",
-            "report_detail": "GET /api/report/detail?reportId=xxx",
-            "health": "GET /health"
+            "이상치_탐지": "POST /api/v1/barcode-anomaly-detect",
+            "리포트_목록": "GET /api/reports",
+            "리포트_상세": "GET /api/report/detail?reportId=xxx",
+            "헬스체크": "GET /health"
         }
     }
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "service": "anomaly-detection"}
+    """헬스체크 엔드포인트 - 서버 상태 확인"""
+    return {"status": "정상", "service": "이상치-탐지-서비스"}
 
 @app.post(
     "/api/v1/barcode-anomaly-detect",
     response_model=AnomalyDetectionResponse,
-    summary="Detect Multiple Anomaly Types (for Backend)",
-    description="Analyze scan data for 5 types of anomalies: epcFake, epcDup, jump, evtOrderErr, locErr"
+    summary="다중 이상치 탐지 (백엔드용)",
+    description="스캔 데이터를 분석하여 5가지 이상치 유형을 탐지합니다: epcFake, epcDup, jump, evtOrderErr, locErr"
 )
 async def detect_anomalies(request: AnomalyDetectionRequest):
     """
-    Multi-anomaly detection endpoint for Backend integration.
+    백엔드 통합용 다중 이상치 탐지 엔드포인트
     
-    **Input**: Scan data with transition statistics and geo data
-    **Output**: EventHistory format with multi-anomaly detection per EPC
+    **입력**: 이동 통계 및 지리 데이터가 포함된 스캔 데이터
+    **출력**: EPC별 다중 이상치 탐지가 포함된 EventHistory 형식
     
-    **Anomaly Types Detected:**
-    - epcFake: Invalid EPC format
-    - epcDup: Impossible duplicate scans 
-    - jump: Impossible travel times
-    - evtOrderErr: Invalid event sequences
-    - locErr: Location hierarchy violations
+    **탐지 가능한 이상치 유형:**
+    - epcFake: 잘못된 EPC 형식
+    - epcDup: 불가능한 중복 스캔
+    - jump: 불가능한 이동 시간
+    - evtOrderErr: 잘못된 이벤트 순서
+    - locErr: 위치 계층 위반
     """
     try:
         # Convert Pydantic model to JSON string for existing function
@@ -162,8 +180,6 @@ async def detect_anomalies(request: AnomalyDetectionRequest):
         report_id = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         reports_storage[report_id] = {
             "result": result_dict,
-            "product_id": request.product_id,
-            "lot_id": request.lot_id,
             "created_at": datetime.now().isoformat()
         }
         
@@ -176,12 +192,10 @@ async def detect_anomalies(request: AnomalyDetectionRequest):
 
 @app.get("/api/reports")
 async def get_reports():
-    """Get list of available reports."""
+    """사용 가능한 리포트 목록 조회"""
     report_list = []
     for report_id, data in reports_storage.items():
-        product_id = data.get("product_id", "Unknown")
-        lot_id = data.get("lot_id", "Unknown")
-        label = f"제품{product_id}-로트{lot_id} 다중 이상치 탐지"
+        label = f"이상치 탐지 리포트 {report_id.split('_')[-1]}"
         report_list.append({
             "id": report_id,
             "label": label,
@@ -192,22 +206,20 @@ async def get_reports():
 @app.get(
     "/api/report/detail",
     response_model=ReportResponse,
-    summary="Get Report Details (for Frontend)",
-    description="Get formatted report for UI display with sequence information"
+    summary="리포트 상세 조회 (프론트엔드용)",
+    description="시퀀스 정보가 포함된 UI 표시용 포맷 리포트 조회"
 )
 async def get_report_detail(reportId: str):
     """
-    Get detailed report for Frontend integration.
+    프론트엔드 통합용 상세 리포트 조회
     
-    **Response**: Report format optimized for UI display
+    **응답**: UI 표시에 최적화된 리포트 형식
     """
     if reportId not in reports_storage:
         raise HTTPException(status_code=404, detail="Report not found")
     
     stored_data = reports_storage[reportId]
     result_data = stored_data["result"]
-    product_id = stored_data.get("product_id", "Unknown")
-    lot_id = stored_data.get("lot_id", "Unknown")
     
     # Convert EventHistory format to Report format
     details = []
@@ -236,7 +248,7 @@ async def get_report_detail(reportId: str):
             sequence_problems.add("R_Stock")
     
     report_response = ReportResponse(
-        title=f"제품 {product_id}-로트 {lot_id} 다중 이상치 탐지",
+        title=f"다중 이상치 탐지 리포트",
         details=details,
         summaryStats=result_data.get("summaryStats", {}),
         multiAnomalyCount=result_data.get("multiAnomalyCount", 0),
@@ -247,7 +259,7 @@ async def get_report_detail(reportId: str):
 
 @app.post("/api/v1/test-with-sample")
 async def test_with_sample_data():
-    """Test endpoint using sample data from test_data_sample.json"""
+    """샘플 데이터를 사용한 테스트 엔드포인트"""
     try:
         # Load sample data
         with open('test_data_sample.json', 'r', encoding='utf-8') as f:
@@ -280,11 +292,11 @@ async def test_with_sample_data():
 if __name__ == "__main__":
     import uvicorn
     
-    print("🚀 Starting FastAPI Anomaly Detection Server")
-    print("📖 API Documentation: http://localhost:8000/docs")
-    print("🔍 Alternative Docs: http://localhost:8000/redoc")
-    print("🧪 Test Endpoint: http://localhost:8000/api/v1/test-with-sample")
-    print("📊 Reports API: http://localhost:8000/api/reports")
+    print("🚀 바코드 이상치 탐지 FastAPI 서버 시작")
+    print("📖 API 문서: http://localhost:8000/docs")
+    print("🔍 대체 문서: http://localhost:8000/redoc")
+    print("🧪 테스트 엔드포인트: http://localhost:8000/api/v1/test-with-sample")
+    print("📊 리포트 API: http://localhost:8000/api/reports")
     
     uvicorn.run(
         app, 
