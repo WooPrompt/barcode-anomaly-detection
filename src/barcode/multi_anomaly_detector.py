@@ -17,6 +17,7 @@ Based on question.txt specifications from prompts/task/anomaly_detection/
 import pandas as pd
 import numpy as np
 import json
+import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Any
 
@@ -388,7 +389,7 @@ def preprocess_scan_data(df: pd.DataFrame) -> pd.DataFrame:
     
     # 1. Time data normalization (critical shared function)
     df_processed['event_time'] = pd.to_datetime(df_processed['event_time'])
-    df_processed['event_time_rounded'] = df_processed['event_time'].dt.floor('S')
+    df_processed['event_time_rounded'] = df_processed['event_time'].dt.floor('s')
     
     # 2. Missing value handling - avoid inplace to prevent side effects
     df_processed['event_type'] = df_processed['event_type'].fillna('UNKNOWN')
@@ -584,7 +585,7 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
 
 def load_csv_data():
     """
-    Load geo_data and transition_stats from CSV files
+    Load geo_data, transition_stats, and location_mapping from CSV files
     """
     import os
     
@@ -593,12 +594,6 @@ def load_csv_data():
         geo_path = "data/processed/location_id_withGeospatial.csv"
         if os.path.exists(geo_path):
             geo_df = pd.read_csv(geo_path)
-            # Rename columns to match expected format
-            geo_df = geo_df.rename(columns={
-                'scan_location': 'scan_location',
-                'Latitude': 'Latitude', 
-                'Longitude': 'Longitude'
-            })
         else:
             geo_df = pd.DataFrame()
         
@@ -609,16 +604,304 @@ def load_csv_data():
         else:
             transition_df = pd.DataFrame()
             
-        return geo_df, transition_df
+        # Load location mapping
+        location_mapping_path = "data/processed/location_id_scan_location_matching.csv"
+        if os.path.exists(location_mapping_path):
+            location_mapping_df = pd.read_csv(location_mapping_path)
+        else:
+            location_mapping_df = pd.DataFrame()
+            
+        return geo_df, transition_df, location_mapping_df
         
     except Exception as e:
         print(f"Warning: Could not load CSV files: {e}")
-        return pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+
+def save_detection_result(input_data: dict, output_data: dict) -> str:
+    """
+    탐지 결과를 JSON 파일로 저장 (ML 학습 데이터 축적용)
+    
+    Args:
+        input_data: 입력 데이터 (백엔드에서 받은 데이터)
+        output_data: 출력 데이터 (탐지 결과)
+    
+    Returns:
+        str: 저장된 파일의 로그 ID
+    """
+    try:
+        # 저장 디렉토리 생성
+        log_dir = "data/detection_logs"
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # 타임스탬프 기반 로그 ID 생성
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 밀리초 포함
+        log_id = f"detection_{timestamp}"
+        
+        # 메타데이터 계산
+        file_id = input_data.get("data", [{}])[0].get("file_id", 1) if input_data.get("data") else 1
+        total_events = len(input_data.get("data", []))
+        anomaly_count = output_data.get("fileAnomalyStats", {}).get("totalEvents", 0)
+        detection_rate = anomaly_count / total_events if total_events > 0 else 0
+        
+        # 로그 엔트리 생성
+        log_entry = {
+            "logId": log_id,
+            "timestamp": datetime.now().isoformat(),
+            "fileId": file_id,
+            "input": input_data,
+            "output": output_data,
+            "metadata": {
+                "total_input_events": total_events,
+                "total_anomaly_events": anomaly_count,
+                "detection_rate": round(detection_rate, 4),
+                "anomaly_breakdown": {
+                    "jumpCount": output_data.get("fileAnomalyStats", {}).get("jumpCount", 0),
+                    "evtOrderErrCount": output_data.get("fileAnomalyStats", {}).get("evtOrderErrCount", 0),
+                    "epcFakeCount": output_data.get("fileAnomalyStats", {}).get("epcFakeCount", 0),
+                    "epcDupCount": output_data.get("fileAnomalyStats", {}).get("epcDupCount", 0),
+                    "locErrCount": output_data.get("fileAnomalyStats", {}).get("locErrCount", 0)
+                },
+                "unique_epc_count": len(output_data.get("epcAnomalyStats", [])),
+                "processing_timestamp": timestamp
+            }
+        }
+        
+        # JSON 파일로 저장
+        log_file_path = os.path.join(log_dir, f"{log_id}.json")
+        with open(log_file_path, "w", encoding="utf-8") as f:
+            json.dump(log_entry, f, ensure_ascii=False, indent=2)
+        
+        print(f"Detection result saved: {log_file_path}")
+        return log_id
+        
+    except Exception as e:
+        print(f"Warning: Could not save detection result: {e}")
+        return f"error_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+def detect_anomalies_backend_format(json_input_str: str) -> str:
+    """
+    Backend-compatible anomaly detection function.
+    Input: JSON with eventId, location_id based format
+    Output: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats format
+    """
+    try:
+        input_data = json.loads(json_input_str)
+        raw_df = pd.DataFrame(input_data['data'])
+        
+        # Get fileId from first record
+        file_id = int(raw_df['file_id'].iloc[0]) if not raw_df.empty else 1
+        
+        # Load CSV data for processing
+        geo_df, transition_stats, location_mapping_df = load_csv_data()
+        
+        # Map location_id to scan_location if location mapping is available
+        if not location_mapping_df.empty and 'location_id' in raw_df.columns:
+            raw_df = raw_df.merge(
+                location_mapping_df[['location_id', 'scan_location']], 
+                on='location_id', 
+                how='left'
+            )
+            # Fill missing scan_location with location_id as string
+            raw_df['scan_location'] = raw_df['scan_location'].fillna(raw_df['location_id'].astype(str))
+        
+    except (json.JSONDecodeError, KeyError) as e:
+        return json.dumps({"error": f"Invalid JSON input: {e}"}, indent=2, ensure_ascii=False)
+
+    if raw_df.empty:
+        return json.dumps({
+            "fileId": 1,
+            "EventHistory": [],
+            "epcAnomalyStats": [],
+            "fileAnomalyStats": {
+                "totalEvents": 0,
+                "jumpCount": 0,
+                "evtOrderErrCount": 0,
+                "epcFakeCount": 0,
+                "epcDupCount": 0,
+                "locErrCount": 0
+            }
+        }, indent=2, ensure_ascii=False)
+
+    # Detect anomalies with enhanced multi-anomaly support
+    anomaly_results = detect_multi_anomalies_enhanced(raw_df, transition_stats, geo_df)
+
+    # Build EventHistory in backend format with proper multi-anomaly detection
+    event_history = []
+    epc_anomaly_stats = {}
+    file_anomaly_stats = {
+        "totalEvents": 0,
+        "jumpCount": 0,
+        "evtOrderErrCount": 0, 
+        "epcFakeCount": 0,
+        "epcDupCount": 0,
+        "locErrCount": 0
+    }
+
+    # Process each event individually for event-specific multi-anomaly detection
+    for _, event_row in raw_df.iterrows():
+        event_id = int(event_row.get('eventId', 0))
+        epc_code = event_row.get('epc_code', '')
+        location_id = int(event_row.get('location_id', 0))
+        event_time = event_row.get('event_time', '')
+        business_step = event_row.get('business_step', '')
+        event_type = event_row.get('event_type', '')
+        
+        event_anomalies = {}
+        
+        # 1. EPC Format Check (epcFake) - applies to this specific event
+        fake_score = calculate_epc_fake_score(epc_code)
+        if fake_score > 0:
+            event_anomalies['epcFake'] = True
+            event_anomalies['epcFakeScore'] = float(fake_score)
+        
+        # Get EPC group for this event's EPC
+        epc_events = raw_df[raw_df['epc_code'] == epc_code].sort_values('event_time').reset_index(drop=True)
+        current_event_index = epc_events[epc_events['eventId'] == event_id].index
+        
+        if len(current_event_index) > 0:
+            current_idx = current_event_index[0]
+            
+            # 2. Event Order Error Check (evtOrderErr) - look for temporal sequence violations  
+            if current_idx > 0:
+                prev_event = epc_events.iloc[current_idx - 1]
+                prev_event_type = prev_event.get('event_type', '')
+                prev_business_step = prev_event.get('business_step', '')
+                prev_time = prev_event.get('event_time', '')
+                current_event_type = event_type
+                
+                try:
+                    from datetime import datetime
+                    prev_datetime = datetime.strptime(prev_time, '%Y-%m-%d %H:%M:%S')
+                    current_datetime = datetime.strptime(event_time, '%Y-%m-%d %H:%M:%S')
+                    
+                    # Detect temporal disorder: current event happens BEFORE previous event
+                    if current_datetime < prev_datetime:
+                        event_anomalies['evtOrderErr'] = True
+                        event_anomalies['evtOrderErrScore'] = 25.0
+                    
+                    # Also detect consecutive Inbound at same location (impossible)
+                    elif (current_event_type == 'Inbound' and prev_event_type == 'Inbound' and 
+                          business_step == prev_business_step):
+                        event_anomalies['evtOrderErr'] = True
+                        event_anomalies['evtOrderErrScore'] = 25.0
+                        
+                except (ValueError, TypeError):
+                    # If datetime parsing fails, fall back to simpler logic
+                    if (current_event_type == 'Inbound' and prev_event_type == 'Inbound' and 
+                        business_step == prev_business_step):
+                        event_anomalies['evtOrderErr'] = True
+                        event_anomalies['evtOrderErrScore'] = 25.0
+            
+            # 3. Duplicate Scan Check (epcDup) - check if this specific event has time conflicts
+            same_time_events = epc_events[epc_events['event_time'] == event_time]
+            if len(same_time_events) > 1:
+                # Multiple events at same time for same EPC is always suspicious
+                event_anomalies['epcDup'] = True
+                event_anomalies['epcDupScore'] = 90.0
+            
+            # 4. Location Error Check (locErr) - check if this specific transition violates hierarchy
+            if current_idx > 0:
+                prev_event = epc_events.iloc[current_idx - 1]
+                prev_business_step = prev_event.get('business_step', '')
+                
+                # Check for hierarchy violations
+                hierarchy = {'Factory': 1, 'WMS': 2, 'Wholesaler': 3, 'Retailer': 4}
+                current_level = hierarchy.get(business_step, 99)
+                prev_level = hierarchy.get(prev_business_step, 99)
+                
+                # Check for reverse hierarchy (higher to lower level)
+                if current_level < prev_level and current_level != 99 and prev_level != 99:
+                    event_anomalies['locErr'] = True
+                    event_anomalies['locErrScore'] = 30.0
+                
+                # Check for level skipping and suspicious direct jumps
+                if ((prev_level == 2 and current_level == 4) or   # WMS -> Retailer (skip Wholesaler)
+                    (prev_level == 1 and current_level == 3) or   # Factory -> Wholesaler (skip WMS)
+                    (prev_level == 1 and current_level == 4)):    # Factory -> Retailer (skip WMS+Wholesaler)
+                    event_anomalies['locErr'] = True
+                    event_anomalies['locErrScore'] = 30.0
+                
+                # Special case: Factory->WMS with same timestamp (suspicious direct jump)
+                elif (prev_level == 1 and current_level == 2):  # Factory -> WMS
+                    prev_time = prev_event.get('event_time', '')
+                    if event_time == prev_time:  # Same timestamp = suspicious
+                        event_anomalies['locErr'] = True
+                        event_anomalies['locErrScore'] = 30.0
+        
+        # If this event has anomalies, add to EventHistory
+        if event_anomalies:
+            event_record = {"eventId": event_id}
+            event_record.update(event_anomalies)
+            event_history.append(event_record)
+    
+    # Build EPC anomaly statistics from actual event history
+    for event in event_history:
+        event_id = event['eventId']
+        # Find the EPC code for this event
+        event_row = raw_df[raw_df['eventId'] == event_id].iloc[0]
+        epc_code = event_row['epc_code']
+        
+        # Initialize EPC stats if not exists
+        if epc_code not in epc_anomaly_stats:
+            epc_anomaly_stats[epc_code] = {
+                "epcCode": epc_code,
+                "totalEvents": 0,
+                "jumpCount": 0,
+                "evtOrderErrCount": 0,
+                "epcFakeCount": 0, 
+                "epcDupCount": 0,
+                "locErrCount": 0
+            }
+        
+        # Count each anomaly type for this EPC based on actual detections
+        for anomaly_type in ['jump', 'evtOrderErr', 'epcFake', 'epcDup', 'locErr']:
+            if event.get(anomaly_type, False):
+                epc_anomaly_stats[epc_code][f"{anomaly_type}Count"] += 1
+    
+    # Calculate totalEvents for each EPC (sum of all anomaly counts)
+    for epc_code, stats in epc_anomaly_stats.items():
+        stats["totalEvents"] = (
+            stats["jumpCount"] + 
+            stats["evtOrderErrCount"] + 
+            stats["epcFakeCount"] + 
+            stats["epcDupCount"] + 
+            stats["locErrCount"]
+        )
+    
+    # Calculate file anomaly statistics
+    for epc_stats in epc_anomaly_stats.values():
+        file_anomaly_stats["jumpCount"] += epc_stats["jumpCount"]
+        file_anomaly_stats["evtOrderErrCount"] += epc_stats["evtOrderErrCount"]
+        file_anomaly_stats["epcFakeCount"] += epc_stats["epcFakeCount"]
+        file_anomaly_stats["epcDupCount"] += epc_stats["epcDupCount"]
+        file_anomaly_stats["locErrCount"] += epc_stats["locErrCount"]
+    
+    # Calculate file totalEvents (sum of all anomaly counts)
+    file_anomaly_stats["totalEvents"] = (
+        file_anomaly_stats["jumpCount"] +
+        file_anomaly_stats["evtOrderErrCount"] +
+        file_anomaly_stats["epcFakeCount"] +
+        file_anomaly_stats["epcDupCount"] +
+        file_anomaly_stats["locErrCount"]
+    )
+
+    # Convert epc_anomaly_stats to list (only include EPCs with anomalies)
+    epc_stats_list = [stats for stats in epc_anomaly_stats.values() if stats["totalEvents"] > 0]
+
+    output = {
+        "fileId": file_id,
+        "EventHistory": event_history,
+        "epcAnomalyStats": epc_stats_list,
+        "fileAnomalyStats": file_anomaly_stats
+    }
+
+    return json.dumps(output, indent=2, ensure_ascii=False)
 
 def detect_anomalies_from_json_enhanced(json_input_str: str) -> str:
     """
     Main enhanced function with EventHistory format output.
     Auto-loads geo_data and transition_stats from CSV files.
+    DEPRECATED: Use detect_anomalies_backend_format for new backend integration
     """
     try:
         input_data = json.loads(json_input_str)
@@ -630,7 +913,7 @@ def detect_anomalies_from_json_enhanced(json_input_str: str) -> str:
         
         # Load from CSV if empty
         if transition_stats.empty or geo_df.empty:
-            csv_geo_df, csv_transition_df = load_csv_data()
+            csv_geo_df, csv_transition_df, _ = load_csv_data()
             
             if geo_df.empty and not csv_geo_df.empty:
                 geo_df = csv_geo_df

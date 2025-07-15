@@ -21,7 +21,7 @@ from datetime import datetime
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.barcode.multi_anomaly_detector import detect_anomalies_from_json_enhanced
+from src.barcode.multi_anomaly_detector import detect_anomalies_from_json_enhanced, detect_anomalies_backend_format, save_detection_result
 
 app = FastAPI(
     title="바코드 이상치 탐지 API",
@@ -69,6 +69,55 @@ class ScanRecord(BaseModel):
     product_name: Optional[str] = "Unknown"
     business_step: Optional[str] = None
     worker_id: Optional[str] = None
+
+# Backend format models (d.txt specification)
+class BackendScanRecord(BaseModel):
+    eventId: int
+    epc_code: str
+    location_id: int
+    business_step: str
+    event_type: str
+    event_time: str
+    file_id: int
+
+class BackendAnomalyDetectionRequest(BaseModel):
+    data: List[BackendScanRecord]
+
+class EventHistoryRecord(BaseModel):
+    eventId: int
+    jump: Optional[bool] = None
+    jumpScore: Optional[float] = None
+    evtOrderErr: Optional[bool] = None
+    evtOrderErrScore: Optional[float] = None
+    epcDup: Optional[bool] = None
+    epcDupScore: Optional[float] = None
+    epcFake: Optional[bool] = None
+    epcFakeScore: Optional[float] = None
+    locErr: Optional[bool] = None
+    locErrScore: Optional[float] = None
+
+class EpcAnomalyStats(BaseModel):
+    epcCode: str
+    totalEvents: int
+    jumpCount: int
+    evtOrderErrCount: int
+    epcFakeCount: int
+    epcDupCount: int
+    locErrCount: int
+
+class FileAnomalyStats(BaseModel):
+    totalEvents: int
+    jumpCount: int
+    evtOrderErrCount: int
+    epcFakeCount: int
+    epcDupCount: int
+    locErrCount: int
+
+class BackendAnomalyDetectionResponse(BaseModel):
+    fileId: int
+    EventHistory: List[EventHistoryRecord]
+    epcAnomalyStats: List[EpcAnomalyStats]
+    fileAnomalyStats: FileAnomalyStats
 
 class TransitionStat(BaseModel):
     from_scan_location: str
@@ -148,16 +197,15 @@ async def health_check():
 
 @app.post(
     "/api/v1/barcode-anomaly-detect",
-    response_model=AnomalyDetectionResponse,
-    summary="다중 이상치 탐지 (백엔드용)",
-    description="스캔 데이터를 분석하여 5가지 이상치 유형을 탐지합니다: epcFake, epcDup, jump, evtOrderErr, locErr"
+    summary="다중 이상치 탐지 (백엔드용 - 즉시 응답)",
+    description="백엔드에서 데이터를 전송하고 즉시 결과를 받는 엔드포인트: epcFake, epcDup, jump, evtOrderErr, locErr"
 )
-async def detect_anomalies(request: AnomalyDetectionRequest):
+async def detect_anomalies_backend(request: BackendAnomalyDetectionRequest):
     """
-    백엔드 통합용 다중 이상치 탐지 엔드포인트
+    백엔드 통합용 다중 이상치 탐지 엔드포인트 (즉시 응답)
     
-    **입력**: 이동 통계 및 지리 데이터가 포함된 스캔 데이터
-    **출력**: EPC별 다중 이상치 탐지가 포함된 EventHistory 형식
+    **입력**: eventId, location_id 기반 스캔 데이터
+    **출력**: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats 형식 (즉시 응답)
     
     **탐지 가능한 이상치 유형:**
     - epcFake: 잘못된 EPC 형식
@@ -165,6 +213,95 @@ async def detect_anomalies(request: AnomalyDetectionRequest):
     - jump: 불가능한 이동 시간
     - evtOrderErr: 잘못된 이벤트 순서
     - locErr: 위치 계층 위반
+    """
+    try:
+        # Convert Pydantic model to JSON string for backend function
+        request_json = request.json()
+        
+        # Call backend-compatible detection function
+        result_json = detect_anomalies_backend_format(request_json)
+        
+        # Parse result and return immediately
+        result_dict = json.loads(result_json)
+        
+        # Optional: Save result for ML training data accumulation
+        save_detection_result(result_dict, request_json)
+        
+        return result_dict
+        
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON input: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Detection error: {e}")
+
+@app.get(
+    "/api/manager/export",
+    response_model=BackendAnomalyDetectionResponse,
+    summary="최근 탐지 결과 조회 (GET 방식)",
+    description="가장 최근에 저장된 이상치 탐지 결과를 조회 (ML 훈련 데이터용)"
+)
+async def export_anomaly_data():
+    """
+    최근 이상치 탐지 결과를 GET 방식으로 조회
+    
+    **사용 목적**: ML 모델 훈련을 위한 축적된 데이터 조회
+    **주 사용자**: POST API 호출 후 결과 재확인이 필요한 경우
+    """
+    try:
+        # Read the most recent saved detection result from JSON files
+        import glob
+        
+        # Find the most recent JSON file in ml_training_data directory
+        json_files = glob.glob("ml_training_data/*.json")
+        if not json_files:
+            # Return empty result if no saved data available
+            return {
+                "fileId": 1,
+                "EventHistory": [],
+                "epcAnomalyStats": [],
+                "fileAnomalyStats": {
+                    "totalEvents": 0,
+                    "jumpCount": 0,
+                    "evtOrderErrCount": 0,
+                    "epcFakeCount": 0,
+                    "epcDupCount": 0,
+                    "locErrCount": 0
+                }
+            }
+        
+        # Get the most recent file by modification time
+        most_recent_file = max(json_files, key=os.path.getmtime)
+        
+        # Load and return the result
+        with open(most_recent_file, 'r', encoding='utf-8') as f:
+            result_data = json.load(f)
+            return result_data["detection_result"]
+            
+    except Exception as e:
+        # Fallback to empty result on any error
+        return {
+            "fileId": 1,
+            "EventHistory": [],
+            "epcAnomalyStats": [],
+            "fileAnomalyStats": {
+                "totalEvents": 0,
+                "jumpCount": 0,
+                "evtOrderErrCount": 0,
+                "epcFakeCount": 0,
+                "epcDupCount": 0,
+                "locErrCount": 0
+            }
+        }
+
+@app.post(
+    "/api/v1/barcode-anomaly-detect-legacy",
+    response_model=AnomalyDetectionResponse,
+    summary="다중 이상치 탐지 (레거시)",
+    description="이전 버전 호환성을 위한 엔드포인트"
+)
+async def detect_anomalies_legacy(request: AnomalyDetectionRequest):
+    """
+    레거시 호환성을 위한 다중 이상치 탐지 엔드포인트
     """
     try:
         # Convert Pydantic model to JSON string for existing function
@@ -177,10 +314,11 @@ async def detect_anomalies(request: AnomalyDetectionRequest):
         result_dict = json.loads(result_json)
         
         # Store result for report generation
-        report_id = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        report_id = f"legacy_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         reports_storage[report_id] = {
             "result": result_dict,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "type": "legacy_format"
         }
         
         return result_dict
@@ -292,11 +430,11 @@ async def test_with_sample_data():
 if __name__ == "__main__":
     import uvicorn
     
-    print("🚀 바코드 이상치 탐지 FastAPI 서버 시작")
-    print("📖 API 문서: http://localhost:8000/docs")
-    print("🔍 대체 문서: http://localhost:8000/redoc")
-    print("🧪 테스트 엔드포인트: http://localhost:8000/api/v1/test-with-sample")
-    print("📊 리포트 API: http://localhost:8000/api/reports")
+    print("바코드 이상치 탐지 FastAPI 서버 시작")
+    print("API 문서: http://localhost:8000/docs")
+    print("대체 문서: http://localhost:8000/redoc")
+    print("테스트 엔드포인트: http://localhost:8000/api/v1/test-with-sample")
+    print("리포트 API: http://localhost:8000/api/reports")
     
     uvicorn.run(
         app, 
