@@ -1,42 +1,134 @@
 Project Folder Structure (with Absolute Paths):
 C:\Users\user\Desktop\barcode-anomaly-detection\
-├───command.txt
+├───ARCHITECTURE_IMPROVEMENT.md
+├───BACKEND_INTEGRATION_SUMMARY.md
+├───README.md
 ├───data\
+│   ├───detection_logs\
 │   ├───external\
+│   │   ├───project_part1.txt
+│   │   ├───project_part2.txt
+│   │   ├───project_part3.txt
+│   │   ├───project_part4.txt
+│   │   ├───project_part5.txt
+│   │   ├───project_part6.txt
+│   │   └───project_part7.txt
 │   ├───processed\
-│   │   ├───.keep
-│   │   ├───all_factories_clean_v2.csv
-│   │   ├───all_factories_clean_v2_test.csv
-│   │   ├───anomalies_report_v2.csv
 │   │   ├───business_step_transition_avg_v2.csv
 │   │   ├───local_rule_anomalies_test.csv
-│   │   ├───local_rule_clean_test.csv
-│   │   ├───location_id_withGeospatial - location_id.csv
-│   │   └───svm_anomalies_report_v1.csv
+│   │   ├───location_id_scan_location_matching.csv
+│   │   └───location_id_withGeospatial.csv
 │   └───raw\
-│       ├───.keep
-│       ├───hws.csv
 │       ├───icn.csv
 │       ├───kum.csv
 │       └───ygs.csv
+├───debug_server.py
 ├───docs\
-│   └───20250709.txt
-├───folder_structure.txt
-├───info.txt
+│   ├───20250709.txt
+│   ├───ANOMALY_DETECTION_ISSUES_ANALYSIS.md
+│   ├───COMPLETE_TEAM_REQUIREMENTS.md
+│   ├───DETAILED_LOGIC_EXPLANATION.md
+│   ├───TEAM_LEADER_ANALYSIS_REPORT.md
+│   ├───folder_structure.txt
+│   └───project_analysis.md
+├───fastapi_server.py
+├───index.llm.txt
+├───logs\
+│   └───api_development_evolution.txt
 ├───model\
-│   ├───.keep
 │   ├───svm_20250709_114352.pkl
-│   └───svm_20250709_122328.pkl
-├───principle.txt
-├───README.md
+│   ├───svm_20250709_122328.pkl
+│   ├───svm_20250710_110314.pkl
+│   └───svm_20250710_131806.pkl
+├───playground\
+│   ├───README.md
+│   └───test_data_generate.ipynb
+├───postman_test_data.json
+├───prompts\
+│   ├───README.md
+│   ├───automation\
+│   │   ├───README.md
+│   │   ├───ai_handoff.json
+│   │   ├───init.json
+│   │   └───update_index.json
+│   ├───command.txt
+│   ├───context\
+│   │   ├───ai_handoff.txt
+│   │   ├───metadata.json
+│   │   └───principle.llm.txt
+│   ├───log\
+│   │   ├───ai_handoff_system_20250712.txt
+│   │   ├───anomaly_detection_analysis_20250712.txt
+│   │   ├───function_generation_20250713.txt
+│   │   ├───index_updates_20250713.txt
+│   │   ├───index_updates_20250713_b.txt
+│   │   ├───metadata.json
+│   │   └───metadata_updates_20250713.txt
+│   ├───meta\
+│   │   ├───automation_guide.txt
+│   │   └───metadata.json
+│   ├───protocol\
+│   │   ├───README.md
+│   │   ├───analysis_log_behavior.llm.txt
+│   │   ├───dynamic_question_protocol.llm.txt
+│   │   ├───learning_v1.llm.txt
+│   │   ├───metadata.json
+│   │   └───question_loop.llm.txt
+│   ├───task\
+│   │   ├───anomaly_detection\
+│   │   │   ├───Refactoring_Workflow.llm.txt
+│   │   │   ├───anomaly_detection.json
+│   │   │   ├───anomaly_detection_analysis.json
+│   │   │   ├───edge_cases.txt
+│   │   │   ├───epcDup\
+│   │   │   │   ├───edge.txt
+│   │   │   │   ├───epcDup_duplicate_scan.py
+│   │   │   │   └───question.txt
+│   │   │   ├───epcFake\
+│   │   │   │   ├───edge.txt
+│   │   │   │   ├───epcFake_structure_check.py
+│   │   │   │   └───question.txt
+│   │   │   ├───evtOrderErr\
+│   │   │   │   ├───edge.txt
+│   │   │   │   ├───evtOrderErr_sequence_check.py
+│   │   │   │   └───question.txt
+│   │   │   ├───jump\
+│   │   │   │   ├───edge.txt
+│   │   │   │   ├───jump_travel_time.py
+│   │   │   │   └───question.txt
+│   │   │   ├───locErr\
+│   │   │   │   ├───edge.txt
+│   │   │   │   ├───locErr_hierarchy_check.py
+│   │   │   │   └───question.txt
+│   │   │   └───questions.txt
+│   │   └───metadata.json
+│   └───templates\
+│       └───metadata.json
 ├───requirements.txt
+├───restart_server.bat
 ├───src\
-│   └───barcode\
-│       ├───anomaly_detection_v5.py
-│       ├───api.py
-│       ├───svm_anomaly_detection_v2.py
-│       └───transition_time_analyzer_v2.py
-└───temp_folder_structure.txt
+│   ├───__init__.py
+│   ├───barcode\
+│   │   ├───anomaly_detection_combined.py
+│   │   ├───anomaly_detection_decomposed.py
+│   │   ├───anomaly_detection_v5.py
+│   │   ├───anomaly_detection_verifier.py
+│   │   ├───api.py
+│   │   ├───benchmark.py
+│   │   ├───legacy_format_detector.py
+│   │   ├───multi_anomaly_detector.py
+│   │   ├───test_anomaly_detection.py
+│   │   └───transition_time_analyzer_v2.py
+│   └───test.ipynb
+├───test_anomaly_api.py
+├───test_api_integration.py
+├───test_backend_fix.py
+├───test_backend_format.py
+├───test_current_output.py
+├───test_simplified_input.py
+└───tests\
+    ├───README.md
+    └───test_json_output.py
 
 ---
 

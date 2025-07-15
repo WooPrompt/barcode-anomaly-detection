@@ -1,5 +1,5 @@
-# 팀 리더 분석 보고서: 바코드 이상치 탐지 시스템
-## 우예은 (팀장 & 데이터 분석가) - 발표용 기술 문서
+# 팀 리더 분석 보고서: 바코드 이상치 탐지 시스템 완성 보고서
+## 우예은 (팀장 & 데이터 분석가) - 최종 성과 발표용 기술 문서
 
 ---
 
@@ -119,42 +119,72 @@ EPC 구조: 001.8804823.0000001.000001.20240701.000000001
 {
   "data": [
     {
-      "scan_location": "서울 공장",
+      "eventId": 101,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
       "location_id": 1,
-      "hub_type": "HWS_Factory", 
       "business_step": "Factory",
       "event_type": "Outbound",
-      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
-      "product_name": "Product A",
-      "event_time": "2024-07-02 09:00:00"
+      "event_time": "2024-07-02 09:00:00",
+      "file_id": 1
     }
   ]
 }
 ```
 
-### **출력 형식 (데이터 분석 → 백엔드)**
+### **위치 ID 매핑 시스템**
+```csv
+# data/processed/location_id_withGeospatial.csv
+seq,location_id,scan_location,Latitude,Longitude,factory_locations
+1,1,인천공장,37.45,126.65,
+2,2,화성공장,37.2,126.83,
+3,3,양산공장,35.33,129.04,
+4,4,구미공장,36.13,128.4,
+5,5,인천공장창고,37.46,126.66,
+...
+```
+
+### **출력 형식 (데이터 분석 → 백엔드) - 다중 이상치 지원**
 ```json
 {
+  "fileId": 1,
   "EventHistory": [
     {
-      "epcCode": "001.8809437.1203199.150002.20250701.000000002",
-      "productName": "Product 2",
-      "eventType": "jump",
-      "businessStep": "Factory", 
-      "scanLocation": "구미공장",
-      "eventTime": "2025-07-01 10:23:39",
-      "anomaly": true,
-      "anomalyType": "비논리적인 시공간 이동",
-      "anomalyCode": "jump",
-      "description": "공장에서 리테일로 점프 이동 발생"
+      "eventId": 106,
+      "epcDup": true,
+      "epcDupScore": 90.0,
+      "locErr": true,
+      "locErrScore": 30.0
     }
-  ]
+  ],
+  "epcAnomalyStats": [
+    {
+      "epcCode": "001.8804823.0000001.000001.20240701.000000002",
+      "totalEvents": 3,
+      "jumpCount": 0,
+      "evtOrderErrCount": 0,
+      "epcFakeCount": 0,
+      "epcDupCount": 2,
+      "locErrCount": 1
+    }
+  ],
+  "fileAnomalyStats": {
+    "totalEvents": 7,
+    "jumpCount": 0,
+    "evtOrderErrCount": 3,
+    "epcFakeCount": 1,
+    "epcDupCount": 2,
+    "locErrCount": 1
+  }
 }
 ```
 
 ### **API 엔드포인트**
 ```python
 POST /api/v1/barcode-anomaly-detect
+# 입력: eventId, epc_code, location_id, business_step, event_type, event_time, file_id
+# 출력: fileId, EventHistory (검출된 이상치만), epcAnomalyStats, fileAnomalyStats
+# 위치 매핑: location_id → scan_location (CSV 파일 기반)
+# 다중 이상치 지원: 하나의 이벤트에서 여러 이상치 동시 검출
 ```
 
 ---
