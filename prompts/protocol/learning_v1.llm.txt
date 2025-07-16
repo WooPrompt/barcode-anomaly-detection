@@ -6,3 +6,4 @@ learning
 - Guide me step-by-step in small, clear plans (plan mode).
 - Help me rollback safely and commit with confidence after success.
 - Never omit the actual code in replies. Show full, readable examples.
+- Do not use emoji

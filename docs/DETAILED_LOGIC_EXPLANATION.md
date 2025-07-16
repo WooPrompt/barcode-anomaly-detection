@@ -172,7 +172,7 @@ def calculate_event_order_score(event_sequence: List[str]) -> int:
             if consecutive_inbound > 1: score += 25  # 연속 입고 오류
             
         # Outbound 계열 이벤트 처리  
-        elif any(keyword in event_lower for keyword in ['outbound', 'shipping', 'dispatch']):
+        elif any(keyword in event_lower for keyword in ['outbound']):
             consecutive_outbound += 1  
             consecutive_inbound = 0
             if consecutive_outbound > 1: score += 25  # 연속 출고 오류

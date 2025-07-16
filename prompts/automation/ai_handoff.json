@@ -8,9 +8,9 @@
     "User answers requirements"
   ],
   "auto_update_sections": {
-    "PROJECT STATUS": "Update current work and next steps",
-    "KEY DECISIONS CHRONOLOGY": "Add new decision as single line with date",
-    "CURRENT CHALLENGE": "Update active problem/focus",
+    "PROJECT STATUS": "Event order anomaly logic updated to use granular event type classification (direction + step) for improved accuracy. Current work: refining event sequence anomaly detection.",
+    "KEY DECISIONS CHRONOLOGY": "2025-07-14: Updated event order anomaly logic to use (direction, step) classification to prevent false positives for valid flows.",
+    "CURRENT CHALLENGE": "Ensuring accurate event sequence anomaly detection without penalizing valid supply chain flows.",
     "ESSENTIAL FILES TO LOAD": "Update latest log/analysis files"
   },
   "maintenance_rules": [

@@ -1,0 +1,511 @@
+✅ 보완할 점 5가지
+1. Feature/Label 간 매핑 로그 누락
+문제점: X와 y 간의 EPC 매핑 정보가 빠져 있습니다. 디버깅이나 오탐 분석할 때 어떤 EPC가 이상치로 분류되었는지 확인하기 어렵습니다.
+
+개선안:
+
+data_manager.py에 epc_list.json 또는 epc_list.npy를 anomaly_type별로 저장하세요.
+
+예:
+
+python
+복사
+편집
+epc_list[anomaly_type] = [epc_code1, epc_code2, ...]
+2. 라벨링 신뢰도 기록 미포함
+문제점: Rule-based 라벨이 "완벽한 ground truth"가 아님에도 불구하고 이진값으로 저장됩니다.
+
+개선안:
+
+rule_based_labels.py에서 라벨과 함께 원래 점수(score) 도 함께 리턴하세요.
+
+python
+복사
+편집
+return {'epcFake': (label, score), ...}
+이를 통해 borderline 케이스(예: 49점 vs 51점) 구분 가능.
+
+3. 테스트셋 분리 전략 미정
+문제점: 전처리 후 데이터를 SVM 학습용으로 저장하지만, train/test 분리 전략이 문서에 없습니다.
+
+개선안:
+
+pipeline.py 또는 data_manager.py에서 자동으로 train/test split 기능 추가 제안.
+
+python
+복사
+편집
+sklearn.model_selection.train_test_split(X, y, test_size=0.2)
+4. 실시간 적용 대비 피처 계산 비용 고려 부족
+문제점: 일부 feature 함수 (예: _calculate_distance_features, _calculate_entropy, _extract_time_intervals) 는 연산량이 큽니다.
+
+개선안:
+
+config.py 에 runtime_safe = True/False 플래그 도입해서, 실시간 서비스용 feature 조합과 배치용 feature 조합을 구분하세요.
+
+예:
+
+python
+복사
+편집
+if config['runtime_safe']:
+    exclude_entropy = True
+5. 단일 entrypoint CLI 또는 test harness 없음
+문제점: 지금은 전처리 파이프라인이 객체 기반 호출만 있고, CLI/테스트 진입점이 없어 개발 중 확인이 불편합니다.
+
+개선안:
+
+scripts/run_pipeline.py 또는 main.py 를 추가해 CLI 진입점 제공:
+
+bash
+복사
+편집
+python scripts/run_pipeline.py --input=data/raw.csv --output=data/svm_training
+또는 pytest 기반 테스트 harness 추가.
+
+
+
+✅ 1. EPC 매핑 누락 → "누가 문제였는지 모르면 해석이 불가능함"
+SVM이 1이라고 예측했는데 어떤 EPC였는지 모르면 왜 그런 결과가 나왔는지 분석이 안 됨.
+
+→ 반드시 X[i], y[i], epc_code[i]가 매칭되어야 디버깅/해석 가능.
+
+✅ 2. 라벨 점수 정보 없음 → "신뢰도 없는 이진 분류는 위험함"
+예: 점수 49 vs 51 → 거의 같은데 0, 1로 완전히 갈림.
+
+→ score도 같이 저장해두면 나중에 모델이 헷갈리는 사례를 확인하거나 후처리 가능.
+
+✅ 3. 테스트셋 분리 없음 → "학습 잘 됐는지 평가할 방법 없음"
+전처리만 하고 모델 학습에 바로 다 넣으면 과적합인지 모름.
+
+→ 기본적으로 train_test_split() 해서 분리해두면 바로 실험 가능.
+
+✅ 4. 연산비용 고려 없음 → "실시간 시스템에서 죽을 수 있음"
+일부 feature는 너무 무거워서 실시간 API에 쓰기엔 부담 큼.
+
+→ config에 runtime_safe 옵션 주면, 가볍고 빠른 feature만 골라서 적용 가능.
+
+✅ 5. 진입점 없음 → "실제로 돌려보기 너무 불편함"
+매번 pipeline 인스턴스 만들어서 불러오는 건 귀찮고 실수 많음.
+
+→ run_pipeline.py 하나 있으면 python run_pipeline.py --input ...만으로 빠르게 돌릴 수 있음.
+
+SVM 전처리 계획 - 5가지 핵심 수정사항
+🚨 수정이 필요한 5가지 문제점
+1. Feature 차원 불일치 문제 🔧
+❌ 현재 문제:
+
+python
+# 각 Feature Extractor가 다른 길이의 벡터 반환
+epc_features = [1.0, 0.0, 1.0, 0.5, ...]     # 길이 8
+dup_features = [2.0, 1.0, 3.0, 1.0]          # 길이 4
+order_features = [3.0, 2.0, 1.0, 0.8, 0.6]  # 길이 5
+✅ 해결책:
+
+python
+class FeatureExtractor:
+    """모든 extractor는 고정된 차원을 반환해야 함"""
+    
+    FEATURE_DIMENSIONS = {
+        'epcFake': 10,      # 고정 10차원
+        'epcDup': 8,        # 고정 8차원  
+        'evtOrderErr': 12,  # 고정 12차원
+        'locErr': 15,       # 고정 15차원
+        'jump': 10          # 고정 10차원
+    }
+    
+    def extract_features(self, data) -> List[float]:
+        features = self._calculate_features(data)
+        # 패딩 또는 트렁케이션으로 고정 길이 보장
+        return self._normalize_to_fixed_length(features, self.expected_dim)
+2. 클래스 불균형 처리 누락 ⚖️
+❌ 현재 문제:
+
+python
+# 실제 데이터에서 예상되는 분포
+epcFake:    정상 95% vs 이상 5%    # 심각한 불균형
+epcDup:     정상 98% vs 이상 2%    # 더 심각한 불균형
+evtOrderErr: 정상 90% vs 이상 10%
+✅ 해결책:
+
+python
+class ImbalanceHandler:
+    """클래스 불균형 해결을 위한 전략들"""
+    
+    def handle_imbalance(self, X: np.ndarray, y: np.ndarray, strategy: str = 'smote'):
+        if strategy == 'smote':
+            from imblearn.over_sampling import SMOTE
+            smote = SMOTE(random_state=42)
+            return smote.fit_resample(X, y)
+        
+        elif strategy == 'weighted':
+            # class_weight='balanced' 사용을 위한 메타데이터 반환
+            pos_weight = len(y) / (2 * np.sum(y))
+            neg_weight = len(y) / (2 * (len(y) - np.sum(y)))
+            return X, y, {0: neg_weight, 1: pos_weight}
+        
+        elif strategy == 'threshold_tuning':
+            # 임계값 최적화를 위한 다양한 threshold 반환
+            return X, y, [30, 40, 50, 60, 70]  # 다양한 임계값 테스트
+
+# config.py에 추가
+SVM_CONFIG = {
+    'class_balance': {
+        'strategy': 'smote',  # 'smote', 'weighted', 'threshold_tuning'
+        'min_samples_per_class': 50,  # 최소 샘플 수
+        'fallback_strategy': 'weighted'  # SMOTE 실패시 대안
+    }
+}
+3. Feature 정규화/스케일링 누락 📏
+❌ 현재 문제:
+
+python
+# SVM은 feature scale에 매우 민감함
+features = [
+    1.0,        # boolean (0-1 범위)
+    156.8,      # EPC 길이 (0-200 범위)  
+    0.000001,   # entropy (0-1 범위)
+    23847.5     # time_diff_hours (0-수만 범위)
+]
+# → SVM이 큰 값에만 의존하게 됨
+✅ 해결책:
+
+python
+from sklearn.preprocessing import StandardScaler, RobustScaler
+
+class FeatureNormalizer:
+    """SVM용 feature 정규화"""
+    
+    def __init__(self, method: str = 'robust'):
+        self.method = method
+        self.scalers = {}
+    
+    def fit_transform_features(self, X: np.ndarray, anomaly_type: str) -> np.ndarray:
+        if self.method == 'robust':
+            # 이상치에 덜 민감한 RobustScaler 사용
+            scaler = RobustScaler()
+        else:
+            scaler = StandardScaler()
+        
+        X_scaled = scaler.fit_transform(X)
+        self.scalers[anomaly_type] = scaler  # 예측시 재사용위해 저장
+        return X_scaled
+    
+    def transform_features(self, X: np.ndarray, anomaly_type: str) -> np.ndarray:
+        """예측시 사용 (이미 fit된 scaler 사용)"""
+        return self.scalers[anomaly_type].transform(X)
+
+# data_manager.py에 통합
+def save_training_data(self, X, y, anomaly_type):
+    # 정규화 적용
+    normalizer = FeatureNormalizer()
+    X_scaled = normalizer.fit_transform_features(X, anomaly_type)
+    
+    # scaler도 함께 저장 (예측시 필요)
+    scaler_path = f"{self.output_dir}/{anomaly_type}_scaler.joblib"
+    joblib.dump(normalizer.scalers[anomaly_type], scaler_path)
+    
+    np.save(f"{self.output_dir}/{anomaly_type}_X_train.npy", X_scaled)
+4. 메모리 효율성 문제 🧠
+❌ 현재 문제:
+
+python
+# 모든 데이터를 메모리에 한번에 로드
+for epc_code, epc_group in df_clean.groupby('epc_code'):  # 수백만 EPC
+    all_features['epcFake'].append(extract_features(...))  # 메모리 폭증
+    all_features['epcDup'].append(extract_features(...))
+    # ... 5개 anomaly type × 수백만 EPC = OOM
+✅ 해결책:
+
+python
+class BatchProcessor:
+    """메모리 효율적인 배치 처리"""
+    
+    def __init__(self, batch_size: int = 10000):
+        self.batch_size = batch_size
+    
+    def process_in_batches(self, df: pd.DataFrame) -> Generator:
+        """EPC를 배치 단위로 처리"""
+        epc_codes = df['epc_code'].unique()
+        
+        for i in range(0, len(epc_codes), self.batch_size):
+            batch_epcs = epc_codes[i:i + self.batch_size]
+            batch_df = df[df['epc_code'].isin(batch_epcs)]
+            yield batch_df
+    
+    def save_batch_features(self, features_batch: Dict, batch_idx: int):
+        """배치별로 임시 저장"""
+        for anomaly_type, features in features_batch.items():
+            temp_path = f"temp_{anomaly_type}_batch_{batch_idx}.npy"
+            np.save(temp_path, np.array(features))
+    
+    def merge_batches(self, anomaly_type: str, total_batches: int):
+        """배치들을 최종 병합"""
+        all_features = []
+        for i in range(total_batches):
+            batch_features = np.load(f"temp_{anomaly_type}_batch_{i}.npy")
+            all_features.append(batch_features)
+            os.remove(f"temp_{anomaly_type}_batch_{i}.npy")  # 정리
+        
+        return np.vstack(all_features)
+
+# pipeline.py 수정
+def process_data(self, raw_df: pd.DataFrame):
+    batch_processor = BatchProcessor(batch_size=10000)
+    
+    for batch_idx, batch_df in enumerate(batch_processor.process_in_batches(raw_df)):
+        batch_features = self._process_batch(batch_df)
+        batch_processor.save_batch_features(batch_features, batch_idx)
+    
+    # 최종 병합
+    for anomaly_type in self.extractors.keys():
+        final_features = batch_processor.merge_batches(anomaly_type, batch_idx + 1)
+        self.data_manager.save_training_data(final_features, anomaly_type)
+5. 예측 단계 연동 누락 🔮
+❌ 현재 문제:
+
+전처리 파이프라인만 있고, 실제 SVM 예측에서 어떻게 사용할지 불명확
+새로운 데이터가 들어왔을 때 전처리 과정 재현 불가
+✅ 해결책:
+
+python
+class SVMInferenceEngine:
+    """훈련된 SVM 모델을 이용한 실시간 예측"""
+    
+    def __init__(self, model_dir: str):
+        self.model_dir = model_dir
+        self.models = {}
+        self.scalers = {}
+        self.extractors = {}
+        self._load_trained_models()
+    
+    def _load_trained_models(self):
+        """저장된 모델들 로드"""
+        for anomaly_type in ['epcFake', 'epcDup', 'evtOrderErr', 'locErr', 'jump']:
+            # SVM 모델 로드
+            model_path = f"{self.model_dir}/{anomaly_type}_svm.joblib"
+            if os.path.exists(model_path):
+                self.models[anomaly_type] = joblib.load(model_path)
+            
+            # Feature scaler 로드
+            scaler_path = f"{self.model_dir}/{anomaly_type}_scaler.joblib"
+            if os.path.exists(scaler_path):
+                self.scalers[anomaly_type] = joblib.load(scaler_path)
+            
+            # Feature extractor 초기화 (동일한 설정으로)
+            self.extractors[anomaly_type] = self._create_extractor(anomaly_type)
+    
+    def predict_anomalies(self, epc_code: str, epc_group: pd.DataFrame) -> Dict[str, float]:
+        """새로운 EPC에 대한 이상치 예측"""
+        predictions = {}
+        
+        for anomaly_type, model in self.models.items():
+            # 1. Feature 추출 (훈련시와 동일한 방식)
+            if anomaly_type == 'epcFake':
+                features = self.extractors[anomaly_type].extract_features(epc_code)
+            else:
+                features = self.extractors[anomaly_type].extract_features(epc_group)
+            
+            # 2. Feature 정규화 (훈련시와 동일한 scaler 사용)
+            features_array = np.array(features).reshape(1, -1)
+            if anomaly_type in self.scalers:
+                features_scaled = self.scalers[anomaly_type].transform(features_array)
+            else:
+                features_scaled = features_array
+            
+            # 3. SVM 예측
+            probability = model.predict_proba(features_scaled)[0][1]  # 이상치 확률
+            predictions[anomaly_type] = float(probability)
+        
+        return predictions
+    
+    def batch_predict(self, df: pd.DataFrame) -> List[Dict]:
+        """여러 EPC에 대한 배치 예측"""
+        results = []
+        
+        # 기존 전처리 파이프라인 재사용
+        df_clean = preprocess_scan_data(df)
+        
+        for epc_code, epc_group in df_clean.groupby('epc_code'):
+            epc_group = epc_group.sort_values('event_time').reset_index(drop=True)
+            predictions = self.predict_anomalies(epc_code, epc_group)
+            
+            results.append({
+                'epc_code': epc_code,
+                'predictions': predictions,
+                'max_anomaly_score': max(predictions.values()),
+                'primary_anomaly': max(predictions.items(), key=lambda x: x[1])[0]
+            })
+        
+        return results
+
+# 통합 워크플로우 예시
+class SVMWorkflow:
+    """전처리 → 훈련 → 예측의 전체 워크플로우"""
+    
+    def train_models(self, training_data_path: str):
+        """1단계: 모델 훈련"""
+        # 전처리 파이프라인 실행
+        pipeline = SVMPreprocessingPipeline()
+        raw_df = pd.read_csv(training_data_path)
+        training_data = pipeline.process_data(raw_df)
+        
+        # SVM 모델 훈련
+        from sklearn.svm import SVC
+        for anomaly_type, (X, y) in training_data.items():
+            # 클래스 불균형 처리
+            X_balanced, y_balanced = self._handle_imbalance(X, y)
+            
+            # SVM 훈련
+            model = SVC(probability=True, class_weight='balanced')
+            model.fit(X_balanced, y_balanced)
+            
+            # 모델 저장
+            joblib.dump(model, f"models/{anomaly_type}_svm.joblib")
+    
+    def predict_new_data(self, new_data_path: str):
+        """2단계: 새로운 데이터 예측"""
+        engine = SVMInferenceEngine("models/")
+        new_df = pd.read_csv(new_data_path)
+        return engine.batch_predict(new_df)
+📋 수정된 구현 우선순위
+단계	작업	예상 시간	중요도
+1	Feature 차원 표준화	2시간	🔴 필수
+2	클래스 불균형 처리	3시간	🔴 필수
+3	Feature 정규화 추가	1.5시간	🔴 필수
+4	배치 처리 구현	2.5시간	🟡 성능
+5	예측 엔진 구현	3시간	🔴 필수
+🎯 핵심 변경사항 요약
+차원 통일: 모든 feature extractor가 고정 길이 벡터 반환
+불균형 해결: SMOTE, class_weight, threshold tuning 옵션 제공
+정규화 필수: SVM 특성상 feature scaling 반드시 적용
+메모리 최적화: 대용량 데이터 처리를 위한 배치 처리
+예측 연동: 훈련된 모델로 실제 예측하는 전체 워크플로우
+이러한 수정사항들이 반영되면 실제 프로덕션 환경에서 안정적으로 동작하는 SVM 시스템을 구축할 수 있습니다!
+
+항등원 1 이나 0 전체 피쳐에서 얘가 0이라도 전체 선형시스템에 영향을 안주다고 생각해서 0으로 곱하는가 ? 시퀀스에 길이 안맞는데 0을  (부호가 바뀌어서 무시시키는 -1)
+
+빈값이 한곳에 모여잇는거 안자름, 빈게 무작위로 분산되어잇어야함, 규칙성잇는거 안자름, 규칙에마ㅣㅈ춰값을넣음,자르는게 3퍼 넘으면 안자르고 보간함. 
+v평균과 중앙값을 판단하고 피쳐를 자를걸 고려하기 
+판단기준이 없으면 자른다는 결정을 못함
+
+이거 반영했니?
+
+
+문제 2: 정규화 누락으로 인한 Feature 무시
+큰 값이 작은 값을 지배하는 문제
+실제 Feature 스케일 차이
+python# EPC Fake 특성 예시
+epc_features = [
+    1.0,          # boolean: valid_structure (0-1 범위)
+    0.0,          # boolean: valid_header (0-1 범위)  
+    1.0,          # boolean: valid_company (0-1 범위)
+    47.0,         # length: epc_code_length (10-100 범위)
+    0.000234,     # entropy: information_entropy (0-1 범위)
+    1672531200,   # timestamp: manufacture_date (Unix timestamp)
+    156.8,        # count: character_count (0-200 범위)
+    0.85          # ratio: digit_ratio (0-1 범위)
+]
+
+# SVM이 보는 것:
+# "1672531200이 가장 중요한 특성이구나! 나머지는 무시!"
+SVM 거리 계산의 왜곡
+python# SVM은 데이터 포인트 간 거리를 계산함
+# 유클리드 거리: sqrt((x1-x2)² + (y1-y2)² + ...)
+
+정상 EPC: [1.0, 0.0, 1.0, 47.0, 0.000234, 1672531200, 156.8, 0.85]
+이상 EPC: [0.0, 0.0, 0.0, 45.0, 0.000198, 1672531150, 154.2, 0.82]
+
+거리 계산:
+= sqrt((1-0)² + (0-0)² + (1-0)² + (47-45)² + (0.000234-0.000198)² + (1672531200-1672531150)² + (156.8-154.2)² + (0.85-0.82)²)
+= sqrt(1 + 0 + 1 + 4 + 0.000000001 + 2500 + 6.76 + 0.0009)
+= sqrt(2512.76) ≈ 50.13
+
+# 하지만 진짜 기여도:
+timestamp 차이: sqrt(2500) = 50.0   ← 99% 기여
+나머지 모든 특성: sqrt(12.76) = 3.6  ← 1% 기여
+중요한 패턴이 묻혀버림
+python# 실제로 중요한 패턴들
+정상 EPC: boolean들이 모두 1 (완벽한 형식)
+이상 EPC: boolean들이 모두 0 (형식 오류)
+
+# 하지만 SVM은 이것만 봄:
+정상 EPC: timestamp = 1672531200
+이상 EPC: timestamp = 1672531150
+# "아, 50초 차이구나. 이걸로 분류하자!"
+
+# 결과: 진짜 중요한 EPC 형식 오류는 무시되고
+#       의미없는 제조시간 차이로만 분류함
+
+💡 해결책과 효과
+1. 클래스 불균형 해결
+SMOTE (Synthetic Minority Oversampling)
+pythonfrom imblearn.over_sampling import SMOTE
+
+# 원본 데이터
+정상: 99,000개
+이상: 1,000개
+
+# SMOTE 적용 후
+smote = SMOTE(random_state=42)
+X_balanced, y_balanced = smote.fit_resample(X_train, y_train)
+
+정상: 99,000개
+이상: 99,000개 (인공 생성)
+
+# 결과: SVM이 이상치를 진짜로 학습함!
+Class Weight 조정
+python# 불균형을 페널티로 보정
+svm = SVC(class_weight='balanced')  
+# 내부적으로: 
+# 정상 오분류 페널티: 1.0
+# 이상 오분류 페널티: 99.0 (99배 더 중요하게!)
+2. 정규화로 Feature 스케일 통일
+StandardScaler 적용
+pythonfrom sklearn.preprocessing import StandardScaler
+
+# 정규화 전
+features_raw = [1.0, 0.0, 1.0, 47.0, 0.000234, 1672531200, 156.8, 0.85]
+
+# 정규화 후 (평균=0, 표준편차=1)
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform([features_raw])
+# → [0.23, -1.41, 0.23, 0.15, -0.89, 1.34, 0.67, 0.12]
+
+# 이제 모든 특성이 동등한 범위 (-3 ~ +3)에서 경쟁!
+RobustScaler (추천)
+pythonfrom sklearn.preprocessing import RobustScaler
+
+# 이상치에 덜 민감한 정규화
+scaler = RobustScaler()  # 중앙값과 IQR 사용
+features_robust = scaler.fit_transform([features_raw])
+
+# 극단적인 timestamp 값이 있어도 안정적으로 정규화
+
+. 해결책: 정규화 (Feature Scaling)
+정규화는 말 그대로 값의 크기를 줄여서 모두 비슷하게 만드는 것입니다.
+
+📍 예시: StandardScaler
+모든 값을 평균 0, 표준편차 1로 변환
+
+python
+복사
+편집
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform([features])
+📍 예시: RobustScaler (우리가 추천)
+평균 대신 중앙값, 표준편차 대신 IQR 사용 → 이상치에 강함
+
+python
+복사
+편집
+from sklearn.preprocessing import RobustScaler
+scaler = RobustScaler()
+features_robust = scaler.fit_transform([features])
+→ 이러면 다음처럼 전부 값이 -3 ~ +3 사이로 바뀜
+→ 모든 피처가 "공정하게" 비교됨
+
+
+
+이거 고려햇니

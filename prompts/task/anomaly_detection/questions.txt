@@ -1,5 +1,0 @@
-1. Do all anomaly functions operate independently or are there dependencies?
-2. Which column combinations best identify each anomaly type?
-3. How much variation in runtime exists between small vs large input sizes?
-4. What is the expected threshold for "too slow"?
-5. Are edge cases (e.g. duplicate EPCs with same timestamp) already covered in test data?

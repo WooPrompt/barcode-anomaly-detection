@@ -1,1 +1,148 @@
-서버실행하라고..
+
+참고파일
+거점간 이동 거리:C:\Users\user\Desktop\barcode-anomaly-detection\data\processed\business_step_transition_avg_v2.csv
+location_id :data/processed/location_id_scan_location_matching.csv
+경위도값 :C:\Users\user\Desktop\barcode-anomaly-detection\data\processed\location_id_withGeospatial.csv
+
+백엔드가 줄 제이슨 형태
+eventId 같은 경우는  event_type + location_id + event_time 조합으로 백엔드가 알아서 줄 것임. 
+{
+  "data": [
+    {
+      "eventId": 101,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 1,
+      "business_step": "Factory",
+      "event_type": "Outbound",
+      "event_time": "2024-07-02 09:00:00",
+      "file_id": 1
+    },
+    {
+      "eventId": 102,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 2,
+      "business_step": "WMS",
+      "event_type": "Inbound",
+      "event_time": "2024-07-02 11:00:00",
+      "file_id": 1
+    },
+    {
+      "eventId": 103,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 3,
+      "business_step": "Wholesaler",
+      "event_type": "Inbound",
+      "event_time": "2024-07-03 09:30:00",
+      "file_id": 1
+    }
+  ]
+}
+
+
+
+백엔드가 바라는 출력 형태
+{
+  "fileId": 1,
+   // eventId 별 어디가 어떻게 이상한지 (이상한 애들만 전달)
+  "EventHistory": [
+    {
+      "eventId": 1234, 
+      "jump": true,
+      "jumpScore": 60.0,
+      "evtOrderErr": true,
+      "evtOrderErrScore": 45.0,
+      "epcDup": true,
+      "epcDupScore": 90.0
+    },
+    {
+      "eventId": 1235,
+      "jump": true,
+      "jumpScore": 60.0,
+      "evtOrderErr": true,
+      "evtOrderErrScore": 45.0,
+      "epcDup": true,
+      "epcDupScore": 90.0
+    },
+    ...
+  ],
+
+
+
+   // EPC 코드별 이상한 애들 통계(이상한 애들만 전달)
+  "epcAnomalyStats": [
+    {
+      "epcCode": "001.8804823 … 000000001",
+      "totalEvents": 5, //epc코드별 오류 총합
+      "jumpCount": 1, 
+      "evtOrderErrCount": 2,
+      "epcFakeCount": 1,
+      "epcDupCount": 2, 
+      “locErrCount”: 0
+    },
+    ...
+  ],
+
+   // fileId별 이상치 전체 통계
+  "fileAnomalyStats": {
+    "totalEvents": 100,
+     "jumpCount": 1, 
+      "evtOrderErrCount": 2,
+      "epcFakeCount": 1,
+      "epcDupCount": 2, 
+      “locErrCount”: 0
+  }
+}
+
+
+
+📄 JSON 구조 설명 (파일 단위 이상치 분석 결과)
+
+1. fileId
+  - 분석 대상 CSV 파일을 구분하는 ID
+  - 전체 구조에서 기준이 되는 단일 파일 식별자
+
+2. EventHistory  ← 백엔드로 부터 입력받은 모든 epc코드에 대한 이상치 기록
+  - eventId: 백엔드에서 전달하는 고유 이벤트 식별자 (event_type + location_id + event_time 조합)
+  - 각 이상치 유형: true/false로 이상 여부. false의 경우엔 전달하지 않고 true만 전달.
+      예: jump: true, epcDup: true, evtOrderErr: true
+  - 각 이상치에 대한 score 포함
+      예: jumpScore: 60.0, epcDupScore: 90.0 (백엔드는 float 타입으로 저장 할 예정이며 , 이는 추후 lstm등의 이용시 소숫점값 출력을 대비)
+
+3. epcAnomalyStats  ← EPC 코드별 이상 통계
+  - epcCode: 제품 개체를 고유하게 식별하는 코드
+  - totalEvents: 이 EPC 전체 시퀀스에서 발생한 이상치 갯수 전체
+  - 각 이상치 유형에 대해 몇 번 감지되었는지도 출력 필요
+      예: jumpCount: 1, evtOrderErrCount: 2, epcDupCount: 1
+
+4. fileAnomalyStats  ← 파일 전체 이상 통계
+  - totalEvents: 파일 내 전체 발생한 이상치 갯수 총합
+  - 각 이상치 유형별 총 감지 횟수
+      예: jumpCount: 4, evtOrderErrCount: 7, epcDupCount: 3
+
+📌 요약
+- EventHistory → 전체 인풋 관련 내용 다 담는 리스트
+- epcAnomalyStats → 한 EPC 코드 안의 통계 요약
+- fileAnomalyStats → 전체 파일 단위의 총 통계
+
+POST /api/v1/barcode-anomaly-detect 
+백엔드가 데이터모델쪽에서 데이터 받을때 api주소
+
+GET /api/manager/export
+백엔드가 데이터모델쪽에 겟으로 데이터 줄때 api 주소
+
+
+소스 파일보고 흐름 정리좀해줘. 
+근데 다 프롬프트로 한거라서 내가 데이터분석가로서 역량을 키울수가 없었어. 교수님이 svm성능은 룰베이스보다 잘 나올수 없다고 지금 나오는 svm성능이 최선이냐 물어보고 이제 lstm이나 다른모델도 생각해보라고
+lstm하면 기존전처리 고려하지말고 데이터만봐서 전처리해야함. 전처리섞이면 안됨. lstm에 먹일 데이터는 따로 전처리해야함. 이렇게 말씀하시면서 옵티마이저나 그런것도 잘하고 
+프롬프트가 중요한게 아니라 데이터분석이라는 핵심을 잘하면서 프롬프트를 활용할줄알아야한다 하시는데 
+
+유니테스트 별도폴더에  둬야함
+테스트코드 짜달라고, 테스트케이스보면 나머지안봐도 됨.  파일하나만들때마다 테스트케이스 만들어라해야함. 본체말고 테스트케이스 설명부터 나에게 하라고 해야함. 
+
+
+validate_manufacture_date 가 감지하는 조건문
+1.제조일자가 오늘보다 미래인가
+2.제조일로부터 오늘까지의 날짜 차이가 5년보다 더 나는가
+
+calculate_epc_fake_score
+1.

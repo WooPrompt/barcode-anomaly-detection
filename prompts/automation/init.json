@@ -19,16 +19,6 @@
   },
   "default_tasks": [
     {
-      "type": "update_metadata",
-      "description": "Auto-update metadata.json files with lineage tracking",
-      "scan_folders": [
-        "prompts/context/",
-        "prompts/protocol/", 
-        "prompts/meta/",
-        "prompts/templates/",
-        "prompts/task/",
-        "prompts/log/"
-      ],
       "update_fields": ["last_updated", "file_count", "recent_changes"],
       "log_to": "prompts/log/metadata_updates_YYYYMMDD.txt"
     },

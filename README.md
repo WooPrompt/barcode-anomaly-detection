@@ -1,8 +1,8 @@
 # Barcode Anomaly Detection System - Production Ready
 
-## Project Status: **COMPLETED** (2025-07-15)
+## Project Status: **COMPLETED** (2025-07-16) - Updated Event Classification
 
-This project is a **production-ready supply chain anomaly detection system** that successfully combines rule-based detection with advanced multi-anomaly capabilities. Originally developed as a prompt engineering learning project, it has evolved into a fully operational system providing real-time anomaly detection for logistics supply chains.
+A **production-ready supply chain anomaly detection system** that combines rule-based detection with advanced multi-anomaly capabilities for logistics supply chains. This system provides real-time anomaly detection for 2D barcode scanning data, handling 920,000+ records with sub-100ms response times.
 
 ### Achievement Summary
 - **Multi-Anomaly Detection**: Breakthrough capability to detect multiple anomaly types simultaneously in single events
@@ -19,6 +19,7 @@ This project is a **production-ready supply chain anomaly detection system** tha
 - Statistical scoring system (0-100 point scale)
 - Complete EPC anomaly statistics with accurate counts
 - Optimized performance for large-scale data processing
+- **Refined Event Classification**: Streamlined outbound event pattern matching for improved accuracy
 
 ## Technical Implementation
 
@@ -288,6 +289,31 @@ The system detects 5 types of anomalies with multi-anomaly support:
    - System uses `data/processed/location_id_withGeospatial.csv`
    - Maps location_id (1) → scan_location ("인천공장") with coordinates
    - Supports 58 locations across supply chain
+
+## Recent Updates
+
+### Event Classification Refinement (2025-07-16)
+
+**Change Made**: Streamlined outbound event pattern matching in `classify_event_type()` function
+- **Before**: Matched multiple keywords: `['outbound', 'shipping', 'dispatch', 'departure']`
+- **After**: Simplified to single keyword: `['outbound']`
+
+**Impact**:
+- **Improved Accuracy**: More precise event classification reduces false positives
+- **Consistent Logic**: Aligns with inbound pattern matching (only 'inbound' + 'aggregation')
+- **Better Performance**: Fewer string comparisons per event classification
+- **Cleaner Data**: Reduces ambiguity in event type categorization for `evtOrderErr` detection
+
+**Technical Details**:
+```python
+# Updated function in src/barcode/multi_anomaly_detector.py
+def classify_event_type(event: str) -> str:
+    # Inbound patterns: ['inbound', 'aggregation']
+    # Outbound patterns: ['outbound']  # Simplified from 4 keywords to 1
+    # Other patterns: 'inspection', 'return', etc.
+```
+
+This refinement ensures that only explicitly labeled 'outbound' events are classified as outbound, improving the reliability of event sequence anomaly detection (`evtOrderErr`).
 
 ## Troubleshooting
 

@@ -213,32 +213,38 @@ def calculate_time_jump_score(time_diff_hours: float, expected_hours: float, std
     else:
         return 95  # Almost certainly impossible
 
-def classify_event_type(event: str) -> str:
+def classify_event_type(event: str) -> Tuple[str, str]:
     """
-    Classify event into inbound/outbound/other categories.
-    
-    Args:
-        event: Event type string
-    
+    Classify event into (direction, step) categories.
     Returns:
-        str: 'inbound', 'outbound', or 'other'
+        direction: 'inbound', 'outbound', or 'other'
+        step: e.g., 'WMS', 'HUB', 'W_Stock', 'R_Stock', 'POS', etc.
     """
     if pd.isna(event) or not event:
-        return 'missing'
+        return 'missing', 'unknown'
     
     event_lower = event.lower()
-    
-    # Inbound event patterns
-    inbound_keywords = ['inbound', 'aggregation', 'receiving', 'arrival']
-    if any(keyword in event_lower for keyword in inbound_keywords):
-        return 'inbound'
-    
-    # Outbound event patterns  
-    outbound_keywords = ['outbound', 'shipping', 'dispatch', 'departure']
-    if any(keyword in event_lower for keyword in outbound_keywords):
-        return 'outbound'
-    
-    return 'other'  # inspection, return, etc.
+    if 'aggregation' in event_lower:
+        return 'inbound', 'aggregation'
+    if 'wms_inbound' in event_lower:
+        return 'inbound', 'wms'
+    if 'wms_outbound' in event_lower:
+        return 'outbound', 'wms'
+    if 'hub_inbound' in event_lower:
+        return 'inbound', 'hub'
+    if 'hub_outbound' in event_lower:
+        return 'outbound', 'hub'
+    if 'w_stock_inbound' in event_lower:
+        return 'inbound', 'w_stock'
+    if 'w_stock_outbound' in event_lower:
+        return 'outbound', 'w_stock'
+    if 'r_stock_inbound' in event_lower:
+        return 'inbound', 'r_stock'
+    if 'r_stock_outbound' in event_lower:
+        return 'outbound', 'r_stock'
+    if 'pos_sell' in event_lower:
+        return 'other', 'pos'
+    return 'other', 'unknown'
 
 def calculate_event_order_score(event_sequence: List[str]) -> int:
     """
@@ -255,41 +261,21 @@ def calculate_event_order_score(event_sequence: List[str]) -> int:
         return 0  # Single event = no sequence to analyze
     
     total_score = 0
-    consecutive_inbound = 0
-    consecutive_outbound = 0
-    
+    prev_direction, prev_step = None, None
+    consecutive_count = 1
+
     for event in event_sequence:
-        event_type = classify_event_type(event)
-        
-        if event_type == 'missing':
-            total_score += EPC_VALIDATION_SCORES['MISSING_EVENT']
-            continue
-        elif event_type == 'inbound':
-            consecutive_inbound += 1
-            consecutive_outbound = 0
-            
-            if consecutive_inbound > 1:
+        direction, step = classify_event_type(event)
+        if direction == prev_direction and step == prev_step and direction in ['inbound', 'outbound']:
+            consecutive_count += 1
+            if consecutive_count > 1:
                 total_score += EPC_VALIDATION_SCORES['CONSECUTIVE_EVENT']
-                
-                # Progressive penalty for 3+ consecutive events
-                if consecutive_inbound >= 3:
-                    total_score += (consecutive_inbound - 2) * 15
-                    
-        elif event_type == 'outbound':
-            consecutive_outbound += 1
-            consecutive_inbound = 0
-            
-            if consecutive_outbound > 1:
-                total_score += EPC_VALIDATION_SCORES['CONSECUTIVE_EVENT']
-                
-                # Progressive penalty for 3+ consecutive events
-                if consecutive_outbound >= 3:
-                    total_score += (consecutive_outbound - 2) * 15
+                if consecutive_count >= 3:
+                    total_score += (consecutive_count - 2) * 15
         else:
-            # Other events reset the consecutive counters
-            consecutive_inbound = 0
-            consecutive_outbound = 0
-    
+            consecutive_count = 1
+        prev_direction, prev_step = direction, step
+
     return min(100, total_score)
 
 # Location hierarchy constants

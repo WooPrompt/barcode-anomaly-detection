@@ -1,0 +1,76 @@
+{
+    "data": [
+      {
+        "eventId": 301,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000001",
+        "location_id": 1,
+        "business_step": "Factory",
+        "event_type": "Outbound",
+        "event_time": "2024-12-01 08:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 302,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000001",
+        "location_id": 2,
+        "business_step": "WMS",
+        "event_type": "Inbound",
+        "event_time": "2024-12-01 10:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 303,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000001",
+        "location_id": 4,
+        "business_step": "Retailer",
+        "event_type": "Inbound",
+        "event_time": "2024-12-01 10:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 304,
+        "epc_code": "BROKEN.EPC.FORMAT",
+        "location_id": 3,
+        "business_step": "Wholesaler",
+        "event_type": "Inbound",
+        "event_time": "2024-12-01 11:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 305,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000002",
+        "location_id": 2,
+        "business_step": "WMS",
+        "event_type": "Outbound",
+        "event_time": "2024-12-01 12:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 306,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000002",
+        "location_id": 1,
+        "business_step": "Factory",
+        "event_type": "Inbound",
+        "event_time": "2024-12-01 13:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 307,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000003",
+        "location_id": 3,
+        "business_step": "Wholesaler",
+        "event_type": "Inbound",
+        "event_time": "2024-12-01 14:00:00",
+        "file_id": 3
+      },
+      {
+        "eventId": 308,
+        "epc_code": "001.8804823.0000003.000001.20241201.000000003",
+        "location_id": 3,
+        "business_step": "Wholesaler",
+        "event_type": "Outbound",
+        "event_time": "2024-12-01 14:00:00",
+        "file_id": 3
+      }
+    ]
+  }
