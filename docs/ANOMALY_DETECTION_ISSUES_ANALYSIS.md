@@ -5,6 +5,124 @@
 - **작성자**: Data Analysis Team
 - **문서 목적**: 현재 이상치 탐지 시스템의 문제점 분석 및 다중 이상치 검출 요구사항 대응
 
+
+인풋 예시
+{
+  "data": [
+    {
+      "eventId": 101,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 1,
+      "business_step": "Factory",
+      "event_type": "Outbound",
+      "event_time": "2024-07-02 09:00:00",
+      "file_id": 1
+    },
+    {
+      "eventId": 102,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 2,
+      "business_step": "WMS",
+      "event_type": "Inbound",
+      "event_time": "2024-07-02 11:00:00",
+      "file_id": 1
+    },
+    {
+      "eventId": 103,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 3,
+      "business_step": "Wholesaler",
+      "event_type": "Inbound",
+      "event_time": "2024-07-03 09:30:00",
+      "file_id": 1
+    }
+  ]
+}
+
+아웃풋 예시
+{
+  "fileId": 1,
+   // eventId 별 어디가 어떻게 이상한지 (이상한 애들만 전달)
+  "EventHistory": [
+    {
+      "eventId": 1234, 
+      "jump": true,
+      "jumpScore": 60.0,
+      "evtOrderErr": true,
+      "evtOrderErrScore": 45.0,
+      "epcDup": true,
+      "epcDupScore": 90.0
+    },
+    {
+      "eventId": 1235,
+      "jump": true,
+      "jumpScore": 60.0,
+      "evtOrderErr": true,
+      "evtOrderErrScore": 45.0,
+      "epcDup": true,
+      "epcDupScore": 90.0
+    },
+    ...
+  ],
+
+
+
+   // EPC 코드별 이상한 애들 통계(이상한 애들만 전달)
+  "epcAnomalyStats": [
+    {
+      "epcCode": "001.8804823 … 000000001",
+      "totalEvents": 5, //epc코드별 오류 총합
+      "jumpCount": 1, 
+      "evtOrderErrCount": 2,
+      "epcFakeCount": 1,
+      "epcDupCount": 2, 
+      “locErrCount”: 0
+    },
+    ...
+  ],
+
+   // fileId별 이상치 전체 통계
+  "fileAnomalyStats": {
+    "totalEvents": 100,
+     "jumpCount": 1, 
+      "evtOrderErrCount": 2,
+      "epcFakeCount": 1,
+      "epcDupCount": 2, 
+      “locErrCount”: 0
+  }
+}
+
+📄 JSON 구조 설명 (파일 단위 이상치 분석 결과)
+
+1. fileId
+  - 분석 대상 CSV 파일을 구분하는 ID
+  - 전체 구조에서 기준이 되는 단일 파일 식별자
+
+2. EventHistory  ← 백엔드로 부터 입력받은 모든 epc코드에 대한 이상치 기록
+  - eventId: 백엔드에서 전달하는 고유 이벤트 식별자 (event_type + location_id + event_time 조합)
+  - 각 이상치 유형: true/false로 이상 여부. false의 경우엔 전달하지 않고 true만 전달.
+      예: jump: true, epcDup: true, evtOrderErr: true
+  - 각 이상치에 대한 score 포함
+      예: jumpScore: 60.0, epcDupScore: 90.0 (백엔드는 float 타입으로 저장 할 예정이며 , 이는 추후 lstm등의 이용시 소숫점값 출력을 대비)
+
+3. epcAnomalyStats  ← EPC 코드별 이상 통계
+  - epcCode: 제품 개체를 고유하게 식별하는 코드
+  - totalEvents: 이 EPC 전체 시퀀스에서 발생한 이상치 갯수 전체
+  - 각 이상치 유형에 대해 몇 번 감지되었는지도 출력 필요
+      예: jumpCount: 1, evtOrderErrCount: 2, epcDupCount: 1
+
+4. fileAnomalyStats  ← 파일 전체 이상 통계
+  - totalEvents: 파일 내 전체 발생한 이상치 갯수 총합
+  - 각 이상치 유형별 총 감지 횟수
+      예: jumpCount: 4, evtOrderErrCount: 7, epcDupCount: 3
+
+📌 요약
+- EventHistory → 전체 인풋 관련 내용 다 담는 리스트
+- epcAnomalyStats → 한 EPC 코드 안의 통계 요약
+- fileAnomalyStats → 전체 파일 단위의 총 통계
+
+
+
 ## 1. 문제 요약
 
 ### 1.1 주요 문제점

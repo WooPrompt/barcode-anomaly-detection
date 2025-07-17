@@ -22,6 +22,7 @@ from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.barcode.multi_anomaly_detector import detect_anomalies_from_json_enhanced, detect_anomalies_backend_format, save_detection_result
+from src.barcode.svm_anomaly_detector import detect_anomalies_svm, train_svm_models
 
 app = FastAPI(
     title="바코드 이상치 탐지 API",
@@ -184,6 +185,8 @@ async def root():
         "docs": "/docs",
         "endpoints": {
             "이상치_탐지": "POST /api/v1/barcode-anomaly-detect",
+            "SVM_이상치_탐지": "POST /api/v1/barcode-anomaly-detect/svm",
+            "SVM_모델_훈련": "POST /api/v1/svm/train",
             "리포트_목록": "GET /api/reports",
             "리포트_상세": "GET /api/report/detail?reportId=xxx",
             "헬스체크": "GET /health"
@@ -220,14 +223,18 @@ async def detect_anomalies_backend(request: BackendAnomalyDetectionRequest):
         
         # Call backend-compatible detection function
         result_json = detect_anomalies_backend_format(request_json)
+        result_data = json.loads(result_json)
         
-        # Parse result and return immediately
-        result_dict = json.loads(result_json)
-        
-        # Optional: Save result for ML training data accumulation
-        save_detection_result(result_dict, request_json)
-        
-        return result_dict
+        # Check if this is multi-file format (array of results)
+        if isinstance(result_data, list):
+            # Multi-file format - return array of file results
+            return result_data
+        else:
+            # Single-file format - return single result object
+            # Optional: Save result for ML training data accumulation
+            save_detection_result(result_data, request_json)
+            
+            return result_data
         
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=400, detail=f"Invalid JSON input: {e}")
@@ -292,6 +299,118 @@ async def export_anomaly_data():
                 "locErrCount": 0
             }
         }
+
+@app.post(
+    "/api/v1/barcode-anomaly-detect/svm",
+    summary="SVM 기반 다중 이상치 탐지 (머신러닝)",
+    description="SVM 머신러닝 모델을 사용한 고급 이상치 탐지: epcFake, epcDup, jump, evtOrderErr, locErr"
+)
+async def detect_anomalies_svm_endpoint(request: BackendAnomalyDetectionRequest):
+    """
+    SVM 머신러닝 기반 다중 이상치 탐지 엔드포인트
+    
+    **특징**: 
+    - 5개의 독립적인 One-Class SVM 모델 사용
+    - 각 모델별 전용 특성 추출 (10~15차원)
+    - 확률 기반 스코어링 (0-100%)
+    - 다중 이상치 동시 검출 지원
+    
+    **입력**: eventId, location_id 기반 스캔 데이터
+    **출력**: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats 형식
+    
+    **SVM 모델별 특성:**
+    - epcFake_svm: EPC 형식 검증 (10차원)
+    - epcDup_svm: 중복 스캔 패턴 (8차원)  
+    - locErr_svm: 위치 계층 분석 (15차원)
+    - evtOrderErr_svm: 이벤트 순서 패턴 (12차원)
+    - jump_svm: 시간 이동 분석 (10차원)
+    """
+    try:
+        # Convert Pydantic model to JSON string for SVM function
+        request_json = request.json()
+        
+        # Check if SVM models are trained
+        try:
+            # Call SVM-based detection function
+            result_json = detect_anomalies_svm(request_json)
+            result_data = json.loads(result_json)
+            
+            # Check if this is multi-file format (array of results)
+            if isinstance(result_data, list):
+                # Multi-file format - return array of file results
+                return result_data
+            else:
+                # Single-file format - return single result object
+                # Optional: Save result for ML model improvement
+                save_detection_result(request_json, result_data)
+                
+                return result_data
+            
+        except RuntimeError as svm_error:
+            if "No trained SVM models found" in str(svm_error):
+                # Fallback to rule-based detection with warning
+                rule_result_json = detect_anomalies_backend_format(request_json)
+                rule_result_dict = json.loads(rule_result_json)
+                
+                # Add warning to response
+                rule_result_dict["warning"] = "SVM models not trained yet. Using rule-based detection. Please train models first: python train_svm_models.py"
+                rule_result_dict["method"] = "rule-based-fallback"
+                
+                return rule_result_dict
+            else:
+                raise svm_error
+        
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON input: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SVM detection error: {e}")
+
+class SVMTrainingRequest(BaseModel):
+    training_datasets: List[Dict[str, Any]]
+    retrain_all: bool = True
+
+@app.post(
+    "/api/v1/svm/train",
+    summary="SVM 모델 훈련/재훈련",
+    description="SVM 모델을 새로운 데이터로 훈련하거나 재훈련합니다"
+)
+async def train_svm_models_endpoint(request: SVMTrainingRequest):
+    """
+    SVM 모델 훈련 엔드포인트
+    
+    **기능**: 
+    - 룰 기반 탐지 결과를 사용하여 SVM 모델 훈련
+    - 5개 모델 개별 또는 일괄 훈련 지원
+    - 훈련 데이터 자동 생성 및 저장
+    
+    **훈련 과정**:
+    1. 룰 기반 탐지로 라벨 생성
+    2. 각 이상치 유형별 특성 추출
+    3. One-Class SVM 모델 훈련 (정상 데이터 학습)
+    4. 모델 저장 및 성능 평가
+    
+    **입력**: 훈련용 데이터셋 리스트
+    **출력**: 훈련 결과 및 성능 지표
+    """
+    try:
+        # Convert training datasets to JSON strings
+        json_data_list = []
+        for dataset in request.training_datasets:
+            json_data_list.append(json.dumps(dataset))
+        
+        # Train SVM models
+        training_results = train_svm_models(json_data_list)
+        
+        return {
+            "status": "success",
+            "message": "SVM models trained successfully",
+            "training_results": training_results,
+            "trained_models": list(training_results.keys()),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SVM training error: {e}")
 
 @app.post(
     "/api/v1/barcode-anomaly-detect-legacy",
@@ -440,5 +559,5 @@ if __name__ == "__main__":
         app, 
         host="0.0.0.0", 
         port=8000,
-        reload=True  # Auto-reload on code changes
+        reload=False  # Disable auto-reload for stability
     )

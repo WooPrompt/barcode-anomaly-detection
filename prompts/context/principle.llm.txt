@@ -1,4 +1,4 @@
-
+Do not use Unicode characters in the print statements that cause encoding errors
 
 ## project_goal
 Build a real-time, API-driven anomaly detection system for supply chain barcodes.

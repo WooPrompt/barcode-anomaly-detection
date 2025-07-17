@@ -666,9 +666,66 @@ def save_detection_result(input_data: dict, output_data: dict) -> str:
 
 def detect_anomalies_backend_format(json_input_str: str) -> str:
     """
-    Backend-compatible anomaly detection function.
+    Backend-compatible anomaly detection function with multi-file support.
     Input: JSON with eventId, location_id based format
     Output: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats format
+    Supports multiple file_ids in single request.
+    """
+    try:
+        input_data = json.loads(json_input_str)
+        raw_df = pd.DataFrame(input_data['data'])
+        
+        if raw_df.empty:
+            return json.dumps({
+                "fileId": 1,
+                "EventHistory": [],
+                "epcAnomalyStats": [],
+                "fileAnomalyStats": {
+                    "totalEvents": 0,
+                    "jumpCount": 0,
+                    "evtOrderErrCount": 0,
+                    "epcFakeCount": 0,
+                    "epcDupCount": 0,
+                    "locErrCount": 0
+                }
+            }, indent=2, ensure_ascii=False)
+        
+        # Check if multiple file_ids exist
+        file_ids = raw_df['file_id'].unique() if 'file_id' in raw_df.columns else [1]
+        
+        if len(file_ids) == 1:
+            # Single file processing (use original logic)
+            return _detect_anomalies_single_file_backend(json_input_str)
+        else:
+            # Multi-file processing (new logic)
+            all_file_results = []
+            
+            for file_id in file_ids:
+                file_df = raw_df[raw_df['file_id'] == file_id]
+                # Create single-file input for existing function
+                single_file_input = {
+                    "data": file_df.to_dict('records')
+                }
+                single_file_json = json.dumps(single_file_input)
+                
+                # Process single file
+                result_json = _detect_anomalies_single_file_backend(single_file_json)
+                result_dict = json.loads(result_json)
+                all_file_results.append(result_dict)
+            
+            # Return array of file results for multi-file requests
+            if len(all_file_results) == 1:
+                return json.dumps(all_file_results[0], indent=2, ensure_ascii=False)
+            else:
+                # Return array of separate file result objects
+                return json.dumps(all_file_results, indent=2, ensure_ascii=False)
+        
+    except (json.JSONDecodeError, KeyError) as e:
+        return json.dumps({"error": f"Invalid JSON input: {e}"}, indent=2, ensure_ascii=False)
+
+def _detect_anomalies_single_file_backend(json_input_str: str) -> str:
+    """
+    Original single-file backend detection logic.
     """
     try:
         input_data = json.loads(json_input_str)

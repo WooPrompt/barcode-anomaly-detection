@@ -1,0 +1,95 @@
+{
+  "training_start": "2025-07-17T10:57:25.029773",
+  "training_end": "2025-07-17T11:22:08.860667",
+  "training_duration_minutes": 24.73051490386327,
+  "csv_files_used": [
+    "icn.csv",
+    "ygs.csv",
+    "hws.csv"
+  ],
+  "validation_files": [
+    "kum.csv"
+  ],
+  "chunk_size": 50000,
+  "training_results": {
+    "epcFake": {
+      "accuracy": 0.0,
+      "normal_samples": 50000,
+      "total_samples": 50000,
+      "anomaly_samples": 0,
+      "feature_dimensions": 10
+    },
+    "epcDup": {
+      "accuracy": 0.0,
+      "normal_samples": 50000,
+      "total_samples": 50000,
+      "anomaly_samples": 0,
+      "feature_dimensions": 8
+    },
+    "locErr": {
+      "accuracy": 0.0,
+      "normal_samples": 50000,
+      "total_samples": 50000,
+      "anomaly_samples": 0,
+      "feature_dimensions": 15
+    },
+    "evtOrderErr": {
+      "accuracy": 0.0,
+      "normal_samples": 50000,
+      "total_samples": 50000,
+      "anomaly_samples": 0,
+      "feature_dimensions": 12
+    },
+    "jump": {
+      "accuracy": 0.0,
+      "normal_samples": 50000,
+      "total_samples": 50000,
+      "anomaly_samples": 0,
+      "feature_dimensions": 10
+    }
+  },
+  "validation_results": {
+    "total_predictions": 3,
+    "successful_predictions": 0,
+    "average_prediction_time": 0,
+    "anomaly_detection_rates": {
+      "epcFake": 0,
+      "epcDup": 0,
+      "locErr": 0,
+      "evtOrderErr": 0,
+      "jump": 0
+    }
+  },
+  "file_analysis": {
+    "total_files": 4,
+    "file_sizes": {
+      "hws.csv": 44.185893058776855,
+      "icn.csv": 90.93743801116943,
+      "kum.csv": 27.673542976379395,
+      "ygs.csv": 27.467171669006348
+    },
+    "estimated_total_rows": 1995062,
+    "files": [
+      {
+        "name": "hws.csv",
+        "size_mb": 44.19,
+        "estimated_rows": 463322
+      },
+      {
+        "name": "icn.csv",
+        "size_mb": 90.94,
+        "estimated_rows": 953548
+      },
+      {
+        "name": "kum.csv",
+        "size_mb": 27.67,
+        "estimated_rows": 290178
+      },
+      {
+        "name": "ygs.csv",
+        "size_mb": 27.47,
+        "estimated_rows": 288014
+      }
+    ]
+  }
+}

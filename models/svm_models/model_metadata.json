@@ -1,0 +1,32 @@
+{
+  "epcFake": {
+    "trained": true,
+    "training_date": "2025-07-17T11:10:48.629824",
+    "training_samples": 50000,
+    "feature_count": 10
+  },
+  "epcDup": {
+    "trained": true,
+    "training_date": "2025-07-17T11:11:04.648007",
+    "training_samples": 50000,
+    "feature_count": 8
+  },
+  "locErr": {
+    "trained": true,
+    "training_date": "2025-07-17T11:11:22.869557",
+    "training_samples": 50000,
+    "feature_count": 15
+  },
+  "evtOrderErr": {
+    "trained": true,
+    "training_date": "2025-07-17T11:11:39.398885",
+    "training_samples": 50000,
+    "feature_count": 12
+  },
+  "jump": {
+    "trained": true,
+    "training_date": "2025-07-17T11:11:56.899248",
+    "training_samples": 50000,
+    "feature_count": 10
+  }
+}

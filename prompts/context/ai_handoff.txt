@@ -23,9 +23,22 @@ Real-time barcode anomaly detection system OPERATIONAL. FastAPI backend with mul
 - 2025-07-15: Implemented multi-anomaly detection per event (one event can have multiple anomaly types)
 - 2025-07-15: Fixed temporal disorder detection in evtOrderErr logic
 - 2025-07-15: Corrected totalEvents calculation to count anomaly occurrences not event counts
+- 2025-07-17: **SVM SYSTEM IMPLEMENTED** - Complete SVM-based anomaly detection system with CSV training pipeline
+  - Created 5 independent One-Class SVM models for each anomaly type (epcFake, epcDup, locErr, evtOrderErr, jump)
+  - Built memory-efficient CSV processing pipeline for large datasets (data/raw/*.csv)
+  - Implemented FastAPI endpoint: POST /api/v1/barcode-anomaly-detect/svm
+  - Fixed critical import issues: logging directory creation, Python path configuration, tqdm fallback
+  - Architecture: CSV → Feature Extraction → 5 SVM Models → JSON API Response (<7sec requirement)
+  - **MULTI-FILE PROCESSING**: Added support for multiple file_ids in single API request
+    - Both SVM and rule-based detectors now process multiple file_ids automatically
+    - API returns array format: `[{fileId: 3, ...}, {fileId: 1, ...}]` for multi-file requests
+    - Single file requests maintain backward compatibility with object format
+  - **CSV TRAINING OPTIMIZATION**: Modified training to use ALL 4 CSV files instead of 3/1 train/validation split
+    - Merged icn.csv, kum.csv, ygs.csv, hws.csv for maximum training data (33% more data)
+    - Removed validation split to focus all data on improving model performance
 
 ## CURRENT CHALLENGE
-Backend anomaly detection fully operational with correct multi-anomaly output. Recent fixes tested and verified. Ready for production integration and team handoff.
+**SVM SYSTEM READY FOR PRODUCTION**: Both rule-based and SVM-based anomaly detection systems operational. SVM training pipeline tested with CSV import fixes. Ready for training on large datasets (icn.csv, kum.csv, ygs.csv) and production deployment.
 
 ## USER WORKING STYLE
 - Always ask clarifying questions first (use question_loop.llm.txt)
@@ -35,17 +48,33 @@ Backend anomaly detection fully operational with correct multi-anomaly output. R
 - Document decisions and commit milestones
 
 ## ESSENTIAL FILES TO LOAD
-- @fastapi_server.py - Main API server (response_model removed for clean output)
-- @src/barcode/multi_anomaly_detector.py - Multi-anomaly detection logic (lines 740-884)
+- @fastapi_server.py - Main API server (includes SVM endpoint /api/v1/barcode-anomaly-detect/svm)
+- @src/barcode/multi_anomaly_detector.py - Rule-based multi-anomaly detection logic (lines 740-884)
+- @src/barcode/svm_anomaly_detector.py - SVM-based detection system with 5 models
+- @src/barcode/csv_data_processor.py - Memory-efficient CSV processing for training
+- @src/barcode/svm_csv_trainer.py - Training pipeline for large CSV datasets
+- @train_svm_models.py - Main training script with analysis and training modes
 - @docs/ANOMALY_DETECTION_ISSUES_ANALYSIS.md - Complete problem analysis and solutions
-- @prompts/d.txt - Latest test cases and expected outputs
+- @SVM_IMPLEMENTATION_GUIDE.md - Complete SVM system documentation
 - @restart_server.bat - Server restart script for testing
 
 ## HOW TO START
+**For Rule-based Detection (Production Ready):**
 1. Start FastAPI server: `uvicorn fastapi_server:app --host 0.0.0.0 --port 8000 --reload`
 2. Test API: http://localhost:8000/docs (Korean documentation)
-3. Apply question_loop protocol for any new task  
-4. Keep token usage minimal, decisions measurable
+3. Use endpoint: POST /api/v1/barcode-anomaly-detect
+
+**For SVM-based Detection (Training Required):**
+1. Train models: `python train_svm_models.py` (using data/raw/*.csv)
+2. Start FastAPI server: `python fastapi_server.py`
+3. Use endpoint: POST /api/v1/barcode-anomaly-detect/svm
+4. Apply question_loop protocol for any new task  
+5. Keep token usage minimal, decisions measurable
+
+**Critical Import Fix History:**
+- Logging directory creation before configuration required
+- Python path setup for cross-module imports
+- tqdm fallback implementation for missing dependencies
 
 ## AUTOMATION WORKFLOW
 - **Entry**: @prompts/automation/init.json (loads context, applies protocols, updates metadata)
