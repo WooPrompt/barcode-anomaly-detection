@@ -27,6 +27,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import warnings
+import logging
 warnings.filterwarnings('ignore')
 
 # PyTorch CUDA GPU acceleration
@@ -56,27 +57,38 @@ sys.path.append(os.path.dirname(os.path.dirname(current_dir)))
 sys.path.append(current_dir)
 sys.path.append(os.path.join(current_dir, 'svm_preprocessing'))
 
-# Import feature extractors with error handling
+# Import preprocessing pipeline and feature extractors
 try:
+    from svm_preprocessing.pipeline import SVMPreprocessingPipeline
+    from svm_preprocessing.data_manager import SVMDataManager
     from svm_preprocessing.feature_extractors.epc_fake_features import EPCFakeFeatureExtractor
     from svm_preprocessing.feature_extractors.epc_dup_features import EPCDupFeatureExtractor
     from svm_preprocessing.feature_extractors.jump_features import JumpFeatureExtractor
     from svm_preprocessing.feature_extractors.loc_err_features import LocationErrorFeatureExtractor
     from svm_preprocessing.feature_extractors.evt_order_features import EventOrderFeatureExtractor
+    PREPROCESSING_AVAILABLE = True
+    print("Advanced preprocessing pipeline loaded successfully")
 except ImportError as e:
-    print(f"Warning: Could not import feature extractors: {e}")
-    print("SVM functionality may be limited.")
-    # Create dummy classes to prevent module import failure
+    print(f"Warning: Could not import preprocessing pipeline: {e}")
+    print("Falling back to basic feature extraction")
+    PREPROCESSING_AVAILABLE = False
+    
+    # Fallback basic feature extractors
     class EPCFakeFeatureExtractor:
         def extract_features(self, *args): return [0.0] * 10
+        def get_feature_names(self): return [f"feature_{i}" for i in range(10)]
     class EPCDupFeatureExtractor:
         def extract_features(self, *args): return [0.0] * 8
+        def get_feature_names(self): return [f"feature_{i}" for i in range(8)]
     class JumpFeatureExtractor:
         def extract_features(self, *args): return [0.0] * 10
+        def get_feature_names(self): return [f"feature_{i}" for i in range(10)]
     class LocationErrorFeatureExtractor:
         def extract_features(self, *args): return [0.0] * 15
+        def get_feature_names(self): return [f"feature_{i}" for i in range(15)]
     class EventOrderFeatureExtractor:
         def extract_features(self, *args): return [0.0] * 12
+        def get_feature_names(self): return [f"feature_{i}" for i in range(12)]
 
 # Import rule-based detector for training data generation
 try:
@@ -99,10 +111,16 @@ class SVMAnomalyDetector:
     Each model specializes in detecting one specific type of anomaly.
     """
     
-    def __init__(self, model_dir: str = "models/svm_models"):
-        """Initialize SVM anomaly detector with GPU acceleration"""
+    def __init__(self, model_dir: str = "models/svm_models", 
+                 preprocessing_dir: str = "data/svm_training"):
+        """Initialize SVM anomaly detector with advanced preprocessing pipeline"""
         self.model_dir = model_dir
+        self.preprocessing_dir = preprocessing_dir
         os.makedirs(model_dir, exist_ok=True)
+        os.makedirs(preprocessing_dir, exist_ok=True)
+        
+        # Setup logging
+        self._setup_logging()
         
         # GPU configuration
         self.device = device if TORCH_AVAILABLE else torch.device('cpu')
@@ -110,15 +128,26 @@ class SVMAnomalyDetector:
         
         # Optimize settings based on hardware
         if self.use_gpu:
-            # GPU-optimized settings for RTX 4090
-            self.batch_size = 10000  # Larger batches for GPU
-            self.chunk_size = 100000  # Larger chunks
-            print(f"GPU mode: batch_size={self.batch_size}, chunk_size={self.chunk_size}")
+            self.batch_size = 10000
+            self.chunk_size = 100000
+            self.logger.info(f"GPU mode enabled: batch_size={self.batch_size}, chunk_size={self.chunk_size}")
         else:
-            # CPU-optimized settings
             self.batch_size = 5000
             self.chunk_size = 50000
-            print(f"CPU mode: batch_size={self.batch_size}, chunk_size={self.chunk_size}")
+            self.logger.info(f"CPU mode: batch_size={self.batch_size}, chunk_size={self.chunk_size}")
+        
+        # Initialize preprocessing pipeline if available
+        if PREPROCESSING_AVAILABLE:
+            self.preprocessing_pipeline = SVMPreprocessingPipeline(
+                output_dir=preprocessing_dir,
+                enable_logging=True
+            )
+            self.data_manager = SVMDataManager(preprocessing_dir)
+            self.logger.info("Advanced preprocessing pipeline initialized")
+        else:
+            self.preprocessing_pipeline = None
+            self.data_manager = None
+            self.logger.warning("Using basic feature extraction")
         
         # Initialize feature extractors
         self.feature_extractors = {
@@ -144,6 +173,23 @@ class SVMAnomalyDetector:
         
         self._initialize_models()
     
+    def _setup_logging(self):
+        """Setup logging for SVM operations"""
+        # Create logs directory if it doesn't exist
+        os.makedirs('logs', exist_ok=True)
+        
+        # Configure logging if not already configured
+        if not logging.getLogger().handlers:
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                handlers=[
+                    logging.FileHandler('logs/svm_detector.log'),
+                    logging.StreamHandler()
+                ]
+            )
+        self.logger = logging.getLogger(__name__)
+    
     def _initialize_models(self):
         """Initialize SVM models and scalers for each anomaly type"""
         for anomaly_type in self.feature_extractors.keys():
@@ -159,7 +205,7 @@ class SVMAnomalyDetector:
     def generate_training_data(self, json_data_list: List[str], 
                              save_training_data: bool = True) -> Dict[str, Dict]:
         """
-        Generate training data using rule-based detection results.
+        Generate training data using advanced preprocessing pipeline.
         
         Args:
             json_data_list: List of JSON strings with barcode scan data
@@ -168,7 +214,93 @@ class SVMAnomalyDetector:
         Returns:
             Dictionary with training features and labels for each anomaly type
         """
-        print("Generating training data from rule-based detection results...")
+        self.logger.info("Generating training data using preprocessing pipeline...")
+        
+        if PREPROCESSING_AVAILABLE and self.preprocessing_pipeline:
+            return self._generate_training_data_advanced(json_data_list, save_training_data)
+        else:
+            return self._generate_training_data_basic(json_data_list, save_training_data)
+    
+    def _generate_training_data_advanced(self, json_data_list: List[str], 
+                                       save_training_data: bool = True) -> Dict[str, Dict]:
+        """Generate training data using advanced preprocessing pipeline"""
+        self.logger.info("Using advanced preprocessing pipeline for training data generation")
+        
+        all_training_results = {}
+        
+        for i, json_data in enumerate(json_data_list):
+            self.logger.info(f"Processing dataset {i+1}/{len(json_data_list)} with advanced pipeline")
+            
+            try:
+                # Parse input data
+                input_data = json.loads(json_data)
+                df = pd.DataFrame(input_data['data'])
+                
+                # Add scan_location mapping if location_id exists
+                if 'location_id' in df.columns and 'scan_location' not in df.columns:
+                    # Create a simple mapping for now (can be enhanced with actual CSV mapping)
+                    df['scan_location'] = df['location_id'].astype(str)
+                
+                # Use preprocessing pipeline
+                preprocessing_results = self.preprocessing_pipeline.process_data(
+                    raw_df=df,
+                    save_data=save_training_data,
+                    batch_size=self.batch_size
+                )
+                
+                # Extract results for each anomaly type
+                for anomaly_type in self.feature_extractors.keys():
+                    if anomaly_type not in all_training_results:
+                        all_training_results[anomaly_type] = {
+                            'features': [],
+                            'labels': [],
+                            'scores': [],
+                            'epc_codes': []
+                        }
+                    
+                    if anomaly_type in preprocessing_results:
+                        result = preprocessing_results[anomaly_type]
+                        if 'features' in result and 'labels' in result:
+                            all_training_results[anomaly_type]['features'].extend(result['features'].tolist())
+                            all_training_results[anomaly_type]['labels'].extend(result['labels'])
+                            all_training_results[anomaly_type]['scores'].extend(result.get('scores', []))
+                            all_training_results[anomaly_type]['epc_codes'].extend(result.get('epc_codes', []))
+                
+                self.logger.info(f"Successfully processed dataset {i+1} with preprocessing pipeline")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to process dataset {i+1} with preprocessing pipeline: {str(e)}")
+                continue
+        
+        # Log summary statistics
+        for anomaly_type, data in all_training_results.items():
+            if data['features']:
+                feature_count = len(data['features'][0]) if data['features'] else 0
+                positive_count = sum(data['labels'])
+                total_count = len(data['labels'])
+                positive_ratio = positive_count / total_count if total_count > 0 else 0
+                
+                self.logger.info(f"{anomaly_type}: {total_count} samples, {feature_count} features, "
+                               f"{positive_ratio:.3f} positive ratio")
+                
+                # Log feature statistics for debugging
+                if data['features']:
+                    features_array = np.array(data['features'])
+                    feature_means = np.mean(features_array, axis=0)
+                    feature_stds = np.std(features_array, axis=0)
+                    zero_variance_features = np.sum(feature_stds == 0)
+                    
+                    self.logger.debug(f"{anomaly_type} feature stats: "
+                                    f"mean_range=[{np.min(feature_means):.3f}, {np.max(feature_means):.3f}], "
+                                    f"std_range=[{np.min(feature_stds):.3f}, {np.max(feature_stds):.3f}], "
+                                    f"zero_variance={zero_variance_features}")
+        
+        return all_training_results
+    
+    def _generate_training_data_basic(self, json_data_list: List[str], 
+                                    save_training_data: bool = True) -> Dict[str, Dict]:
+        """Generate training data using basic feature extraction (fallback)"""
+        self.logger.warning("Using basic feature extraction for training data generation")
         
         training_data = {
             'epcFake': {'features': [], 'labels': []},
