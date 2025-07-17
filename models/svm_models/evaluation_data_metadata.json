@@ -1,0 +1,10 @@
+{
+  "evaluation_files": [
+    "ygs.csv"
+  ],
+  "evaluation_file_paths": [
+    "data\\raw\\ygs.csv"
+  ],
+  "saved_at": "2025-07-17T17:34:12.250189",
+  "purpose": "tt.txt compliant evaluation - data not used in training"
+}

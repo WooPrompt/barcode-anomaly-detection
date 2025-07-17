@@ -1,0 +1,117 @@
+{
+  "evaluation_metadata": {
+    "evaluation_files": [
+      "ygs.csv"
+    ],
+    "evaluation_file_paths": [
+      "data\\raw\\ygs.csv"
+    ],
+    "saved_at": "2025-07-17T17:34:12.250189",
+    "purpose": "tt.txt compliant evaluation - data not used in training"
+  },
+  "evaluation_metrics": {
+    "epcFake": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "accuracy": 0.0,
+      "confusion_matrix": {
+        "true_positives": 0,
+        "false_positives": 0,
+        "true_negatives": 0,
+        "false_negatives": 0
+      },
+      "support": 0
+    },
+    "epcDup": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "accuracy": 0.0,
+      "confusion_matrix": {
+        "true_positives": 0,
+        "false_positives": 0,
+        "true_negatives": 0,
+        "false_negatives": 0
+      },
+      "support": 0
+    },
+    "locErr": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "accuracy": 0.0,
+      "confusion_matrix": {
+        "true_positives": 0,
+        "false_positives": 0,
+        "true_negatives": 0,
+        "false_negatives": 0
+      },
+      "support": 0
+    },
+    "evtOrderErr": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "accuracy": 0.0,
+      "confusion_matrix": {
+        "true_positives": 0,
+        "false_positives": 0,
+        "true_negatives": 0,
+        "false_negatives": 0
+      },
+      "support": 0
+    },
+    "jump": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "accuracy": 0.0,
+      "confusion_matrix": {
+        "true_positives": 0,
+        "false_positives": 0,
+        "true_negatives": 0,
+        "false_negatives": 0
+      },
+      "support": 0
+    },
+    "_summary": {
+      "total_samples_evaluated": 132200,
+      "evaluation_method": "svm_vs_rule_based_ground_truth",
+      "evaluation_date": "2025-07-17T18:01:28.594609",
+      "compliance": "tt.txt_train_eval_separation"
+    }
+  },
+  "model_performance": {
+    "epcFake_svm": {
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0
+    },
+    "epcDup_svm": {
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0
+    },
+    "locErr_svm": {
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0
+    },
+    "evtOrderErr_svm": {
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0
+    },
+    "jump_svm": {
+      "f1_score": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "accuracy": 0.0
+    }
+  }
+}
