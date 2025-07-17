@@ -73,7 +73,7 @@ class ScanRecord(BaseModel):
 
 # Backend format models (d.txt specification)
 class BackendScanRecord(BaseModel):
-    eventId: int
+    event_id: int  # Backend input uses event_id
     epc_code: str
     location_id: int
     business_step: str
@@ -207,8 +207,8 @@ async def detect_anomalies_backend(request: BackendAnomalyDetectionRequest):
     """
     백엔드 통합용 다중 이상치 탐지 엔드포인트 (즉시 응답)
     
-    **입력**: eventId, location_id 기반 스캔 데이터
-    **출력**: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats 형식 (즉시 응답)
+    **입력**: event_id, location_id 기반 스캔 데이터
+    **출력**: fileId, EventHistory(eventId 필드), epcAnomalyStats, fileAnomalyStats 형식 (즉시 응답)
     
     **탐지 가능한 이상치 유형:**
     - epcFake: 잘못된 EPC 형식
@@ -315,8 +315,8 @@ async def detect_anomalies_svm_endpoint(request: BackendAnomalyDetectionRequest)
     - 확률 기반 스코어링 (0-100%)
     - 다중 이상치 동시 검출 지원
     
-    **입력**: eventId, location_id 기반 스캔 데이터
-    **출력**: fileId, EventHistory, epcAnomalyStats, fileAnomalyStats 형식
+    **입력**: event_id, location_id 기반 스캔 데이터
+    **출력**: fileId, EventHistory(eventId 필드), epcAnomalyStats, fileAnomalyStats 형식
     
     **SVM 모델별 특성:**
     - epcFake_svm: EPC 형식 검증 (10차원)
