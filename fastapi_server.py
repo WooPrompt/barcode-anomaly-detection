@@ -184,8 +184,8 @@ async def root():
         "version": "1.0.0",
         "docs": "/docs",
         "endpoints": {
-            "이상치_탐지": "POST /api/v1/barcode-anomaly-detect",
-            "SVM_이상치_탐지": "POST /api/v1/barcode-anomaly-detect/svm",
+            "이상치_탐지": "POST /api/manager/export-and-analyze-async",
+            "SVM_이상치_탐지": "POST /api/manager/export-and-analyze-async/svm",
             "SVM_모델_훈련": "POST /api/v1/svm/train",
             "리포트_목록": "GET /api/reports",
             "리포트_상세": "GET /api/report/detail?reportId=xxx",
@@ -199,7 +199,7 @@ async def health_check():
     return {"status": "정상", "service": "이상치-탐지-서비스"}
 
 @app.post(
-    "/api/v1/barcode-anomaly-detect",
+    "/api/manager/export-and-analyze-async",
     summary="다중 이상치 탐지 (백엔드용 - 즉시 응답)",
     description="백엔드에서 데이터를 전송하고 즉시 결과를 받는 엔드포인트: epcFake, epcDup, jump, evtOrderErr, locErr"
 )
@@ -301,7 +301,7 @@ async def export_anomaly_data():
         }
 
 @app.post(
-    "/api/v1/barcode-anomaly-detect/svm",
+    "/api/manager/export-and-analyze-async/svm",
     summary="SVM 기반 다중 이상치 탐지 (머신러닝)",
     description="SVM 머신러닝 모델을 사용한 고급 이상치 탐지: epcFake, epcDup, jump, evtOrderErr, locErr"
 )
@@ -413,7 +413,7 @@ async def train_svm_models_endpoint(request: SVMTrainingRequest):
         raise HTTPException(status_code=500, detail=f"SVM training error: {e}")
 
 @app.post(
-    "/api/v1/barcode-anomaly-detect-legacy",
+    "/api/manager/export-and-analyze-async-legacy",
     response_model=AnomalyDetectionResponse,
     summary="다중 이상치 탐지 (레거시)",
     description="이전 버전 호환성을 위한 엔드포인트"
