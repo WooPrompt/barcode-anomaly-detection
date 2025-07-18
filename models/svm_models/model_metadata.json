@@ -1,32 +1,44 @@
 {
   "epcFake": {
-    "trained": true,
-    "training_date": "2025-07-17T11:10:48.629824",
-    "training_samples": 50000,
-    "feature_count": 10
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
   },
   "epcDup": {
-    "trained": true,
-    "training_date": "2025-07-17T11:11:04.648007",
-    "training_samples": 50000,
-    "feature_count": 8
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
   },
   "locErr": {
-    "trained": true,
-    "training_date": "2025-07-17T11:11:22.869557",
-    "training_samples": 50000,
-    "feature_count": 15
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
   },
   "evtOrderErr": {
-    "trained": true,
-    "training_date": "2025-07-17T11:11:39.398885",
-    "training_samples": 50000,
-    "feature_count": 12
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
   },
   "jump": {
-    "trained": true,
-    "training_date": "2025-07-17T11:11:56.899248",
-    "training_samples": 50000,
-    "feature_count": 10
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
+  },
+  "jump_event": {
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
+  },
+  "locErr_event": {
+    "trained": false,
+    "training_date": null,
+    "training_samples": 0,
+    "feature_count": 0
   }
 }

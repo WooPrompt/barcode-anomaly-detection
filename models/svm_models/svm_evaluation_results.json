@@ -78,7 +78,7 @@
     "_summary": {
       "total_samples_evaluated": 132200,
       "evaluation_method": "svm_vs_rule_based_ground_truth",
-      "evaluation_date": "2025-07-17T18:01:28.594609",
+      "evaluation_date": "2025-07-18T10:01:47.792783",
       "compliance": "tt.txt_train_eval_separation"
     }
   },
