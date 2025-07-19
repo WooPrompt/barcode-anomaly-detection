@@ -1,0 +1,534 @@
+# ROW-LEVEL MULTI-LABEL SVM ANOMALY DETECTION SYSTEM SPECIFICATION
+
+## Document Information
+- **Creation Date**: 2025-07-19
+- **Purpose**: Complete technical specification for implementing row-level multi-label SVM anomaly detection system
+- **Target AI**: New AI with zero context about the project
+- **Handoff Context**: This replaces sequence-level EPC groupby approach with row-level multi-label binary classification
+
+---
+
+## 1. PROJECT OVERVIEW
+
+### 1.1 System Goal
+Build a **row-level multi-label SVM anomaly detection system** that processes each event (row) individually and outputs probability scores (0.0-1.0) for 5 anomaly types simultaneously.
+
+### 1.2 Key Requirements
+- **Input**: JSON format identical to current rule-based system
+- **Output**: JSON format with probability scores instead of binary flags
+- **Performance**: <7 seconds response time for 50 events
+- **Architecture**: 5 separate binary SVM models (not One-Class)
+- **Labels**: Generated from existing rule-based detection results
+- **Priority**: Response time > accuracy (if trade-off needed)
+
+### 1.3 Anomaly Types (5 Types)
+1. **epcFake**: Malformed EPC code structure
+2. **epcDup**: Same EPC at different locations simultaneously
+3. **locErr**: Invalid supply chain location sequence
+4. **evtOrderErr**: Incorrect event order within same location
+5. **jump**: Statistically impossible travel time between events
+
+---
+
+## 2. INPUT/OUTPUT SPECIFICATION
+
+### 2.1 API Endpoint
+- **Method**: POST
+- **URL**: `/api/manager/export-and-analyze-async/svm`
+- **Content-Type**: application/json
+
+### 2.2 Input JSON Format
+```json
+{
+  "data": [
+    {
+      "eventId": 101,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 1,
+      "business_step": "Factory",
+      "event_type": "Outbound",
+      "event_time": "2024-07-02 09:00:00",
+      "file_id": 1
+    },
+    {
+      "eventId": 102,
+      "epc_code": "001.8804823.0000001.000001.20240701.000000001",
+      "location_id": 2,
+      "business_step": "WMS",
+      "event_type": "Inbound",
+      "event_time": "2024-07-02 11:00:00",
+      "file_id": 1
+    }
+  ]
+}
+```
+
+### 2.3 Output JSON Format
+```json
+{
+  "fileId": 1,
+  "EventHistory": [
+    {
+      "eventId": 101,
+      "epcFake": true,
+      "epcFakeScore": 0.85,
+      "locErr": true,
+      "locErrScore": 0.72
+    },
+    {
+      "eventId": 102,
+      "epcDup": true,
+      "epcDupScore": 0.93,
+      "jump": true,
+      "jumpScore": 0.68
+    }
+  ],
+  "epcAnomalyStats": [
+    {
+      "epcCode": "001.8804823.0000001.000001.20240701.000000001",
+      "totalEvents": 4,
+      "jumpCount": 1,
+      "evtOrderErrCount": 0,
+      "epcFakeCount": 1,
+      "epcDupCount": 1,
+      "locErrCount": 1
+    }
+  ],
+  "fileAnomalyStats": {
+    "totalEvents": 4,
+    "jumpCount": 1,
+    "evtOrderErrCount": 0,
+    "epcFakeCount": 1,
+    "epcDupCount": 1,
+    "locErrCount": 1
+  }
+}
+```
+
+### 2.4 Output Rules
+- **EventHistory**: Only include events with detected anomalies (probability > 0.5)
+- **Scores**: Probability values 0.0-1.0 (sigmoid-calibrated)
+- **Multi-label**: Single event can have multiple anomaly types
+- **totalEvents**: Count of anomaly occurrences, not event count
+
+---
+
+## 3. TECHNICAL ARCHITECTURE
+
+### 3.1 System Architecture
+```
+JSON Input → Row Enrichment → Feature Extraction → 5 Binary SVMs → Probability Calibration → JSON Output
+```
+
+### 3.2 Core Components
+
+#### 3.2.1 Row-Level Data Processor (`row_level_data_processor.py`)
+- **Purpose**: Enrich each event row with statistical and contextual features
+- **Input**: Raw JSON events
+- **Output**: Feature-enriched DataFrame
+- **Key Functions**:
+  - Join with processed CSV files (geospatial, transition times, location matching)
+  - Add EPC-level statistical features to each row
+  - Add previous event context (immediate previous event only)
+  - Handle missing previous event (first events): use NaN or 0
+
+#### 3.2.2 Multi-Label Binary SVM System (`svm_binary_detector.py`)
+- **Purpose**: 5 separate binary SVM models for probability prediction
+- **Architecture**: Binary classification (not One-Class)
+- **Models**: Independent SVMs for each anomaly type
+- **Output**: Calibrated probabilities (0.0-1.0) via Platt scaling
+
+#### 3.2.3 Feature Extraction Pipeline
+- **Current Features**: Use existing event-level extractors
+- **Additional Features**: EPC-level statistical features per row
+- **Normalization**: Z-score normalization across entire dataset
+- **Context**: Previous event features (location_id, business_step, event_time)
+
+### 3.3 Feature Specifications
+
+#### 3.3.1 Current Event-Level Features (Use Existing)
+- **epcFake**: 10 dimensions (structure validation features)
+- **epcDup**: 8 dimensions (duplicate detection features)
+- **locErr**: 10 dimensions (location hierarchy features)
+- **evtOrderErr**: 12 dimensions (event order features)
+- **jump**: 8 dimensions (time-based features)
+
+#### 3.3.2 New Statistical Features (Add to Each Row)
+**Temporal Features**:
+- `epc_total_duration`: Total time from first to last event in EPC sequence
+- `epc_event_count`: Number of events in this EPC sequence
+- `epc_avg_step_time`: Average time between consecutive events
+- `epc_std_step_time`: Standard deviation of step times
+
+**Spatial Features**:
+- `epc_unique_locations`: Number of unique locations visited
+- `epc_location_revisits`: Count of location revisits
+- `epc_max_distance`: Maximum geographical distance between consecutive locations
+
+**Positional Features**:
+- `event_position_in_sequence`: This event's position (1st, 2nd, 3rd, etc.)
+- `events_remaining`: How many events left in this EPC sequence
+- `progress_ratio`: event_position / total_events (0.0 to 1.0)
+
+**Context Features**:
+- `previous_location_id`: Location ID of immediate previous event (NaN for first events)
+- `previous_business_step`: Business step of previous event
+- `previous_event_time`: Timestamp of previous event
+
+#### 3.3.3 External Data Integration
+**Required CSV Files**:
+- `data/processed/location_id_withGeospatial.csv`: Latitude/longitude coordinates
+- `data/processed/business_step_transition_avg_v2.csv`: Average transition times
+- `data/processed/location_id_scan_location_matching.csv`: Location ID mappings
+
+---
+
+## 4. DATA PIPELINE SPECIFICATION
+
+### 4.1 Training Data Generation
+
+#### 4.1.1 Data Merging Strategy
+```
+Step 1: Merge all factory CSV files (icn.csv, kum.csv, ygs.csv, hws.csv)
+Step 2: Sort chronologically by event_time
+Step 3: Apply rule-based labeling to create 5 binary labels per row
+Step 4: Add statistical features for each EPC sequence
+Step 5: Join with processed CSV data (geospatial, transitions, mappings)
+Step 6: Time-based train/eval split (80% past / 20% future)
+```
+
+#### 4.1.2 Label Generation
+- **Source**: Existing rule-based detection system
+- **Method**: Apply rule-based detection to all merged data
+- **Output**: 5 binary labels per row (epcFake, epcDup, locErr, evtOrderErr, jump)
+- **Multi-label**: Single event can have multiple anomaly types = 1
+
+#### 4.1.3 Train/Eval Split Strategy
+- **Method**: Chronological split by timestamp (no random split)
+- **Ratio**: 80% training (past) / 20% evaluation (future)
+- **Rationale**: Simulate real-world deployment scenario
+- **Stratification**: Apply stratified sampling within time constraints
+- **Class Balance**: Use SMOTE if extreme imbalance occurs
+
+#### 4.1.4 Training Data Philosophy
+**Balanced Anomaly Training**:
+> "Training only on normal data allows the model to flag anything that deviates from the normal pattern as an anomaly. However, it is important to also train on different types of anomalies because anomalies are not all the same. By learning the specific patterns of each anomaly type, the model can accurately identify and flag the particular type of anomaly. This enables more precise detection and effective response, rather than just a generic anomaly alert."
+
+### 4.2 Data Files Structure
+```
+data/svm_training/
+├── train.csv          # Training data with all features + 5 binary labels
+├── eval.csv           # Evaluation data with all features + 5 binary labels
+└── feature_names.txt  # Complete list of feature names for interpretability
+```
+
+### 4.3 Feature Normalization
+- **Method**: Z-score normalization across entire dataset
+- **Rationale**: In logistics anomaly detection, comparing each event within the context of overall data flow is crucial
+- **Implementation**: StandardScaler or RobustScaler from scikit-learn
+
+---
+
+## 5. MODEL ARCHITECTURE SPECIFICATION
+
+### 5.1 SVM Model Configuration
+
+#### 5.1.1 Model Type
+- **Algorithm**: Binary SVM (not One-Class SVM)
+- **Kernel**: RBF (Radial Basis Function)
+- **Implementation**: scikit-learn SVC with probability=True
+
+#### 5.1.2 Model Parameters
+- **Initial nu/C**: Use grid search for optimization
+- **Probability**: True (enable Platt scaling)
+- **Class Weight**: 'balanced' to handle class imbalance
+- **Random State**: 42 for reproducibility
+
+#### 5.1.3 Hyperparameter Optimization
+- **Method**: GridSearchCV or RandomizedSearchCV
+- **Parameters**: C, gamma, class_weight
+- **Scoring**: Focus on recall > precision = f1_score
+- **Cross-validation**: TimeSeriesSplit (respects temporal order)
+
+### 5.2 Probability Calibration
+- **Method**: Platt scaling (built into SVC with probability=True)
+- **Alternative**: CalibratedClassifierCV if needed
+- **Threshold**: 0.5 (adjustable based on evaluation results)
+- **Output Range**: 0.0-1.0 properly calibrated probabilities
+
+### 5.3 Model File Management
+- **Format**: Individual .pkl files for each anomaly type
+- **Naming**: `svm_[anomalyType]_YYYYMMDD.pkl`
+- **Location**: `models/svm_binary/`
+- **Examples**:
+  - `svm_epcFake_20250719.pkl`
+  - `svm_epcDup_20250719.pkl`
+  - `svm_locErr_20250719.pkl`
+  - `svm_evtOrderErr_20250719.pkl`
+  - `svm_jump_20250719.pkl`
+
+---
+
+## 6. EVALUATION SPECIFICATION
+
+### 6.1 Evaluation Metrics Priority
+1. **Recall** (most important): Catch as many real anomalies as possible
+2. **Precision** (equal to F1): Minimize false positives
+3. **F1-Score** (equal to precision): Balanced performance measure
+4. **Specificity**: True negative rate (important for logistics)
+
+### 6.2 Performance Logging
+- **Location**: `logs/svm_models/svm_performance_log.csv`
+- **Format**: Date, Model, Precision, Recall, F1_Score, Specificity, Training_Time_Min, Prediction_Time_Sec
+- **Update**: Append new row each evaluation run
+- **Example**:
+```csv
+Date,Model,Precision,Recall,F1_Score,Specificity,Training_Time_Min,Prediction_Time_Sec
+2025-07-19,epcFake,0.85,0.92,0.88,0.94,12.5,0.03
+2025-07-19,epcDup,0.78,0.89,0.83,0.91,15.2,0.02
+```
+
+### 6.3 Per-Anomaly ROC Analysis
+- **Method**: Individual ROC curves for each of 5 anomaly types
+- **Threshold Optimization**: Find optimal probability threshold per anomaly type
+- **Metric**: Area Under Curve (AUC) per anomaly type
+
+---
+
+## 7. API INTEGRATION SPECIFICATION
+
+### 7.1 FastAPI Endpoint Implementation
+- **Endpoint**: POST `/api/manager/export-and-analyze-async/svm`
+- **Existing Code**: Modify existing SVM endpoint in `fastapi_server.py`
+- **Response Time**: <7 seconds for 50 events (hard requirement)
+- **Fallback**: Rule-based detection if SVM models fail to load
+
+### 7.2 Error Handling Strategy
+```python
+# Model Loading Error Handling
+try:
+    svm_models = load_all_svm_models()
+except Exception as e:
+    logging.error(f"SVM models failed to load: {e}")
+    return rule_based_detection(data)  # Fallback
+
+# Missing Features Error Handling
+if previous_event is None:  # First event in sequence
+    features['previous_location_id'] = 0  # Use 0 instead of NaN
+    features['previous_business_step'] = 'unknown'
+```
+
+### 7.3 Performance Optimization
+- **Model Loading**: Load models once at startup, not per request
+- **Batch Processing**: Process all events in single batch
+- **Feature Caching**: Cache statistical features if same EPC appears multiple times
+- **Memory Management**: Use memory-efficient DataFrames
+
+---
+
+## 8. IMPLEMENTATION PLAN
+
+### 8.1 Phase 1: Data Pipeline (Week 1)
+```python
+# File: row_level_data_processor.py
+class RowLevelDataProcessor:
+    def __init__(self):
+        self.load_processed_data()  # Load CSV files
+        
+    def process_json_input(self, json_data):
+        # Convert JSON to DataFrame
+        # Add statistical features per EPC
+        # Join with processed CSV data
+        # Add previous event context
+        # Return feature-enriched DataFrame
+        
+    def generate_training_data(self):
+        # Merge all factory CSV files
+        # Apply rule-based labeling
+        # Time-based train/eval split
+        # Save train.csv and eval.csv
+```
+
+### 8.2 Phase 2: SVM Architecture (Week 2)
+```python
+# File: svm_binary_detector.py
+class SVMBinaryDetector:
+    def __init__(self):
+        self.models = {}  # 5 binary SVM models
+        
+    def train_models(self, train_data):
+        # Train 5 separate binary SVMs
+        # Apply hyperparameter optimization
+        # Enable probability calibration
+        # Save models with date suffix
+        
+    def predict_probabilities(self, features):
+        # Load 5 trained models
+        # Predict probabilities for each anomaly type
+        # Apply threshold (>0.5 = anomaly)
+        # Return multi-label results
+```
+
+### 8.3 Phase 3: API Integration (Week 3)
+```python
+# File: fastapi_server.py (modify existing)
+@app.post("/api/manager/export-and-analyze-async/svm")
+async def svm_anomaly_detection(request: AnomalyDetectionRequest):
+    try:
+        # Process input with RowLevelDataProcessor
+        # Extract features for each event
+        # Apply SVMBinaryDetector
+        # Format output JSON (identical to rule-based)
+        # Return results within 7 seconds
+    except Exception as e:
+        # Fallback to rule-based detection
+        return await rule_based_detection(request)
+```
+
+### 8.4 Phase 4: Evaluation (Week 4)
+```python
+# File: evaluate_svm_binary.py
+def evaluate_svm_models():
+    # Load eval.csv
+    # Apply trained models
+    # Calculate per-anomaly metrics
+    # Generate ROC curves
+    # Log performance to CSV
+    # Generate comprehensive report
+```
+
+---
+
+## 9. KEY DIFFERENCES FROM CURRENT SYSTEM
+
+### 9.1 Current System (Sequence-Level)
+- **Processing**: Group by EPC, then extract features
+- **Models**: 5 One-Class SVMs (unsupervised)
+- **Output**: One result per EPC sequence
+- **Performance**: 0% accuracy (EPC groupby loses temporal information)
+
+### 9.2 New System (Row-Level)
+- **Processing**: Process each event individually with EPC context
+- **Models**: 5 Binary SVMs (supervised with rule-based labels)
+- **Output**: Probability scores per event
+- **Performance**: Expected significant improvement with temporal preservation
+
+### 9.3 Architectural Changes
+```
+OLD: CSV → EPC Groupby → Feature Extraction → One-Class SVM → EPC Results
+NEW: CSV → Row Enrichment → Event Features + EPC Context → Binary SVM → Event Probabilities
+```
+
+---
+
+## 10. SUCCESS CRITERIA
+
+### 10.1 Functional Requirements
+- ✅ API accepts identical JSON input format
+- ✅ API returns compatible JSON output with probability scores
+- ✅ Response time <7 seconds for 50 events
+- ✅ Multi-label detection (multiple anomalies per event)
+- ✅ Fallback to rule-based detection on errors
+
+### 10.2 Performance Requirements
+- **Recall**: >0.85 for each anomaly type
+- **Response Time**: <7 seconds (hard requirement)
+- **Memory Usage**: <2GB during inference
+- **Model Size**: <100MB total for all 5 models
+
+### 10.3 Operational Requirements
+- **Model Training**: Manual trigger only
+- **Performance Logging**: Automatic CSV logging
+- **Error Handling**: Graceful fallback to rule-based system
+- **Model Versioning**: Date-based file naming
+
+---
+
+## 11. EXAMPLE USAGE SCENARIOS
+
+### 11.1 Normal Operation
+```python
+# Input: 50 events JSON
+# Processing time: ~3 seconds
+# Output: Events with probability scores >0.5
+# Log: Performance metrics saved to CSV
+```
+
+### 11.2 Edge Cases
+```python
+# Case 1: First event in EPC sequence
+previous_location_id = 0  # Default value
+previous_business_step = 'unknown'
+
+# Case 2: Model loading failure
+if not svm_models_loaded:
+    return rule_based_detection(data)
+
+# Case 3: Extreme processing time
+if processing_time > 6.5_seconds:
+    return partial_results_with_warning()
+```
+
+---
+
+## 12. APPENDIX: REQUIRED FILES AND DEPENDENCIES
+
+### 12.1 New Files to Create
+```
+src/barcode/row_level_data_processor.py     # Main data processing pipeline
+src/barcode/svm_binary_detector.py          # Multi-label binary SVM system
+evaluate_svm_binary.py                      # Evaluation script
+train_svm_binary_models.py                  # Training script
+data/svm_training/train.csv                 # Training data
+data/svm_training/eval.csv                  # Evaluation data
+logs/svm_models/svm_performance_log.csv     # Performance logging
+```
+
+### 12.2 Existing Files to Modify
+```
+fastapi_server.py                           # Update SVM endpoint
+docs/row_level_svm_implementation_plan.txt  # Update with final specifications
+```
+
+### 12.3 Dependencies
+```python
+# Core ML libraries
+scikit-learn>=1.6.1    # Binary SVM with probability calibration
+pandas>=2.3.0          # Data processing
+numpy>=2.3.0           # Numerical operations
+
+# Feature engineering
+imblearn               # SMOTE for class balancing
+scipy                  # Statistical functions
+
+# API and utilities
+fastapi                # Web API framework
+pydantic              # Data validation
+logging               # Performance logging
+```
+
+---
+
+## 13. HANDOFF SUMMARY FOR NEW AI
+
+### 13.1 What You Need to Build
+1. **Row-Level Data Processor**: Enrich each event with EPC-level statistics and previous event context
+2. **Multi-Label Binary SVM System**: 5 separate binary SVMs with probability calibration
+3. **Training Pipeline**: Generate labeled training data from rule-based system
+4. **API Integration**: Modify existing endpoint to use new SVM system
+5. **Evaluation System**: Comprehensive performance monitoring and logging
+
+### 13.2 Key Design Principles
+- **Row-Level Processing**: Each event processed individually (not EPC groupby)
+- **Multi-Label Classification**: Single event can have multiple anomaly types
+- **Probability Outputs**: 0.0-1.0 calibrated probabilities (not binary flags)
+- **Performance Priority**: Response time more important than accuracy
+- **Supervised Learning**: Use rule-based results as ground truth labels
+
+### 13.3 Success Metrics
+- Response time <7 seconds for 50 events
+- Recall >0.85 for each anomaly type
+- Identical JSON input/output compatibility
+- Graceful error handling with rule-based fallback
+
+This specification provides everything needed to implement a complete row-level multi-label SVM anomaly detection system that replaces the current sequence-level approach while maintaining full API compatibility.

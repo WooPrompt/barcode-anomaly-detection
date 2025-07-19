@@ -4,6 +4,10 @@ Do not use Unicode characters in the print statements that cause encoding errors
 Build a real-time, API-driven anomaly detection system for supply chain barcodes.
 Detect forged EPCs, logistical errors, and impossible travel times using both rule-based logic and machine learning.
 
+**Current Status**: Rule-based system operational. Next phase: Row-level multi-label SVM system.
+**Target**: Replace EPC-groupby approach with row-level binary classification for 5 anomaly types.
+**Specification**: See docs/ROW_LEVEL_SVM_SYSTEM_SPECIFICATION.txt for complete implementation details.
+
 ## Environment
 - OS: Windows
 - Language: Python
@@ -32,16 +36,23 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 
 
 ## key_files
-- /src/barcode/api.py: FastAPI core (entry point for the API).
-- /src/barcode/anomaly_detection_v5.py: Monolithic rule-based anomaly detection (API-ready).
-- /src/barcode/anomaly_detection_decomposed.py: Individual standalone functions for each anomaly type (COMPLETE - 5/5 functions implemented).
-- /src/barcode/anomaly_detection_combined.py: Full pipeline combining rule-based + SVM detection.
-- /src/barcode/transition_time_analyzer_v2.py: Analyzes travel-time anomalies ("jump" errors).
+- fastapi_server.py: Main API server with both rule-based and SVM endpoints (includes /api/manager/export-and-analyze-async/svm).
+- src/barcode/multi_anomaly_detector.py: Rule-based multi-anomaly detection logic (lines 740-884).
+- src/barcode/svm_anomaly_detector.py: SVM-based detection system with 5 One-Class SVM models.
+- src/barcode/svm_csv_trainer.py: Training pipeline for large CSV datasets with memory-efficient processing.
+- evaluate_svm_models.py: Academic evaluation script (tt.txt compliant) comparing SVM vs rule-based.
+- src/barcode/svm_preprocessing/: Sophisticated SVM preprocessing pipeline with feature extraction and class imbalance handling.
+- src/barcode/svm_preprocessing/feature_extractors/jump_features.py: EPC groupby features (sequence-level).
+- src/barcode/svm_preprocessing/feature_extractors/jump_features_event_level.py: Event-level features for row-level processing.
+- src/barcode/svm_preprocessing/base_preprocessor.py: EPC groupby logic (lines 127-128).
 - /data/processed/location_id_withGeospatial.csv: Geospatial reference data for locations.
 - /data/processed/business_step_transition_avg_v2.csv: Statistical baseline for travel time validation.
+- /data/raw/*.csv: Training data (icn.csv, kum.csv, ygs.csv, hws.csv) for SVM models.
 - /data/: Contains raw, processed, and external datasets.
 - /docs/: Project documentation and research notes.
-- /docs/folder_structure.txt: Complete project directory structure.
+- SVM_IMPLEMENTATION_GUIDE.md: Complete SVM system documentation.
+- 바코드_이상탐지_프로젝트_개발일지_종합분석.md: Complete 10-day development journey analysis.
+- row_level_svm_implementation_plan.txt: Future row-level SVM implementation plan.
 - requirements.txt: Python package dependencies.
 
 ## data_schema
@@ -81,18 +92,35 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 - Limit each request to small changes: ideally ≤1 file, ≤2–3 functions, ≤10 lines per function.
 
 ## project_status_update
-MODULARIZATION COMPLETE (100%): All individual anomaly detection functions successfully implemented in anomaly_detection_decomposed.py.
-- DONE: detect_epc_fake() - Format validation 
-- DONE: detect_epc_dup() - Duplicate detection
-- DONE: detect_loc_err() - Location hierarchy validation  
-- DONE: detect_evt_order_err() - Event sequence validation
-- DONE: detect_jump_anomalies() - Statistical travel time analysis
+REAL-TIME BARCODE ANOMALY DETECTION SYSTEM OPERATIONAL (2025-07-19):
+- ✅ Rule-based detection: FastAPI backend with 5 anomaly types (epcFake, epcDup, locErr, evtOrderErr, jump)
+- ✅ SVM-based detection: 5 One-Class SVM models with sophisticated preprocessing pipeline
+- ✅ Multi-file processing: Both systems support multiple file_ids in single API request
+- ✅ Academic evaluation: tt.txt compliant train/eval data splitting system
+- ⚠️ CURRENT CHALLENGE: SVM zero performance issue - EPC groupby approach loses 90% temporal information
+- 📋 NEXT PHASE: Row-level multi-label SVM implementation to preserve temporal patterns
+
+### API Endpoints:
+- POST /api/manager/export-and-analyze-async (rule-based detection) - PRODUCTION READY
+- POST /api/manager/export-and-analyze-async/svm (SVM-based detection) - TRAINING REQUIRED
+
+### SVM System Status:
+- Training pipeline: ✅ Implemented (python train_svm_models.py)
+- Evaluation system: ✅ Implemented (python evaluate_svm_models.py)
+- Feature extraction: ✅ Advanced preprocessing with SMOTE, normalization
+- Performance issue: ❌ 0% metrics due to EPC groupby information loss
 
 ## data_requirements
 For rule-based anomaly detection, ALWAYS use these specific data files:
 - Geospatial data: data/processed/location_id_withGeospatial.csv
 - Travel time baselines: data/processed/business_step_transition_avg_v2.csv
 - These contain pre-calculated statistics and geospatial coordinates required for location validation and jump detection.
+
+For SVM-based anomaly detection:
+- Training data: data/raw/*.csv (icn.csv, kum.csv, ygs.csv, hws.csv)
+- ALL 4 CSV files used for training (merged for maximum data, no validation split)
+- Memory-efficient CSV processing pipeline handles large datasets
+- Academic evaluation requires train/eval split BEFORE training (tt.txt compliance)
 
 
 ## file_correction_guideline
