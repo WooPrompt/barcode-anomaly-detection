@@ -16,6 +16,8 @@ from .feature_extractors.epc_dup_features import EPCDupFeatureExtractor
 from .feature_extractors.evt_order_features import EventOrderFeatureExtractor
 from .feature_extractors.loc_err_features import LocationErrorFeatureExtractor
 from .feature_extractors.jump_features import JumpFeatureExtractor
+from .feature_extractors.loc_err_features_event_level import LocationErrorFeatureExtractorEventLevel
+from .feature_extractors.jump_features_event_level import JumpFeatureExtractorEventLevel
 from .label_generators.rule_based_labels import RuleBasedLabelGenerator
 from .data_manager import SVMDataManager
 
@@ -38,7 +40,9 @@ class SVMPreprocessingPipeline:
             'epcDup': EPCDupFeatureExtractor(),
             'evtOrderErr': EventOrderFeatureExtractor(),
             'locErr': LocationErrorFeatureExtractor(),
-            'jump': JumpFeatureExtractor()
+            'jump': JumpFeatureExtractor(),
+            'locErr_event': LocationErrorFeatureExtractorEventLevel(),
+            'jump_event': JumpFeatureExtractorEventLevel()
         }
         
         # Setup logging
@@ -194,15 +198,18 @@ class SVMPreprocessingPipeline:
         features = []
         
         for epc_code, epc_group in epc_groups.items():
-            if anomaly_type == 'epcFake':
+            if "event" in anomaly_type:
+                event_features = extractor.extract_features_per_event(epc_group)
+                features.extend(event_features)
+            elif anomaly_type == 'epcFake':
                 # EPC fake only needs the EPC code
                 feature_vector = extractor.extract_features(epc_code)
+                features.append(feature_vector)
             else:
                 # Other anomaly types need the full EPC group
                 feature_vector = extractor.extract_features(epc_group)
-            
-            features.append(feature_vector)
-        
+                features.append(feature_vector)
+
         return features
     
     def _extract_features_batched(self, epc_groups: Dict[str, pd.DataFrame],
@@ -216,13 +223,17 @@ class SVMPreprocessingPipeline:
             batch_features = []
             
             for epc_code, epc_group in batch_items:
-                if anomaly_type == 'epcFake':
+                if "event" in anomaly_type:
+                    event_features = extractor.extract_features_per_event(epc_group)
+                    batch_features.extend(event_features)
+                elif anomaly_type == 'epcFake':
                     feature_vector = extractor.extract_features(epc_code)
+                    batch_features.append(feature_vector)
                 else:
+                    # Other anomaly types need the full EPC group
                     feature_vector = extractor.extract_features(epc_group)
-                
-                batch_features.append(feature_vector)
-            
+                    batch_features.append(feature_vector)
+
             features.extend(batch_features)
             
             if self.logger:

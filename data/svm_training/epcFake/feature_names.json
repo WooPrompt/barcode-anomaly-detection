@@ -1,0 +1,1 @@
+["structure_valid", "header_valid", "company_valid", "product_valid", "lot_valid", "serial_valid", "date_valid", "date_future_error", "date_old_error", "epc_length_normalized"]

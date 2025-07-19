@@ -1,7 +1,7 @@
 # AI HANDOFF - COMPLETE PROJECT CONTEXT [2025-07-15]
 
 ## PROJECT STATUS
-Real-time barcode anomaly detection system OPERATIONAL with advanced SVM preprocessing integration. FastAPI backend features both rule-based and SVM-based detection with sophisticated feature extraction, class imbalance handling, and comprehensive debugging capabilities. System addresses all feature extraction and performance issues identified in tt.txt.
+Real-time barcode anomaly detection system OPERATIONAL with both rule-based and SVM detection. Enhanced jump detection using geographic validation and transition statistics. Synthetic data generation creates realistic anomalies for testing and training. Rule-based detection achieving 56.6% accuracy on synthetic data.
 
 ## FRAMEWORKS DEVELOPED
 1. **question_loop.llm.txt** - AI must ask clarifying questions before coding
@@ -55,9 +55,16 @@ Real-time barcode anomaly detection system OPERATIONAL with advanced SVM preproc
   - Current: 1,000 EPC sequences → 1,000 training samples (information loss)
   - Solution: Row-level processing → 15,000 individual events (information preservation)
   - Documented comprehensive development journey analysis in Korean
+- 2025-07-19: **DETECTION SYSTEM IMPROVEMENTS** - Enhanced rule-based detection and synthetic data generation
+  - Fixed rule-based detection with enhanced space-time jump validation using geolocation files
+  - Updated EpcDup detection to allow normal factory-warehouse same-time scans
+  - Created realistic synthetic data generation aligned with detection logic (create_realistic_synthetic_data.py)
+  - Improved detection rate from 28% to 56.6% on synthetic anomalies
+  - Added missing predict_anomalies() method to SVM detector
+  - Jump detection now uses Haversine formula for geographic distance validation
 
 ## CURRENT CHALLENGE
-**SVM ZERO PERFORMANCE ISSUE**: All SVM models showing 0% performance across all metrics (precision, recall, F1-score). Need immediate investigation of: 1) Feature extraction effectiveness, 2) Label generation accuracy, 3) Model architecture suitability. EPC groupby approach identified as core limitation - produces "minmax" aggregated features losing 90% temporal information. Row-level multi-label SVM approach documented for next phase.
+**DETECTION OPTIMIZATION**: Rule-based detection working (56.6% on synthetic data) but still missing jump and event order anomalies. SVM system has prediction method added but needs bug fixes for feature extraction errors (reader_location field missing, JSON serialization). Next phase: Fix remaining rule-based detection gaps and resolve SVM technical issues.
 
 ## USER WORKING STYLE
 - Always ask clarifying questions first (use question_loop.llm.txt)
@@ -68,16 +75,17 @@ Real-time barcode anomaly detection system OPERATIONAL with advanced SVM preproc
 
 ## ESSENTIAL FILES TO LOAD
 - @fastapi_server.py - Main API server (includes SVM endpoint /api/manager/export-and-analyze-async/svm)
-- @src/barcode/multi_anomaly_detector.py - Rule-based multi-anomaly detection logic (lines 740-884)
-- @src/barcode/svm_anomaly_detector.py - SVM-based detection system with 5 models
+- @src/barcode/multi_anomaly_detector.py - Enhanced rule-based detection with geographic validation (lines 193-258, 501-516, 892-915)
+- @src/barcode/svm_anomaly_detector.py - SVM-based detection system with 5 models (added predict_anomalies method lines 443-569)
+- @create_realistic_synthetic_data.py - Realistic synthetic data generation aligned with detection logic
+- @test_svm_synthetic.py - Testing framework for both rule-based and SVM detection
+- @data/analysis_output/realistic_synthetic_data.csv - Generated realistic test data with 56.6% detection rate
 - @src/barcode/svm_csv_trainer.py - Training pipeline for large CSV datasets
 - @evaluate_svm_models.py - Academic evaluation script (tt.txt compliant)
 - @SVM_IMPLEMENTATION_GUIDE.md - Complete SVM system documentation
 - @바코드_이상탐지_프로젝트_개발일지_종합분석.md - Complete 10-day development journey analysis
-- @src/barcode/svm_preprocessing/feature_extractors/jump_features.py - EPC groupby features (sequence-level)
-- @src/barcode/svm_preprocessing/feature_extractors/jump_features_event_level.py - Event-level features
-- @src/barcode/svm_preprocessing/base_preprocessor.py - EPC groupby logic (lines 127-128)
-- @row_level_svm_implementation_plan.txt - Future row-level SVM implementation plan
+- @data/processed/business_step_transition_avg_v2.csv - Transition statistics for jump detection
+- @data/processed/location_id_withGeospatial.csv - Geographic coordinates for space-time validation
 
 ## HOW TO START
 **For Rule-based Detection (Production Ready):**

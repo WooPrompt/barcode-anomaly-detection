@@ -1,0 +1,1 @@
+["sequence_length", "unique_locations", "hierarchy_violations", "unknown_locations", "reverse_transitions", "max_hierarchy_jump", "level0_ratio", "level1_ratio", "level2_ratio", "level3_ratio", "location_entropy", "hierarchy_consistency", "geographic_scatter", "transition_regularity", "location_anomaly_density"]

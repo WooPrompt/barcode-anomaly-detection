@@ -1,0 +1,1 @@
+["sequence_length", "unique_event_types", "transition_count", "backward_transitions", "temporal_disorder_count", "max_time_gap_hours", "production_ratio", "logistics_ratio", "retail_ratio", "event_type_entropy", "sequence_regularity", "violation_density"]

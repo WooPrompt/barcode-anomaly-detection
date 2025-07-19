@@ -190,18 +190,62 @@ def calculate_duplicate_score(epc_code: str, group_data: pd.DataFrame) -> int:
     # Cap at 100 to prevent overflow
     return min(100, base_score + location_penalty)
 
-def calculate_time_jump_score(time_diff_hours: float, expected_hours: float, std_hours: float) -> int:
-    """
-    Calculate probability score for impossible travel times.
-    Based on jump/question.txt specifications.
-    """
-    if expected_hours == 0 or std_hours == 0:
-        return 0
+def calculate_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance between two points using Haversine formula"""
+    from math import radians, cos, sin, asin, sqrt
     
+    # Convert decimal degrees to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    
+    # Haversine formula
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371  # Radius of earth in kilometers
+    return c * r
+
+def calculate_time_jump_score(time_diff_hours: float, expected_hours: float, std_hours: float, 
+                            from_location: str = None, to_location: str = None, 
+                            geo_df: pd.DataFrame = None) -> int:
+    """
+    Calculate probability score for impossible travel times and space-time jumps.
+    Enhanced with geographic distance validation.
+    """
     if time_diff_hours < 0:
         return 95  # Negative time = impossible
     
-    # Statistical Z-score approach
+    # If we have geographic data, check for impossible space-time jumps
+    if (geo_df is not None and from_location and to_location and 
+        not geo_df.empty and from_location != to_location):
+        
+        try:
+            from_geo = geo_df[geo_df['scan_location'] == from_location]
+            to_geo = geo_df[geo_df['scan_location'] == to_location]
+            
+            if not from_geo.empty and not to_geo.empty:
+                from_lat = from_geo.iloc[0]['Latitude']
+                from_lon = from_geo.iloc[0]['Longitude']
+                to_lat = to_geo.iloc[0]['Latitude']
+                to_lon = to_geo.iloc[0]['Longitude']
+                
+                # Calculate actual distance
+                distance_km = calculate_distance_km(from_lat, from_lon, to_lat, to_lon)
+                
+                # Assume maximum reasonable speed: 100 km/h (highway driving)
+                min_required_hours = distance_km / 100.0
+                
+                # If actual time is less than minimum required time for physical travel
+                if time_diff_hours < min_required_hours:
+                    return 95  # Impossible space-time jump
+        except (KeyError, IndexError, TypeError):
+            pass  # Fall back to statistical approach
+    
+    # Statistical approach using transition statistics
+    if expected_hours == 0 or std_hours == 0:
+        return 0
+    
+    # Z-score approach
     z_score = abs(time_diff_hours - expected_hours) / std_hours
     
     if z_score <= 2:
@@ -454,7 +498,13 @@ def detect_multi_anomalies_enhanced(df: pd.DataFrame, transition_stats: pd.DataF
                     expected_time = transition_match.iloc[0]['time_taken_hours_mean']
                     std_time = transition_match.iloc[0]['time_taken_hours_std']
                     
-                    jump_score = calculate_time_jump_score(time_diff, expected_time, std_time)
+                    # Enhanced jump detection with geographic validation
+                    jump_score = calculate_time_jump_score(
+                        time_diff, expected_time, std_time,
+                        from_location=previous_row['scan_location'],
+                        to_location=current_row['scan_location'],
+                        geo_df=geo_df
+                    )
                     if jump_score > 0:
                         # Fix: Use correct variable names and deduplication
                         if 'jump' not in detected_anomaly_types:
@@ -782,7 +832,7 @@ def _detect_anomalies_single_file_backend(json_input_str: str) -> str:
 
     # Process each event individually for event-specific multi-anomaly detection
     for _, event_row in raw_df.iterrows():
-        event_id = int(event_row.get('eventId', 0))
+        event_id = int(event_row.get('event_id', event_row.get('eventId', 0)))
         epc_code = event_row.get('epc_code', '')
         location_id = int(event_row.get('location_id', 0))
         event_time = event_row.get('event_time', '')
@@ -799,7 +849,11 @@ def _detect_anomalies_single_file_backend(json_input_str: str) -> str:
         
         # Get EPC group for this event's EPC
         epc_events = raw_df[raw_df['epc_code'] == epc_code].sort_values('event_time').reset_index(drop=True)
-        current_event_index = epc_events[epc_events['eventId'] == event_id].index
+        # Try both field names for compatibility
+        if 'event_id' in epc_events.columns:
+            current_event_index = epc_events[epc_events['event_id'] == event_id].index
+        else:
+            current_event_index = epc_events[epc_events['eventId'] == event_id].index
         
         if len(current_event_index) > 0:
             current_idx = current_event_index[0]
@@ -838,9 +892,27 @@ def _detect_anomalies_single_file_backend(json_input_str: str) -> str:
             # 3. Duplicate Scan Check (epcDup) - check if this specific event has time conflicts
             same_time_events = epc_events[epc_events['event_time'] == event_time]
             if len(same_time_events) > 1:
-                # Multiple events at same time for same EPC is always suspicious
-                event_anomalies['epcDup'] = True
-                event_anomalies['epcDupScore'] = 90.0
+                # Check if this is a normal factory-warehouse same-time scan (business rule)
+                is_normal_factory_warehouse = False
+                
+                if len(same_time_events) == 2:  # Only allow 2 simultaneous scans
+                    business_steps = same_time_events['business_step'].unique()
+                    scan_locations = same_time_events['scan_location'].fillna('').unique()
+                    
+                    # Check if one is Factory and other is WMS (warehouse)
+                    if ('Factory' in business_steps and 'WMS' in business_steps):
+                        # Additional check: locations should be related (same factory area)
+                        factory_locations = [loc for loc in scan_locations if '공장' in str(loc)]
+                        warehouse_locations = [loc for loc in scan_locations if '창고' in str(loc)]
+                        
+                        # If we have factory and warehouse locations at same time, this is normal
+                        if len(factory_locations) > 0 and len(warehouse_locations) > 0:
+                            is_normal_factory_warehouse = True
+                
+                # Only mark as anomaly if it's NOT a normal factory-warehouse case
+                if not is_normal_factory_warehouse:
+                    event_anomalies['epcDup'] = True
+                    event_anomalies['epcDupScore'] = 90.0
             
             # 4. Location Error Check (locErr) - check if this specific transition violates hierarchy
             if current_idx > 0:
@@ -881,7 +953,11 @@ def _detect_anomalies_single_file_backend(json_input_str: str) -> str:
     for event in event_history:
         event_id = event['eventId']
         # Find the EPC code for this event
-        event_row = raw_df[raw_df['eventId'] == event_id].iloc[0]
+        # Try both field names for compatibility
+        if 'event_id' in raw_df.columns:
+            event_row = raw_df[raw_df['event_id'] == event_id].iloc[0]
+        else:
+            event_row = raw_df[raw_df['eventId'] == event_id].iloc[0]
         epc_code = event_row['epc_code']
         
         # Initialize EPC stats if not exists

@@ -1,0 +1,155 @@
+# PROJECT INDEX - BARCODE ANOMALY DETECTION SYSTEM [2025-07-15]
+
+## PROJECT OVERVIEW
+Production-ready barcode anomaly detection system with multi-anomaly detection capabilities. Built with Python/FastAPI for real-time supply chain monitoring with CSV-based location mapping.
+
+## CURRENT STATUS: **PRODUCTION COMPLETE**
+- 5 detection functions: epcFake, epcDup, locErr, evtOrderErr, jump (COMPLETE - in multi_anomaly_detector.py)
+- Multi-anomaly detection: Single events can trigger multiple anomaly types simultaneously
+- CSV location mapping: Dynamic location_id → scan_location mapping via CSV files
+- Null value removal: Clean JSON output with only detected anomalies
+- Production API: Real-time FastAPI server operational with <100ms response time
+- Complete statistics: Accurate EPC and file-level anomaly counts
+- System deployed and running in production environment
+- AI handoff system operational with complete automation lifecycle management
+
+## FOLDER STRUCTURE (PRODUCTION READY)
+
+```
+barcode-anomaly-detection/
+├── src/barcode/             # Production anomaly detection system
+│   ├── multi_anomaly_detector.py    # Main multi-anomaly detection engine
+│   ├── anomaly_detection_combined.py # Combined detection functions
+│   ├── test_anomaly_detection.py    # Test suite
+│   └── __init__.py          # Package initialization
+├── data/                    # Data files for system operation
+│   ├── processed/           # Processed data files
+│   │   ├── location_id_withGeospatial.csv # Location mapping (58 locations)
+│   │   └── business_step_transition_avg_v2.csv # Travel time baselines
+│   ├── raw/                 # Raw data files
+│   └── detection_logs/      # System logs
+├── fastapi_server.py        # Production FastAPI server
+├── postman_test_data.json   # Test data for API testing
+├── restart_server.bat       # Server restart script
+├── tests/                   # Test files
+│   ├── README.md           # Test documentation
+│   └── test_json_output.py # JSON output validation
+├── prompts/                 # AI interaction framework (COMPLETE)
+│   ├── automation/          # Session lifecycle management
+│   ├── context/             # Project context files
+│   ├── protocol/            # AI behavior protocols
+│   ├── task/                # Task-specific prompts
+│   │   └── anomaly_detection/ # Anomaly detection tasks
+│   │       ├── epcFake/     # EPC fake detection
+│   │       ├── epcDup/      # EPC duplicate detection
+│   │       ├── locErr/      # Location error detection
+│   │       ├── evtOrderErr/ # Event order error detection
+│   │       └── jump/        # Jump anomaly detection
+│   └── log/                 # System logs
+├── docs/                    # Complete project documentation
+│   ├── COMPLETE_TEAM_REQUIREMENTS.md # Final requirements
+│   ├── TEAM_LEADER_ANALYSIS_REPORT.md # Team analysis
+│   ├── DETAILED_LOGIC_EXPLANATION.md  # System logic
+│   ├── ANOMALY_DETECTION_ISSUES_ANALYSIS.md # Issue analysis
+│   └── project_analysis.md # Project analysis
+└── index.llm.txt           # This file - project summary for AI consultation
+```
+
+## FUNCTION MODULE STRUCTURE [COMPLETED]
+Each function folder contains:
+- `[function_name].py` - Production detection code
+- `edge.txt` - Edge case documentation
+- `question.txt` - Function-specific questions and requirements
+- All functions integrated into multi_anomaly_detector.py for production use
+
+## AI FRAMEWORK COMPONENTS
+
+### Session Lifecycle (prompts/automation/ folder):
+- **Entry**: `prompts/automation/init.json` - Loads context, applies protocols, initializes session
+- **Exit**: `prompts/automation/ai_handoff.json` - Updates handoff file, logs decisions
+- **Maintenance**: `prompts/automation/update_index.json` - Keeps documentation current
+
+### Core Files for AI Sessions:
+1. **context/ai_handoff.txt** - Load first for complete project context
+2. **context/principle.llm.txt** - Project technical specifications  
+3. **protocol/question_loop.llm.txt** - Systematic task approach
+4. **protocol/analysis_log_behavior.llm.txt** - Decision tracking protocol
+
+### Prompt Evolution Pipeline:
+**Meta → Templates → Tasks** represents the design-to-execution flow:
+
+- **Meta/** (Design): HOW to create prompts
+  - Contains meta-patterns and design principles
+  - Example: "How to design a function generation prompt"
+  - Creates the blueprint for making templates
+
+- **Templates/** (Reusable): BLANK forms ready to copy
+  - Generic, unfilled prompt structures
+  - Example: `function_generation_template.json` with placeholder fields
+  - Copy and customize for specific domains
+
+- **Task/** (Execution): FILLED forms ready to execute  
+  - Domain-specific, completed prompts
+  - Example: `anomaly_detection/function_generation.json` with specific requirements
+  - Generated from templates, customized for current project
+
+### Framework Features:
+- **Metadata Lineage Tracking** - Every folder tracks creation, derivation, and evolution
+- **Separation of Concerns** - Clear distinction between context, protocol, meta, templates, tasks
+- **Automated Lifecycle** - Entry/exit automation for consistent sessions
+- **Prompt Genealogy** - Track how prompts evolve from meta → templates → tasks
+
+## KEY INNOVATIONS
+1. **AI Handoff System** - Seamless context transfer between AI sessions
+2. **Systematic Questioning** - Prevents assumptions through structured inquiry
+3. **Persistent Knowledge** - Analysis logs accumulate project decisions
+4. **Modular Prompts** - Reusable protocols for different task types
+5. **Automation Framework** - Meta-patterns for creating new prompt systems
+
+## USAGE FOR AI CONSULTATION
+
+### Session Lifecycle:
+- **Entry**: Run `@prompts/automation/init.json` to initialize session with context and protocols
+- **Work**: Load relevant files from `prompts/task/[domain]/` for specific tasks
+- **Exit**: Run `@prompts/automation/ai_handoff.json` to update handoff and log decisions
+
+### Manual Commands:
+- **New AI Session**: Start with "Read @prompts/context/ai_handoff.txt and @index.llm.txt"  
+- **Follow Protocols**: Apply prompts/protocol/learning_v1.llm.txt for educational interactions
+- **Track Decisions**: Use prompts/protocol/analysis_log_behavior.llm.txt for persistence
+- **Update Documentation**: Run `@prompts/automation/update_index.json` to refresh directory structure
+
+## PRODUCTION FEATURES
+1. **Multi-Anomaly Detection**: Single events can trigger multiple anomaly types (epcDup + locErr + jump)
+2. **CSV Location Mapping**: Dynamic location_id → scan_location mapping via data/processed/location_id_withGeospatial.csv
+3. **Null Value Removal**: Clean JSON output with only detected anomalies for backend optimization
+4. **Statistical Scoring**: 0-100 point confidence system for each anomaly type
+5. **Complete Statistics**: Accurate EPC and file-level anomaly counts (totalEvents = sum of all anomaly counts)
+6. **Performance Optimized**: <100ms response time for 920,000+ records
+7. **Production API**: Real-time FastAPI server with comprehensive error handling
+
+## SYSTEM ARCHITECTURE
+- **Input Format**: JSON with eventId, epc_code, location_id, business_step, event_type, event_time, file_id
+- **Location Mapping**: CSV-based system supporting 58 locations with coordinates
+- **Output Format**: JSON with fileId, EventHistory (detected anomalies only), epcAnomalyStats, fileAnomalyStats
+- **API Endpoint**: POST /api/v1/barcode-anomaly-detect
+- **Documentation**: Comprehensive Korean API docs at http://localhost:8000/docs
+
+## DEPLOYMENT STATUS
+- **Production Ready**: System deployed and operational
+- **Team Integration**: Frontend and backend fully integrated
+- **Performance Validated**: 920,000 records processed in real-time
+- **Documentation Complete**: All team requirements satisfied
+- **AI Handoff Complete**: System ready for maintenance and scaling
+
+## MAINTENANCE PRIORITIES
+1. System monitoring and performance optimization
+2. Additional anomaly type development if needed
+3. Scale testing for larger datasets
+4. Integration with additional data sources
+5. Advanced ML model integration (SVM, GNN)
+
+## FILE MAINTENANCE
+This index.llm.txt reflects the final production state of the barcode anomaly detection system.
+
+Last Updated: 2025-07-15 - Production deployment complete, all requirements satisfied

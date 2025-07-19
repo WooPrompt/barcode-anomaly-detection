@@ -7,6 +7,10 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from multi_anomaly_detector import (
     calculate_epc_fake_score, calculate_duplicate_score, calculate_time_jump_score,
     calculate_event_order_score, calculate_location_error_score
@@ -26,7 +30,9 @@ class RuleBasedLabelGenerator:
             'epcDup': 50, 
             'evtOrderErr': 50,
             'locErr': 50,
-            'jump': 50
+            'jump': 50,
+            'locErr_event': 50,
+            'jump_event': 50
         }
         
         # Map anomaly types to their scoring functions
@@ -46,6 +52,9 @@ class RuleBasedLabelGenerator:
         Returns:
             Tuple of (labels, scores, epc_codes)
         """
+        if "event" in anomaly_type:
+            return self.generate_labels_per_event(epc_groups, anomaly_type)
+
         if anomaly_type not in self.scoring_functions:
             raise ValueError(f"Unknown anomaly type: {anomaly_type}")
         
@@ -68,7 +77,32 @@ class RuleBasedLabelGenerator:
             epc_codes.append(epc_code)
         
         return labels, scores, epc_codes
-    
+
+    def generate_labels_per_event(self, epc_groups: Dict[str, pd.DataFrame], 
+                               anomaly_type: str) -> Tuple[List[int], List[float], List[str]]:
+        """Generate labels for each event in a sequence."""
+        labels = []
+        scores = []
+        epc_codes = []
+        
+        base_anomaly_type = anomaly_type.split('_')[0]
+        scoring_func = self.scoring_functions[base_anomaly_type]
+        threshold = self.thresholds[anomaly_type]
+
+        for epc_code, epc_group in epc_groups.items():
+            # This is a simplified approach. For a real implementation, the scoring 
+            # functions would need to be refactored to return per-event scores.
+            # For now, we apply the sequence-level score to all events.
+            score = scoring_func(epc_code, epc_group)
+            label = 1 if score >= threshold else 0
+            
+            for _ in range(len(epc_group)):
+                labels.append(label)
+                scores.append(score)
+                epc_codes.append(epc_code)
+
+        return labels, scores, epc_codes
+
     def generate_all_labels(self, epc_groups: Dict[str, pd.DataFrame]) -> Dict[str, Dict[str, Any]]:
         """Generate labels for all anomaly types"""
         all_labels = {}
@@ -88,7 +122,7 @@ class RuleBasedLabelGenerator:
     
     def _score_epc_fake(self, epc_code: str, epc_group: pd.DataFrame) -> float:
         """REUSE: lines 98-161 (calculate_epc_fake_score)"""
-        return float(calculate_epc_fake_score(epc_code))
+        return float(calculate_epc_fake_score(str(epc_code)))
     
     def _score_epc_dup(self, epc_code: str, epc_group: pd.DataFrame) -> float:
         """REUSE: lines 163-191 (calculate_duplicate_score)"""
@@ -104,7 +138,7 @@ class RuleBasedLabelGenerator:
     
     def _score_time_jump(self, epc_code: str, epc_group: pd.DataFrame) -> float:
         """REUSE: lines 193-214 (calculate_time_jump_score)"""
-        return float(calculate_time_jump_score(epc_group))
+        return float(calculate_time_jump_score(epc_group, 24, 12))
     
     def _analyze_label_distribution(self, labels: List[int], scores: List[float]) -> Dict[str, Any]:
         """Analyze distribution of generated labels"""
