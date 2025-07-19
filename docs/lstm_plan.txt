@@ -1,0 +1,89 @@
+### **Updated LSTM Implementation Plan**
+
+This plan is updated based on the principles and project context outlined in `prompts/context/principle.llm.txt`.
+
+**Project Goal Alignment:** The LSTM model directly addresses the "CURRENT CHALLENGE" of the SVM's zero performance due to temporal information loss. By its nature, an LSTM is designed to understand sequences and temporal patterns, making it the ideal next step.
+
+**Architectural Philosophy:** This plan follows the "Row-level multi-label" approach specified as the project's next phase, using supervised learning with labels from the production-ready rule-based system.
+
+---
+
+### **Phase 1: Data Pipeline & Feature Engineering (Adhering to `data_requirements`)**
+
+1.  **Data Aggregation & Enrichment:**
+    *   Create a new script, `src/barcode/lstm_data_preprocessor.py`.
+    *   This script will merge the raw training data (`data/raw/*.csv`).
+    *   It will then enrich the merged data by joining it with the required processed files:
+        *   `data/processed/location_id_withGeospatial.csv`
+        *   `data/processed/business_step_transition_avg_v2.csv`
+    *   The data will be sorted chronologically by `event_time` to prepare for sequencing.
+
+2.  **Rule-Based Labeling:**
+    *   Integrate the `MultiAnomalyDetector` from `src/barcode/multi_anomaly_detector.py` to generate the 5 binary ground-truth labels (`epcFake`, `epcDup`, `locErr`, `evtOrderErr`, `jump`) for each row.
+
+3.  **Sequence Generation:**
+    *   Group the labeled data by `epc_code`.
+    *   Define a fixed `sequence_length` (e.g., 10, to be finalized in Q&A).
+    *   Generate sequences for each EPC. Use zero-padding for sequences shorter than `sequence_length`.
+    *   The target label for each sequence will be the 5-dimensional label vector of the *last* event in that sequence.
+
+4.  **Data Splitting & Saving (tt.txt compliant):**
+    *   Implement a chronological train/evaluation split (80/20) based on the timestamp of the last event in each sequence.
+    *   Save the final, processed sequences and labels into a dedicated folder: `data/lstm_training/`.
+
+---
+
+### **Phase 2: LSTM Model Architecture (Following `ai_guidelines`)**
+
+1.  **Model Definition (`src/barcode/lstm_detector.py`):**
+    *   This new file will define the LSTM model using `torch`, leveraging the existing CUDA-enabled environment.
+    *   **Architecture:**
+        *   Input Layer (accepting sequences of shape `(batch_size, sequence_length, num_features)`)
+        *   Two stacked `nn.LSTM` layers for robust pattern detection.
+        *   `nn.Dropout` layers between LSTM layers and before the final output layer to prevent overfitting.
+        *   A final `nn.Linear` layer with 5 output neurons.
+        *   A `nn.Sigmoid` activation function to produce the 5 multi-label probability scores.
+    *   The code will be clear and well-commented, explaining the "why" behind architectural choices.
+
+2.  **Training Script (`train_lstm_model.py`):**
+    *   This new script will orchestrate the training process.
+    *   It will load the prepared data from `data/lstm_training/`.
+    *   The model will be trained using `binary_crossentropy` loss and the `Adam` optimizer.
+    *   The script will include GPU utilization logic (`.to(device)`).
+    *   The final trained model will be saved to `models/lstm/lstm_model_YYYYMMDD.pt`.
+
+---
+
+### **Phase 3: API Integration (Modifying `fastapi_server.py`)**
+
+1.  **Create a New Endpoint:**
+    *   To maintain clarity and versioning, a new endpoint will be added: `POST /api/manager/export-and-analyze-async/lstm`.
+    *   This keeps the production-ready rule-based endpoint and the experimental SVM endpoint separate.
+
+2.  **Inference Logic:**
+    *   The endpoint will load the trained LSTM model (`.pt` file) once at startup.
+    *   For each incoming request, it will perform the necessary preprocessing and sequence construction in real-time. This is a critical step and will require careful implementation to meet the <7s performance target.
+    *   The prepared sequence will be fed to the LSTM model for inference.
+    *   The output will be formatted into the standard JSON response, including the `lstmScore` for each detected anomaly.
+
+---
+
+### **Phase 4: Evaluation & Monitoring**
+
+1.  **Evaluation Script (`evaluate_lstm_model.py`):**
+    *   This new script will be created, following the academic rigor of `evaluate_svm_models.py`.
+    *   It will load the evaluation dataset from `data/lstm_training/`.
+    *   It will calculate and compare the performance (Recall, Precision, F1, Specificity) of the LSTM model against the rule-based system.
+    *   Results will be logged to `logs/lstm_models/lstm_performance_log.csv`.
+
+---
+
+### **Updated Questions for the LSTM Plan**
+
+The original questions are still relevant, but I'll refine them based on the new context:
+
+1.  **Sequence Length:** Given that EPC sequences can vary, what should be the `sequence_length`? A shorter sequence is faster but may miss long-term patterns. A longer one is more descriptive but slower. **Recommendation:** Start with a length of 10-15, which seems a reasonable balance for supply chain steps.
+2.  **Real-time Sequence Construction:** The biggest challenge is building the input sequence for a given event in real-time for the API. This requires fetching the last `N-1` events for that EPC. Should we implement a temporary caching mechanism (e.g., Redis) to store recent events for faster lookups, or query our primary data store every time?
+3.  **Handling First Events (Cold Start):** For the very first event of an EPC, the sequence will be mostly padding. Should the model be trained to output a specific "low confidence" score in this case, or should we fall back to the rule-based result for the first few events of any given EPC?
+4.  **Performance vs. Complexity:** The `principle.llm.txt` file emphasizes performance. The two-layer LSTM is powerful but may be slow. **Proposal:** We should also design a simpler, single-layer LSTM as a baseline to compare against. This aligns with the guideline to "explain multiple code options with pros/cons."
+5.  **Batching in API:** To optimize performance, can we assume that events in a single API call might belong to the same EPCs? If so, we could process them in batches for the LSTM, which is much more efficient. Or must we process each of the 50 events in a request individually?

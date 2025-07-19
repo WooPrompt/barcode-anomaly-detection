@@ -21,8 +21,14 @@ This document describes the complete implementation of SVM-based anomaly detecti
    - `evt_order_features.py`: Event sequence patterns (12 dimensions)
 
 3. **API Endpoints** (`fastapi_server.py`)
+   - `POST /api/manager/export-and-analyze-async`: Enhanced rule-based detection
    - `POST /api/manager/export-and-analyze-async/svm`: SVM-based detection
    - `POST /api/v1/svm/train`: Model training endpoint
+
+4. **Testing Framework**
+   - `create_realistic_synthetic_data.py`: Generates realistic test data aligned with detection logic
+   - `test_svm_synthetic.py`: Tests both rule-based and SVM systems
+   - Achieves 56.6% detection rate on synthetic anomalies
 
 ### Model Architecture
 

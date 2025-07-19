@@ -3,31 +3,32 @@
 ## PROJECT OVERVIEW
 Production-ready barcode anomaly detection system with multi-anomaly detection capabilities. Built with Python/FastAPI for real-time supply chain monitoring with CSV-based location mapping.
 
-## CURRENT STATUS: **PRODUCTION COMPLETE**
-- 5 detection functions: epcFake, epcDup, locErr, evtOrderErr, jump (COMPLETE - in multi_anomaly_detector.py)
-- Multi-anomaly detection: Single events can trigger multiple anomaly types simultaneously
-- CSV location mapping: Dynamic location_id → scan_location mapping via CSV files
-- Null value removal: Clean JSON output with only detected anomalies
-- Production API: Real-time FastAPI server operational with <100ms response time
-- Complete statistics: Accurate EPC and file-level anomaly counts
-- System deployed and running in production environment
-- AI handoff system operational with complete automation lifecycle management
+## CURRENT STATUS: **ENHANCED PRODUCTION SYSTEM**
+- Enhanced rule-based detection with geographic validation (56.6% accuracy on synthetic data)
+- Space-time jump detection using Haversine formula and real geolocation files
+- Fixed EpcDup detection allowing normal factory-warehouse same-time scans
+- SVM-based detection system with 5 specialized models (needs bug fixes)
+- Realistic synthetic data generation for testing and training
+- Production API: FastAPI server with both rule-based and SVM endpoints
+- AI handoff system updated with latest development progress
 
 ## FOLDER STRUCTURE (PRODUCTION READY)
 
 ```
 barcode-anomaly-detection/
-├── src/barcode/             # Production anomaly detection system
-│   ├── multi_anomaly_detector.py    # Main multi-anomaly detection engine
-│   ├── anomaly_detection_combined.py # Combined detection functions
-│   ├── test_anomaly_detection.py    # Test suite
-│   └── __init__.py          # Package initialization
-├── data/                    # Data files for system operation
+├── src/barcode/             # Enhanced detection systems
+│   ├── multi_anomaly_detector.py    # Enhanced rule-based detection with geographic validation
+│   ├── svm_anomaly_detector.py      # SVM-based detection with 5 specialized models
+│   ├── svm_csv_trainer.py           # SVM training pipeline
+│   ├── analysis/                    # Analysis and testing tools
+│   └── svm_preprocessing/           # Feature extraction pipeline
+├── data/                    # Data files and training results
 │   ├── processed/           # Processed data files
-│   │   ├── location_id_withGeospatial.csv # Location mapping (58 locations)
-│   │   └── business_step_transition_avg_v2.csv # Travel time baselines
-│   ├── raw/                 # Raw data files
-│   └── detection_logs/      # System logs
+│   │   ├── location_id_withGeospatial.csv # Geographic coordinates (58 locations)
+│   │   └── business_step_transition_avg_v2.csv # Transition time statistics
+│   ├── analysis_output/     # Analysis results and synthetic data
+│   ├── svm_training/        # SVM training data and models
+│   └── raw/                 # Raw supply chain data files
 ├── fastapi_server.py        # Production FastAPI server
 ├── postman_test_data.json   # Test data for API testing
 ├── restart_server.bat       # Server restart script

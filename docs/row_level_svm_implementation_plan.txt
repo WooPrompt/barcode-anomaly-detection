@@ -1,8 +1,11 @@
 ## Row-Level Multi-Label SVM Implementation Plan
+**Status**: Future implementation (current focus on rule-based detection improvements)
 
 ### Project Overview
 Convert current EPC-groupby SVM approach to row-level multi-label binary classification system.
 Goal: 5 separate binary SVMs outputting probability scores for each anomaly type per event row.
+
+**Current Progress**: Enhanced rule-based detection achieving 56.6% accuracy on synthetic data. SVM system has basic framework but needs technical fixes before row-level implementation.
 
 ### Key Requirements Summary
 - Row-level processing instead of EPC groupby
