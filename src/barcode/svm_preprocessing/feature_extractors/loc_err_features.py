@@ -45,6 +45,10 @@ class LocationErrorFeatureExtractor:
         if epc_group.empty:
             return [0.0] * self.FEATURE_DIMENSIONS
         
+        # Validate required field exists
+        assert 'reader_location' in epc_group.columns, "reader_location field missing from EPC group"
+        assert epc_group['reader_location'].notna().all(), "reader_location contains NaN values"
+        
         features = []
         
         # Sort by event time
@@ -141,6 +145,11 @@ class LocationErrorFeatureExtractor:
         
         # Ensure exactly 15 dimensions
         assert len(features) == self.FEATURE_DIMENSIONS, f"Expected {self.FEATURE_DIMENSIONS} features, got {len(features)}"
+        
+        # Validate no all-zero feature vectors (silent failure detection)
+        features_array = np.array(features)
+        assert not (features_array == 0).all(), f"All-zero feature vector detected for location error extraction"
+        assert not np.isnan(features_array).any(), f"NaN values detected in location error features"
         
         return features
     

@@ -30,6 +30,21 @@ import warnings
 import logging
 warnings.filterwarnings('ignore')
 
+
+def convert_numpy_types(obj):
+    """Convert numpy types to native Python types for JSON serialization"""
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
+    return obj
+
 # PyTorch CUDA GPU acceleration
 try:
     import torch
@@ -371,9 +386,25 @@ class SVMAnomalyDetector:
             # For One-Class SVM, train only on normal data (label == 0)
             normal_features = features[labels == 0]
             
+            # Validation: Ensure we have normal data and verify training labels
+            unique_labels = np.unique(labels)
+            print(f"{anomaly_type} - Training labels found: {unique_labels}")
+            assert 0 in unique_labels, f"{anomaly_type}: No normal samples (label=0) found in training data"
+            
             if len(normal_features) < 10:
                 print(f"Insufficient normal data for {anomaly_type} ({len(normal_features)} samples), skipping...")
                 continue
+            
+            # Validate no all-zero feature vectors
+            zero_vectors = (normal_features == 0).all(axis=1).sum()
+            if zero_vectors > 0:
+                print(f"WARNING: {anomaly_type} has {zero_vectors} all-zero feature vectors")
+                # Remove all-zero vectors
+                non_zero_mask = ~(normal_features == 0).all(axis=1)
+                normal_features = normal_features[non_zero_mask]
+                if len(normal_features) < 10:
+                    print(f"After removing zero vectors, insufficient data for {anomaly_type}, skipping...")
+                    continue
             
             # GPU-accelerated feature scaling and training
             if self.use_gpu and len(normal_features) > 1000:
@@ -475,7 +506,8 @@ class SVMAnomalyDetector:
             if len(file_ids) == 1:
                 # Single file processing
                 file_id = file_ids[0]
-                return json.dumps(self._process_single_file(raw_df, file_id), 
+                result = self._process_single_file(raw_df, file_id)
+                return json.dumps(convert_numpy_types(result), 
                                 indent=2, ensure_ascii=False)
             else:
                 # Multiple file processing
@@ -485,7 +517,7 @@ class SVMAnomalyDetector:
                     result = self._process_single_file(file_df, file_id)
                     all_results.append(result)
                 
-                return json.dumps(all_results, indent=2, ensure_ascii=False)
+                return json.dumps(convert_numpy_types(all_results), indent=2, ensure_ascii=False)
                 
         except Exception as e:
             self.logger.error(f"Error in predict_anomalies: {e}")

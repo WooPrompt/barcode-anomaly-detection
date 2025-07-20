@@ -171,11 +171,17 @@ class SVMCSVTrainer:
                 # Convert chunk to DataFrame
                 df = pd.DataFrame(chunk_data['data'])
                 
-                # Add scan_location mapping if location_id exists
-                if 'location_id' in df.columns and 'scan_location' not in df.columns:
-                    df['scan_location'] = df['location_id'].astype(str)
-                if 'location_id' in df.columns and 'reader_location' not in df.columns:
-                    df['reader_location'] = df['location_id'].astype(str)
+                # Ensure required field mappings exist and validate
+                if 'location_id' in df.columns:
+                    if 'scan_location' not in df.columns:
+                        df['scan_location'] = df['location_id'].astype(str)
+                    if 'reader_location' not in df.columns:
+                        df['reader_location'] = df['location_id'].astype(str)
+                    
+                    # Validate reader_location field was created successfully
+                    assert 'reader_location' in df.columns, "reader_location field not created"
+                    assert df['reader_location'].notna().all(), "reader_location contains NaN values"
+                    logger.info(f"reader_location field validated: {df['reader_location'].nunique()} unique locations")
                 
                 # Process through preprocessing pipeline
                 preprocessing_results = self.preprocessing_pipeline.process_data(
@@ -312,6 +318,10 @@ class SVMCSVTrainer:
                 df = pd.DataFrame(chunk_data['data'])
                 if 'location_id' in df.columns:
                     df['reader_location'] = df['location_id'].astype(str)
+                    
+                    # Validate reader_location field was created successfully
+                    assert 'reader_location' in df.columns, "reader_location field not created"
+                    assert df['reader_location'].notna().all(), "reader_location contains NaN values"
                 
                 # Extract features using SVM detector
                 self.detector._extract_training_features(df, rule_dict, training_data)
