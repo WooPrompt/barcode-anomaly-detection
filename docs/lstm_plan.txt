@@ -1,10 +1,16 @@
-### **Updated LSTM Implementation Plan**
+### **LSTM Implementation Plan - DEFERRED**
 
-This plan is updated based on the principles and project context outlined in `prompts/context/principle.llm.txt`.
+**⚠️ PRIORITY UPDATE:** Based on assessment findings, LSTM implementation is **deferred** until existing systems are stabilized.
 
-**Project Goal Alignment:** The LSTM model directly addresses the "CURRENT CHALLENGE" of the SVM's zero performance due to temporal information loss. By its nature, an LSTM is designed to understand sequences and temporal patterns, making it the ideal next step.
+**Current Status:** This plan remains technically sound but is strategically premature given:
+- SVM system has unresolved bugs (feature extraction, JSON serialization)
+- Rule-based detection achieving only 56.6% accuracy (missing 43% of anomalies)
+- Both systems need fixes before adding new complexity
 
-**Architectural Philosophy:** This plan follows the "Row-level multi-label" approach specified as the project's next phase, using supervised learning with labels from the production-ready rule-based system.
+**Recommended Priority Order:**
+1. **Fix SVM bugs first** (highest priority) - resolve feature extraction and JSON serialization
+2. **Improve rule-based detection** (medium priority) - fix jump/event order detection (currently 0%)
+3. **Then consider LSTM** (future) - only after establishing solid baselines
 
 ---
 
@@ -78,12 +84,22 @@ This plan is updated based on the principles and project context outlined in `pr
 
 ---
 
-### **Updated Questions for the LSTM Plan**
+### **Critical Issues to Address Before LSTM Implementation**
 
-The original questions are still relevant, but I'll refine them based on the new context:
+**Technical Challenges Identified:**
 
-1.  **Sequence Length:** Given that EPC sequences can vary, what should be the `sequence_length`? A shorter sequence is faster but may miss long-term patterns. A longer one is more descriptive but slower. **Recommendation:** Start with a length of 10-15, which seems a reasonable balance for supply chain steps.
-2.  **Real-time Sequence Construction:** The biggest challenge is building the input sequence for a given event in real-time for the API. This requires fetching the last `N-1` events for that EPC. Should we implement a temporary caching mechanism (e.g., Redis) to store recent events for faster lookups, or query our primary data store every time?
-3.  **Handling First Events (Cold Start):** For the very first event of an EPC, the sequence will be mostly padding. Should the model be trained to output a specific "low confidence" score in this case, or should we fall back to the rule-based result for the first few events of any given EPC?
-4.  **Performance vs. Complexity:** The `principle.llm.txt` file emphasizes performance. The two-layer LSTM is powerful but may be slow. **Proposal:** We should also design a simpler, single-layer LSTM as a baseline to compare against. This aligns with the guideline to "explain multiple code options with pros/cons."
-5.  **Batching in API:** To optimize performance, can we assume that events in a single API call might belong to the same EPCs? If so, we could process them in batches for the LSTM, which is much more efficient. Or must we process each of the 50 events in a request individually?
+1. **Real-time Sequence Construction:** Building input sequences requires fetching last N-1 events for each EPC within <7s API requirement. No clear solution for this fundamental lookup architecture challenge.
+
+2. **Cold Start Problem:** First events for any EPC have no historical sequence (padding-only input), requiring fallback to rule-based detection and adding system complexity.
+
+3. **Performance vs Benefit Unclear:** Rule-based system works and is fast, SVM framework exists but needs fixes. ROI for LSTM complexity investment is uncertain.
+
+### **Future LSTM Questions (When Ready)**
+
+1. **Sequence Length:** Optimal `sequence_length` balancing temporal patterns vs performance (recommendation: 10-15)
+2. **Caching Strategy:** Redis for recent events vs querying primary data store for real-time sequence construction  
+3. **Cold Start Handling:** Low confidence scores vs rule-based fallback for first few events
+4. **Architecture Complexity:** Two-layer vs single-layer LSTM performance trade-offs
+5. **API Batching:** Processing events in batches vs individually for efficiency
+
+**Next Action Required:** Complete SVM bug fixes and rule-based improvements before revisiting this plan.
