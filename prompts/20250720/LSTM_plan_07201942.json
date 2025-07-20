@@ -1,0 +1,27 @@
+{
+  "role": [
+    "Data Analyst",
+    "NLP Researcher",
+    "Machine Learning Engineer",
+    "Data Scientist",
+    "AI Research Scientist"
+  ],
+  "context files and folder": [
+    "docs/lstm_plan_0720.txt docs/lstm_plan_assessment_0720.txt",
+    "docs/lstm_plan_0720.txt", "prompts/context"
+  ],
+  "task": "Read the provided text files containing data and code related to NLP and sequence modeling with LSTM. Analyze the contents thoroughly.",
+  "goal": "Based on the file contents, list up a plan consisting of 10 possible improvement strategies or research directions for optimizing LSTM usage and NLP pipeline. update the answer under the docs/lstm_plan_0720.txt",
+  "clarification_questions": [
+    "What is the size and type of datasets provided in the files?",
+    "Are the datasets preprocessed or raw?",
+    "What LSTM architectures and hyperparameters are currently used?",
+    "Is the focus on training performance, inference speed, or model interpretability?",
+    "Are there any known bottlenecks or error patterns?",
+    "How is the data split for training and validation?",
+    "Are there existing baseline models or comparisons?",
+    "What NLP tasks are targeted (e.g., text classification, sequence tagging)?",
+    "Are there constraints on computational resources?",
+    "What evaluation metrics are prioritized?"
+  ]
+}

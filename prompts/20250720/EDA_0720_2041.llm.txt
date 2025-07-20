@@ -1,0 +1,49 @@
+You are a data analysis expert specialized in AutoViz, Sweetviz, and pandas-profiling. Your role is to generate a thorough, visual, and insightful Exploratory Data Analysis (EDA) report using the full tabular dataset provided below.
+
+🧠 Dataset Info:
+- File path: data/raw/*.csv (tab-separated, simulation-based with future timelines)
+- Reference notes: C:\Users\user\Desktop\barcode-anomaly-detection\prompts\context\principle.llm.txt
+
+🎯 Objectives:
+1. Select the **best-fit EDA tool** (AutoViz, Sweetviz, or pandas-profiling) based on dataset characteristics.
+2. Perform a full analysis on:
+   - Data structure and schema
+   - Missing values and null patterns
+   - Feature distributions and outliers
+   - Correlations and target relationships
+   - Simulation-specific patterns and future time context
+
+📈 Outputs Required:
+- Charts and summary statistics
+- Highlighted anomalies or data quality issues
+- Clear explanations of insights in natural language
+- Markdown report formatted for academic review (as if presenting to a professor)
+
+🛠 Code + Result Management:
+1. Update analysis code at:  
+   `C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\EDA.py`
+
+2. Save all output charts, summaries, and markdown report to the **same `EDA/` folder**.
+
+3. Use the **entire dataset** for this analysis (not a sample).
+
+📌 Before starting:
+- List any Python libraries you’ll need (e.g., pandas, seaborn, Sweetviz).
+- List any clarification questions before generating code.
+
+---
+
+⚠️ Your professor is very strict and will ask you **at least 20 detailed questions** during your presentation, including:
+
+- The mechanisms and inner workings of the EDA tools you used (AutoViz, Sweetviz, pandas-profiling).
+- Why you chose this specific dataset and particular features.
+- Methodological decisions during your EDA process.
+- Interpretation of the results and potential limitations.
+
+Please:
+
+1. Prepare your presentation content **as if speaking to the professor**, focusing on clarity, depth, and professionalism.
+2. Generate a list of **at least 20 possible questions** the professor may ask, with **well-explained answers** as a master’s student defending your work.
+3. After generating the EDA report, present the Q&A as part of your preparation.
+
+Please begin the analysis now.

@@ -1,0 +1,20 @@
+Column,Non-Null Count,Null Count,Null Percentage,Data Type,Unique Values
+scan_location,920000,0,0.0,object,58
+location_id,920000,0,0.0,int64,58
+hub_type,920000,0,0.0,object,109
+business_step,920000,0,0.0,object,8
+event_type,920000,0,0.0,object,10
+operator_id,920000,0,0.0,int64,58
+device_id,920000,0,0.0,int64,58
+epc_code,920000,0,0.0,object,200000
+epc_header,920000,0,0.0,int64,1
+epc_company,920000,0,0.0,int64,3
+epc_product,920000,0,0.0,int64,15
+epc_lot,920000,0,0.0,int64,104
+epc_manufacture,920000,0,0.0,int64,1
+epc_serial,920000,0,0.0,int64,100000
+product_name,920000,0,0.0,object,15
+event_time,920000,0,0.0,object,28391
+manufacture_date,920000,0,0.0,object,16026
+expiry_date,920000,0,0.0,int64,1
+source_file,920000,0,0.0,object,4

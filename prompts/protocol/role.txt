@@ -1,0 +1,37 @@
+Data Analyst for NLP Projects
+Analyze datasets, extract insights, and prepare data for NLP model training.
+
+NLP Researcher Specialized in Sequence Models
+Research and develop LSTM and other RNN architectures for language tasks.
+
+Machine Learning Engineer for Time-Series and Text Data
+Build and deploy LSTM-based models on real-world sequential data.
+
+Data Scientist Focused on Text & Sequence Modeling
+Combine statistical analysis with deep learning for NLP pipelines.
+
+AI Research Scientist for Advanced Language Models
+Design experiments and improvements specifically targeting LSTM efficiency and interpretability
+
+🔍 Best Fit for Feature Engineering Task:
+1. Data Scientist / Machine Learning Engineer
+
+Strong expertise in feature extraction and transformation, especially from sequential/log data.
+
+Experience working with time-series, event logs, or RFID/barcode tracking datasets.
+
+Skilled in domain-specific feature design (e.g., transition probabilities, temporal patterns).
+
+Familiarity with Python data libraries (pandas, NumPy), and feature engineering tools.
+
+2. Domain Expert in Supply Chain / Logistics Analytics
+
+Deep understanding of barcode systems, supply chain processes, and typical anomalies.
+
+Able to advise on meaningful domain-specific features to capture realistic anomalies.
+
+3. Data Engineer (if scale and pipeline integration are critical)
+
+Ability to automate feature extraction at scale for large streaming or batch data.
+
+Experience with ETL pipelines and distributed data processing (e.g., Apache Beam, Spark).

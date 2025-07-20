@@ -1,0 +1,72 @@
+{
+  "role": ["Data Analyst", "NLP Researcher", "Data Scientist"],
+  "topic": "AI Developer Debugging Questions: Rule-based vs SVM Performance Gap",
+  "questions": {
+    "Data & Labeling Issues": [
+      {
+        "id": 1,
+        "question": "Are you using the same evaluation dataset for both rule-based (48%) and SVM (0%) metrics? What's the exact metric being measured - precision, recall, F1, or accuracy?"
+      },
+      {
+        "id": 2,
+        "question": "How were the labels generated for SVM training? Are they derived from rule-based outputs or ground truth annotations? Show me the label distribution and class balance."
+      },
+      {
+        "id": 3,
+        "question": "Can you provide a confusion matrix and classification report for the SVM model? Are we getting 0% across all classes or just specific anomaly classes?"
+      }
+    ],
+    "Feature Engineering & Data Pipeline": [
+      {
+        "id": 4,
+        "question": "What features are you feeding into the SVM model? Are the rule-based conditions (thresholds, logic gates) explicitly converted into numerical features for the ML model?"
+      },
+      {
+        "id": 5,
+        "question": "Walk me through your data preprocessing pipeline. Are you handling categorical variables (EPC codes, location IDs) properly? Show me the feature scaling/normalization steps."
+      },
+      {
+        "id": 6,
+        "question": "Are there any data leakage issues? Are you accidentally including future information or target-derived features in your training set?"
+      }
+    ],
+    "Model Implementation & Validation": [
+      {
+        "id": 7,
+        "question": "Show me your SVM hyperparameter settings (C, kernel, gamma). Have you performed any hyperparameter tuning or cross-validation? What's your train/validation/test split strategy?"
+      },
+      {
+        "id": 8,
+        "question": "Are you handling class imbalance properly? What's the ratio of normal vs anomaly cases? Are you using class weights, SMOTE, or other balancing techniques?"
+      },
+      {
+        "id": 9,
+        "question": "Can you show me a sample of cases where rule-based catches anomalies (true positives from the 48%) but SVM fails? What patterns are being missed?"
+      }
+    ],
+    "Technical Validation": [
+      {
+        "id": 10,
+        "question": "Is the SVM model actually training? Check the convergence, loss curves, and training logs. Are there any error messages, warnings, or silent failures in your ML pipeline?"
+      }
+    ],
+    "Code Review Request": {
+      "description": "Please check all code related to data preprocessing, feature engineering, label generation, model training, and evaluation for potential issues affecting SVM performance.",
+      "requested_actions": [
+        "Review data loading and preprocessing scripts",
+        "Verify feature extraction and transformation logic",
+        "Check label generation consistency and accuracy",
+        "Inspect SVM model training code including hyperparameters",
+        "Validate evaluation and metric calculation code"
+      ]
+    }
+  },
+  "expected_deliverables": [
+    "Code snippets showing data preprocessing and feature engineering",
+    "Model training logs and performance metrics",
+    "Sample predictions comparison (rule vs SVM)",
+    "Data quality assessment report",
+    "Hyperparameter tuning results",
+    "Code review report with identified issues or suggestions"
+  ]
+}

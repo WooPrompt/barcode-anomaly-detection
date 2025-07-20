@@ -1,0 +1,96 @@
+{
+  "request_metadata": {
+    "request_id": "lstm_plan_acceleration_0720_2045",
+    "prompt_engineer": "Gemini",
+    "target_ai_action": "Analyze this HIGH-URGENCY JSON. The previous 10-day plan is unacceptable. Generate an updated assessment and a refined, accelerated plan based on this new 4-day timeline.",
+    "personas_to_assume": [
+      "Data Analyst for NLP Projects",
+      "NLP Researcher Specialized in Sequence Models",
+      "Machine Learning Engineer for Time-Series and Text Data",
+      "Data Scientist Focused on Text & Sequence Modeling",
+      "AI Research Scientist for Advanced Language Models"
+    ]
+  },
+  "plan_to_assess": {
+    "metadata": {
+      "plan_title": "LSTM Rapid Feasibility Spike",
+      "version": "3.0",
+      "assessment_date": "2025-07-20",
+      "status": "URGENT - Execute Immediately"
+    },
+    "plan_objective": "Execute a hyper-focused 4-day spike to determine the technical feasibility of the LSTM approach. The sole goal is to get a definitive go/no-go signal on the three critical bottlenecks: sequence lookup latency, memory constraints, and viability on imbalanced data.",
+    "acceleration_strategy": {
+      "principle_1_parallelize_tasks": "Data profiling (Data Analyst) and infrastructure setup for latency benchmarks (ML Engineer) will occur simultaneously on Day 1.",
+      "principle_2_reduce_scope": "We will not test multiple architectures. We will build ONE pragmatic model (BiLSTM) and ONE proof-of-concept (PoC) for explainability. The goal is to prove viability, not find the absolute best configuration.",
+      "principle_3_focus_on_critical_path": "All activities not directly contributing to the go/no-go decision (e.g., advanced research, extensive reporting) are postponed."
+    },
+    "focused_architecture_target": {
+      "owner_persona": "NLP Researcher",
+      "model_selection": "Bi-directional LSTM (BiLSTM)",
+      "justification": "This model offers the best balance of performance and complexity for a rapid spike. Alternatives like attention or multi-task heads are postponed to avoid unnecessary complexity.",
+      "key_parameters": {
+        "hidden_size": 64,
+        "num_layers": 2,
+        "dropout": 0.2
+      }
+    },
+    "rapid_feasibility_spike_plan": {
+      "phase_1_parallel_track": {
+        "name": "Infrastructure Benchmark & Data Triage",
+        "duration_days": 1.5,
+        "deliverables": [
+          "EXECUTABLE SCRIPT: `benchmark_redis_lookup.py`",
+          "REPORT: `data_triage_summary.md` (covering imbalance, critical feature distribution, and integrity)",
+          "DECISION: Validated batch size and sequence length for prototype."
+        ],
+        "success_criteria": [
+          "Redis P95 latency is confirmed <= 150ms.",
+          "Class imbalance is quantified; at least one critical anomaly (`locErr` or `jump`) has a positive rate >= 0.1%."
+        ]
+      },
+      "phase_2_focused_build": {
+        "name": "MVP Prototype & Performance Test",
+        "duration_days": 2.5,
+        "deliverables": [
+          "EXECUTABLE SCRIPT: `prototype_bilstm_e2e.py` (includes preprocessing, training loop, and inference function)",
+          "OUTPUT: `performance_results.json` (containing end-to-end latency, GPU memory usage, and key business metrics)",
+          "PoC SCRIPT: `generate_explanation_sample.py`"
+        ],
+        "success_criteria": [
+          "End-to-end P95 inference latency for 50 events is <= 6000ms.",
+          "GPU memory usage during training is stable and <= 3.8GB.",
+          "Model demonstrates predictive power on `locErr` (Precision > 0.7) and `jump` (Recall > 0.5)."
+        ]
+      }
+    },
+    "go_no_go_decision": {
+      "checkpoint_day": 4,
+      "criteria": {
+        "go_proceed_to_full_implementation": "All success criteria from both phases are met.",
+        "pivot_and_fix_bottleneck": "Core logic is sound, but a single criterion was missed (e.g., latency is 6500ms). Allocate a fixed timebox (2 days) to solve that specific issue.",
+        "no_go_and_fallback_to_svm": "A fundamental blocker is hit (e.g., latency is >8000ms, model cannot learn on imbalanced data). Abort LSTM and immediately pivot to enhancing the existing SVM system."
+      }
+    },
+    "post_spike_considerations": {
+      "description": "If the spike is successful (a 'GO' decision), these topics will be integrated into the full implementation plan.",
+      "topics": [
+        "Advanced Architecture Tuning (Attention, MTL)",
+        "Learning with Noisy Labels (LNL)",
+        "Full MLOps Integration (Drift Monitoring, Versioning)"
+      ]
+    },
+    "final_output_instructions": {
+      "description": "After analyzing this accelerated plan, generate the two updated files reflecting this new 4-day timeline and intense focus.",
+      "files_to_generate": [
+        {
+          "filename": "lstm_plan_assessment_0720_2045.txt",
+          "content_summary": "A new assessment that validates this accelerated approach and explains the trade-offs made for speed."
+        },
+        {
+          "filename": "lstm_plan_0720_2045.txt",
+          "content_summary": "The final, actionable 4-day spike plan for immediate execution."
+        }
+      ]
+    }
+  }
+}

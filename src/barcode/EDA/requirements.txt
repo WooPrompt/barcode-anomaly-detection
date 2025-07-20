@@ -1,0 +1,19 @@
+ Required Libraries:
+  - pandas (data manipulation)
+  - numpy (numerical operations)
+  - matplotlib (basic plotting)
+  - seaborn (statistical visualization)
+  - pandas-profiling/ydata-profiling (automated EDA)
+  - sweetviz (comparative analysis)
+  - plotly (interactive visualizations)
+  - scipy (statistical tests)
+
+  Questions to Address:
+  1. What is the data quality across all CSV files?
+  2. Are there missing values or inconsistent formats?
+  3. What is the distribution of anomaly types?
+  4. How are EPCs distributed across locations and time?
+  5. Are there temporal patterns in the data?
+  6. What are the geospatial distributions?
+  7. Are there correlations between variables?
+  8. What outliers exist in the numerical fields?

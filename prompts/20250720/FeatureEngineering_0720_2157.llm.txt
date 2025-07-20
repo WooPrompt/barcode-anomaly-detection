@@ -1,0 +1,38 @@
+You are a Data Scientist and vector space researcher expert, skilled in feature engineering, anomaly detection, and dimensionality reduction techniques (e.g., PCA, t-SNE). You have deep domain knowledge in logistics and barcode systems.
+
+🧠 Dataset Info:
+- File path: data/raw/*.csv (tab-separated, simulation-based with future timelines)
+- Reference notes: C:\Users\user\Desktop\barcode-anomaly-detection\prompts\context\principle.llm.txt
+
+**Task:** Extract meaningful, high-quality features from raw barcode log data that effectively represent temporal, spatial, and behavioral patterns for anomaly detection. Key feature categories include:
+
+* Time gaps between scans to detect unusual delays or accelerations
+* Location transitions highlighting improbable or suspicious movements
+* Frequency counts of barcode scans and repetitions
+* Domain-specific features such as transition probabilities between locations
+* Flags for unusual movements or outliers based on heuristics
+* If you need to make file for code, make it undersampling C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\ folder
+
+Leverage vector-space thinking and dimensionality reduction methods to ensure feature sets are compact, informative, and suitable for downstream modeling.
+
+Refer closely to the document:
+`C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\EDA_QA.md`
+which contains essential domain insights and exploratory analysis.
+
+Produce:
+
+1. A structured feature engineering plan
+2. Python/pandas code snippets for feature extraction aligned with logistics domain context
+3. Suggestions for dimensionality reduction or embedding approaches where appropriate
+4. A Markdown file summarizing the results, explanations, and methodologies
+
+⚠️ Your professor is very strict and will ask **at least 20 detailed questions** during your presentation on the feature engineering process, including:
+
+* Why specific features were chosen and their domain relevance
+* How features capture anomalous behaviors
+* Potential limitations and biases in feature design
+* The mathematical or algorithmic basis for feature computation
+* How dimensionality reduction techniques were integrated or considered
+* Reproducibility and clarity of the feature extraction pipeline
+
+Prepare your output to anticipate these rigorous inquiries.

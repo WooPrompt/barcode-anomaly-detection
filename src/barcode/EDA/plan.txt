@@ -1,0 +1,53 @@
+### 10-Step Plan After EDA for Barcode Log Anomaly Detection
+
+1. **Define Anomaly Types & Detection Goals**
+
+   * Clarify what anomalies matter (e.g., EPC forgery, impossible transitions, timing errors).
+   * Define success criteria and evaluation metrics.
+
+2. **Feature Engineering**
+
+   * Extract relevant features from raw barcode logs (e.g., time gaps, location transitions, frequency counts).
+   * Create domain-specific features (e.g., transition probabilities, unusual movement flags).
+
+3. **Data Cleaning & Preprocessing**
+
+   * Handle missing or inconsistent data found during EDA.
+   * Normalize or standardize numerical features as needed.
+   * Encode categorical features properly.
+
+4. **Class Imbalance Handling**
+
+   * Assess anomaly class imbalance.
+   * Apply techniques like SMOTE, undersampling, or class weighting.
+
+5. **Select & Train Anomaly Detection Models**
+
+   * Choose algorithms suited for anomalies (e.g., One-Class SVM, Isolation Forest, Autoencoders).
+   * Train models on the feature set.
+
+6. **Model Validation & Tuning**
+
+   * Use cross-validation, grid search or Bayesian optimization to tune hyperparameters.
+   * Evaluate with precision, recall, F1-score, ROC-AUC, etc.
+
+7. **Integrate Rule-Based Detection**
+
+   * Implement domain rules discovered during EDA (e.g., impossible location jumps).
+   * Combine rule-based flags with model predictions.
+
+8. **Build Real-Time or Batch Inference Pipeline**
+
+   * Design pipeline for feeding new barcode logs into the detection system.
+   * Ensure scalability and latency requirements are met.
+
+9. **Alerting & Visualization**
+
+   * Create dashboards or alerts for detected anomalies.
+   * Provide actionable insights for end users.
+
+10. **Continuous Monitoring & Feedback Loop**
+
+    * Monitor model performance over time.
+    * Incorporate user feedback and new labeled anomalies to retrain models.
+
