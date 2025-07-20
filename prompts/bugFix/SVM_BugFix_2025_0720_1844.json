@@ -1,0 +1,133 @@
+{
+  "prompt": "You are a **Data Analyst / NLP Researcher / Vector Engineer** tasked with **debugging the 0 % SVM anomaly-detection performance** against the working 48 % rule-based baseline. \n\nYour mission:\n1. Trace every data transformation step from CSV → feature vector → model score → JSON.\n2. Surface silent failures, NaN leaks, serialization errors, and vector-space collapse.\n3. Provide **exact code snippets & assertions** to validate each pipeline stage.\n4. Prioritize fixes that unblock evaluation metrics (precision, recall, F1).\n\nUse this 20-question checklist as your **step-by-step debugging script**.\n",
+  "role_assignment": {
+    "primary": "Data Analyst",
+    "specializations": [
+      "NLP Researcher (text parsing & serialization)",
+      "Vector Engineer (feature-space debugging)"
+    ]
+  },
+  "debugging_questions": [
+    {
+      "id": 1,
+      "question": "Are all `reader_location` values correctly populated after the CSV-to-DataFrame merge (check for `NaN` leaks)?",
+      "validation": "assert df['reader_location'].notna().all()",
+      "expected": "True"
+    },
+    {
+      "id": 2,
+      "question": "Does the rule-based detector actually return any anomalies for the evaluation split (manual spot-check 20 rows)?",
+      "validation": "rule_df[rule_df['label'] == 1].head(20)",
+      "expected": "non-empty DataFrame"
+    },
+    {
+      "id": 3,
+      "question": "Are the One-Class SVM labels **only** `0` (normal) during training, or did rule-based noise creep in as `1` (anomaly)?",
+      "validation": "np.unique(y_train)",
+      "expected": "[0]"
+    },
+    {
+      "id": 4,
+      "question": "Do the 15-D location features in `loc_err_features.py` ever produce an all-zero vector (silent failure)?",
+      "validation": "(features == 0).all(axis=1).sum()",
+      "expected": "0"
+    },
+    {
+      "id": 5,
+      "question": "After the `astype(str)` mapping, is the resulting `reader_location` field always present in the row dictionary passed to feature extractors?",
+      "validation": "assert 'reader_location' in row.keys()",
+      "expected": "True"
+    },
+    {
+      "id": 6,
+      "question": "Are the statistical jump features (`max_gap`, `avg_gap`) returning identical values for >90 % of EPC sequences (aggregation collapse)?",
+      "validation": "features.nunique() / len(features) < 0.1",
+      "expected": "False"
+    },
+    {
+      "id": 7,
+      "question": "Plot the t-SNE of 1000 random SVM feature vectors — do anomalous vs normal clusters overlap completely?",
+      "validation": "TSNE(n_components=2).fit_transform(X) → visualize",
+      "expected": "visible separation"
+    },
+    {
+      "id": 8,
+      "question": "Compute pairwise cosine similarity between 50 normal feature vectors; is the median >0.95 (collapse to a single point)?",
+      "validation": "np.median(cosine_similarity(X_norm)) < 0.95",
+      "expected": "True"
+    },
+    {
+      "id": 9,
+      "question": "Are the StandardScaler statistics (`mean_`, `scale_`) NaN for any dimension (zero-variance features)?",
+      "validation": "np.isnan(scaler.mean_).any()",
+      "expected": "False"
+    },
+    {
+      "id": 10,
+      "question": "Perform a grid-search on `nu` (0.01 → 0.5) and `gamma` (`scale`, 0.001, 0.1) — does any combo break the 0 % barrier?",
+      "validation": "GridSearchCV(...).best_score_ > 0",
+      "expected": "True"
+    },
+    {
+      "id": 11,
+      "question": "Replace One-Class with binary SVC using rule-based labels; does cross-validation F1 jump above 0 %?",
+      "validation": "cross_val_score(SVC(), X, y, scoring='f1').mean() > 0",
+      "expected": "True"
+    },
+    {
+      "id": 12,
+      "question": "Train on only 100 EPC sequences (tiny subset) — does the model still predict everything as normal (pathological under-fit)?",
+      "validation": "(model.predict(X_small) == 1).mean() > 0",
+      "expected": "True"
+    },
+    {
+      "id": 13,
+      "question": "Run `evaluate_svm_models.py` with synthetic anomalies (manually injected) — still 0 % accuracy?",
+      "validation": "accuracy_score(y_true, y_pred) > 0",
+      "expected": "True"
+    },
+    {
+      "id": 14,
+      "question": "Add try/except around the JSON serialization step; what’s the exact TypeError message?",
+      "validation": "json.dumps(pred_dict, ensure_ascii=False, default=int)",
+      "expected": "no TypeError"
+    },
+    {
+      "id": 15,
+      "question": "Dump the raw SVM decision scores (`decision_function`) for the first 50 rows; are they all positive (no anomalies detected)?",
+      "validation": "(model.decision_function(X50) < 0).any()",
+      "expected": "True"
+    },
+    {
+      "id": 16,
+      "question": "If `event_time` parsing fails (e.g., timezone), does the feature extractor silently return zeros?",
+      "validation": "assert not (features == 0).all()",
+      "expected": "True"
+    },
+    {
+      "id": 17,
+      "question": "Check for duplicate EPC codes in the evaluation split — could identical sequences confuse One-Class SVM?",
+      "validation": "df['epc_code'].duplicated().sum() == 0",
+      "expected": "True"
+    },
+    {
+      "id": 18,
+      "question": "Are there zero-length EPC sequences (only 1 event) causing division-by-zero in time-gap features?",
+      "validation": "assert (epc_group.shape[0] > 1 for _, epc_group in df.groupby('epc_code'))",
+      "expected": "True"
+    },
+    {
+      "id": 19,
+      "question": "Insert assertions after each preprocessing step (`assert df['reader_location'].notna().all()`) — where does it first fail?",
+      "validation": "assert df['reader_location'].notna().all()",
+      "expected": "pass"
+    },
+    {
+      "id": 20,
+      "question": "Capture feature vector hash per EPC before/after scaling — do identical hashes explain the 0 % diversity?",
+      "validation": "len(set(pd.util.hash_pandas_object(features))) > 1",
+      "expected": "True"
+    }
+  ],
+  "quick_win": "Fix #14 first (JSON int64 serialization) — it likely blocks all downstream evaluation."
+}
