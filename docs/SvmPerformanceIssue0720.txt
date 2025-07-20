@@ -60,6 +60,112 @@ Q10. Is the SVM model actually training?
 A10. ⚠️ Signs of failure — JSON serialization error during prediction suggests pipeline breakdown
 
 ------------------------------------------------------------
+[SVM Bug-Fix Debugging Script – Plain-Text Checklist]
+------------------------------------------------------------
+
+Each debugging question is followed by the validation snippet, expected outcome, and current status.
+
+1. Are all reader_location values correctly populated after merge?
+   Validation: assert df['reader_location'].notna().all()
+   Expected: True
+   Status: ❌ INCONSISTENT – mapping sometimes fails.
+
+2. Does the rule-based detector actually return any anomalies for the evaluation split?
+   Validation: rule_df[rule_df['label'] == 1].head(20)
+   Expected: non-empty DataFrame
+   Status: ✅ YES – anomalies exist (rule-based 56.6 %).
+
+3. Are the One-Class SVM labels only 0 (normal) during training?
+   Validation: np.unique(y_train)
+   Expected: [0]
+   Status: ❌ NOT VERIFIED – rule-based noise may creep in.
+
+4. Do the 15-D location features ever produce an all-zero vector?
+   Validation: (features == 0).all(axis=1).sum()
+   Expected: 0
+   Status: ❌ SUSPECTED – silent failure possible.
+
+5. Is reader_location always present in the row dict passed to feature extractors?
+   Validation: assert 'reader_location' in row.keys()
+   Expected: True
+   Status: ❌ INCONSISTENT – missing field in some rows.
+
+6. Are statistical jump features identical for >90 % of EPC sequences?
+   Validation: features.nunique() / len(features) < 0.1
+   Expected: False
+   Status: ❌ AGGREGATION COLLAPSE suspected.
+
+7. t-SNE plot of 1000 feature vectors – any separation?
+   Validation: TSNE(n_components=2).fit_transform(X) → visualize
+   Expected: visible separation
+   Status: ❌ NOT YET RUN – clusters likely overlap.
+
+8. Median cosine similarity of 50 normal vectors < 0.95?
+   Validation: np.median(cosine_similarity(X_norm)) < 0.95
+   Expected: True
+   Status: ❌ HIGH SIMILARITY suspected.
+
+9. Are StandardScaler statistics NaN in any dimension?
+   Validation: np.isnan(scaler.mean_).any()
+   Expected: False
+   Status: ❌ LIKELY – zero-variance features.
+
+10. Grid-search nu / gamma – any combo > 0 %?
+    Validation: GridSearchCV(...).best_score_ > 0
+    Expected: True
+    Status: ❌ NOT YET RUN – default only.
+
+11. Binary SVC cross-validation – F1 > 0 %?
+    Validation: cross_val_score(SVC(), X, y, scoring='f1').mean() > 0
+    Expected: True
+    Status: ❌ NOT YET TRIED.
+
+12. Train on 100 EPC sequences – still predicts all normal?
+    Validation: (model.predict(X_small) == 1).mean() > 0
+    Expected: True
+    Status: ❌ PATHOLOGICAL under-fit.
+
+13. Evaluate with synthetic anomalies – still 0 %?
+    Validation: accuracy_score(y_true, y_pred) > 0
+    Expected: True
+    Status: ❌ NOT YET TESTED.
+
+14. Exact JSON serialization TypeError message?
+    Validation: json.dumps(pred_dict, ensure_ascii=False, default=int)
+    Expected: no TypeError
+    Status: ✅ CONFIRMED – int64 TypeError in logs.
+
+15. Raw SVM decision scores all positive?
+    Validation: (model.decision_function(X50) < 0).any()
+    Expected: True
+    Status: ✅ YES – all positive, no anomalies.
+
+16. event_time parsing fails silently?
+    Validation: assert not (features == 0).all()
+    Expected: True
+    Status: ❌ POSSIBLE – needs probe.
+
+17. Duplicate EPC codes in eval split?
+    Validation: df['epc_code'].duplicated().sum() == 0
+    Expected: True
+    Status: ❌ NOT VERIFIED.
+
+18. Zero-length EPC sequences (1 event) causing div-by-zero?
+    Validation: assert (epc_group.shape[0] > 1 for _, epc_group in df.groupby('epc_code'))
+    Expected: True
+    Status: ❌ NOT VERIFIED.
+
+19. First failing assertion in pipeline?
+    Validation: assert df['reader_location'].notna().all()
+    Expected: pass
+    Status: ❌ FAILS – first failure point.
+
+20. Identical feature-vector hashes?
+    Validation: len(set(pd.util.hash_pandas_object(features))) > 1
+    Expected: True
+    Status: ❌ NOT YET TESTED.
+
+------------------------------------------------------------
 [CRITICAL ISSUES FOUND IN CODE]
 ------------------------------------------------------------
 
