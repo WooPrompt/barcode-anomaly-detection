@@ -1,0 +1,108 @@
+===============================
+SVM Performance Debugging Report
+===============================
+
+[ROLE]
+- Data Analyst
+- NLP Researcher
+- Data Scientist
+
+[TOPIC]
+- Debugging the performance gap between Rule-based (48%) and SVM (0%) anomaly detection systems
+
+------------------------------------------------------------
+[QUESTIONS & ANSWERS]
+------------------------------------------------------------
+
+[Data & Labeling Issues]
+
+Q1. Are you using the same evaluation dataset for both rule-based (48%) and SVM (0%) metrics?
+A1. ✅ Yes - 'tt.txt' compliant split implemented in _split_csv_data_for_evaluation() at svm_csv_trainer.py:378
+
+Q2. How were the labels generated for SVM training? Derived from rule-based outputs or ground truth?
+A2. ✅ Rule-based labels via RuleBasedLabelGenerator using multi_anomaly_detector scoring functions
+
+Q3. Can you provide a confusion matrix and classification report for the SVM model?
+A3. ❌ All metrics are 0 - svm_evaluation_results.json shows 0% precision, recall, F1, and accuracy.
+    "support": 0 — no samples processed
+
+[Feature Engineering & Data Pipeline]
+
+Q4. What features are being fed into the SVM model?
+A4. ⚠️ Potential field mapping failure
+    - 15D location features depend on reader_location field
+    - Mapping may fail, resulting in empty feature vectors
+
+Q5. Walk me through your data preprocessing pipeline.
+A5. ⚠️ Complex pipeline with potential error points:
+    - SVMPreprocessingPipeline → feature_extractors → label_generators
+    - Multiple transformation layers introduce failure risk
+
+Q6. Are there any data leakage issues?
+A6. ✅ No leakage — proper chronological split confirmed
+
+[Model Implementation & Validation]
+
+Q7. What are your SVM hyperparameter settings?
+A7. ⚠️ Minimal config used:
+    svm_params = {'kernel': 'rbf', 'gamma': 'scale', 'nu': 0.1}
+    No hyperparameter tuning evident
+
+Q8. Are you handling class imbalance properly?
+A8. ❌ No explicit handling — OneClassSVM used without SMOTE or class weighting
+
+Q9. Can you show examples where rule-based catches anomalies but SVM fails?
+A9. ❌ Not possible — SVM makes no predictions due to JSON serialization error
+
+[Technical Validation]
+
+Q10. Is the SVM model actually training?
+A10. ⚠️ Signs of failure — JSON serialization error during prediction suggests pipeline breakdown
+
+------------------------------------------------------------
+[CRITICAL ISSUES FOUND IN CODE]
+------------------------------------------------------------
+
+1. ❗ JSON Serialization Bug
+   - File: svm_anomaly_detector.py:7
+   - Error: "Object of type int64 is not JSON serializable"
+   - Cause: Using numpy.int64 instead of Python int
+   - Effect: SVM predictions fail, no output returned
+
+2. ❗ Field Mapping Inconsistency
+   - Files: svm_csv_trainer.py:177-178, loc_err_features.py:62
+   - CSV maps location_id → reader_location
+     → df['reader_location'] = df['location_id'].astype(str)
+   - Feature extractor assumes reader_location already exists
+     → row['reader_location']
+   - Effect: Feature extraction may break due to missing field
+
+3. ❗ Evaluation Results All Zero
+   - File: svm_evaluation_results.json
+   - Metrics: "precision": 0.0, "recall": 0.0, "f1_score": 0.0, "accuracy": 0.0
+   - Support: 0 — means no samples processed during evaluation
+
+------------------------------------------------------------
+[RECOMMENDED FIX PRIORITY]
+------------------------------------------------------------
+
+1. 🔧 Fix JSON serialization — convert numpy int64 → Python int
+2. 🔧 Ensure consistent field mapping for reader_location
+3. 🔧 Add error handling to feature extraction stages
+4. 🔧 Implement proper hyperparameter tuning (e.g., grid search)
+5. 🔧 Apply class imbalance techniques — SMOTE, weighting, etc.
+
+------------------------------------------------------------
+[EXPECTED DELIVERABLES]
+------------------------------------------------------------
+
+- Code snippets for data preprocessing and feature engineering
+- SVM model training logs and evaluation metrics
+- Sample prediction comparisons (rule-based vs SVM)
+- Data quality report
+- Hyperparameter tuning logs
+- Full code review report with issue breakdown
+
+===============================
+End of Report
+===============================
