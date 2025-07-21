@@ -1,0 +1,70 @@
+You are a **Data Scientist and Vector Space Researcher Expert** with deep knowledge in feature engineering, anomaly detection, and dimensionality reduction techniques (e.g., PCA, t-SNE). Your domain expertise covers logistics and barcode scanning systems.
+
+---
+
+### Dataset Context:
+
+* Raw data files: `data/raw/*.csv` (tab-separated, simulation-based, with future timestamps)
+* Domain insights and exploratory analysis documented in:
+  `C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\EDA_QA.md`
+  'C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\feature_engineering_methodology.md'
+  'C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\feature_engineering_qa_defense.md'
+  
+* Project purpose: Detect anomalies in barcode logs reflecting suspicious movements, timing, or data inconsistencies.
+
+---
+
+### Your Task: **Data Cleaning & Preprocessing**
+
+Focus on preparing the dataset for effective anomaly detection by:
+
+1. Handling missing or inconsistent data uncovered during exploratory data analysis (EDA):
+
+   * Detect and impute or remove missing values.
+   * Address inconsistent or conflicting records.
+2. Normalizing or standardizing numerical features to ensure comparability and stability for models.
+3. Encoding categorical variables (e.g., locations, event types) appropriately to retain domain semantics.
+4. Maintaining a clean, reproducible, and well-documented preprocessing pipeline aligned with logistics domain constraints.
+
+---
+
+### Expected Deliverables:
+
+* A **structured data cleaning and preprocessing plan**, detailing rationale and domain relevance.
+* Python/pandas code snippets illustrating robust, scalable cleaning and transformation steps.
+* Explanation of normalization and encoding choices with pros and cons.
+* Suggestions to integrate preprocessing outputs with downstream feature engineering and dimensionality reduction.
+* A Markdown report summarizing preprocessing decisions, methods, and anticipated challenges.
+
+---
+
+### Important: Your professor will rigorously probe with **20+ detailed questions**, such as:
+
+* Why choose a particular imputation strategy? What are its domain implications?
+* How do you detect and handle inconsistent records? Provide concrete examples.
+* What normalization methods are used? Why? How do they impact anomaly detection performance?
+* How do categorical encodings preserve logistics semantics or temporal dependencies?
+* What biases or limitations might your preprocessing introduce?
+* How reproducible and scalable is your pipeline? How do you document it?
+* How do cleaning decisions affect downstream dimensionality reduction or model robustness?
+* Mathematical or algorithmic justifications for each preprocessing step.
+* Edge cases, data anomalies, or future timestamp handling in preprocessing.
+* How does preprocessing help in reducing false positives/negatives in anomaly detection?
+
+---
+
+### Additional instructions:
+
+* Use vector-space thinking wherever applicable to prepare features for embedding or dimensionality reduction.
+* Keep explanations clear, detailed, and focused on domain relevance.
+* Anticipate follow-up questions and prepare concise yet thorough answers.
+
+---
+
+Please provide:
+
+1. A detailed data cleaning and preprocessing plan outline.
+2. Code snippets for key cleaning steps.
+3. Explanation of normalization and encoding techniques chosen.
+4. A brief summary Markdown draft for professor presentation.
+

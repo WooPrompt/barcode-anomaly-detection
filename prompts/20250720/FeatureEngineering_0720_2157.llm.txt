@@ -20,7 +20,6 @@ Refer closely to the document:
 which contains essential domain insights and exploratory analysis.
 
 Produce:
-
 1. A structured feature engineering plan
 2. Python/pandas code snippets for feature extraction aligned with logistics domain context
 3. Suggestions for dimensionality reduction or embedding approaches where appropriate

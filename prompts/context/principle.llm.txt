@@ -1,4 +1,5 @@
 Do not use Unicode characters in the print statements that cause encoding errors
+You can use GPU. use cuda
 
 ## project_goal
 Build a real-time, API-driven anomaly detection system for supply chain barcodes.
@@ -34,27 +35,6 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 - Using a virtual environment (conda/venv) is strongly recommended for package isolation and reproducibility.
 
 
-
-## key_files
-- fastapi_server.py: Main API server with both rule-based and SVM endpoints (includes /api/manager/export-and-analyze-async/svm).
-- src/barcode/multi_anomaly_detector.py: Rule-based multi-anomaly detection logic (lines 740-884).
-- src/barcode/svm_anomaly_detector.py: SVM-based detection system with 5 One-Class SVM models.
-- src/barcode/svm_csv_trainer.py: Training pipeline for large CSV datasets with memory-efficient processing.
-- evaluate_svm_models.py: Academic evaluation script (tt.txt compliant) comparing SVM vs rule-based.
-- src/barcode/svm_preprocessing/: Sophisticated SVM preprocessing pipeline with feature extraction and class imbalance handling.
-- src/barcode/svm_preprocessing/feature_extractors/jump_features.py: EPC groupby features (sequence-level).
-- src/barcode/svm_preprocessing/feature_extractors/jump_features_event_level.py: Event-level features for row-level processing.
-- src/barcode/svm_preprocessing/base_preprocessor.py: EPC groupby logic (lines 127-128).
-- /data/processed/location_id_withGeospatial.csv: Geospatial reference data for locations.
-- /data/processed/business_step_transition_avg_v2.csv: Statistical baseline for travel time validation.
-- /data/raw/*.csv: Training data (icn.csv, kum.csv, ygs.csv, hws.csv) for SVM models.
-- /data/: Contains raw, processed, and external datasets.
-- /docs/: Project documentation and research notes.
-- SVM_IMPLEMENTATION_GUIDE.md: Complete SVM system documentation.
-- 바코드_이상탐지_프로젝트_개발일지_종합분석.md: Complete 10-day development journey analysis.
-- row_level_svm_implementation_plan.txt: Future row-level SVM implementation plan.
-- requirements.txt: Python package dependencies.
-
 ## data_schema
 - scan_location (string): Human-readable location where the EPC was scanned (e.g., '화성공장').
 - location_id (integer): Numerical ID for each location.
@@ -80,7 +60,6 @@ Detect forged EPCs, logistical errors, and impossible travel times using both ru
 - locErr: Invalid location sequence in supply chain (e.g., backward movement).
 - evtOrderErr: Events out of logical order within the same location.
 - jump: Travel time between two events is statistically impossible.
-- svm_outlier: Statistically detected anomaly using One-Class SVM (not caught by rules).
 
 ## ai_guidelines
 - Versioning: Use new files for major feature versions (e.g., *_v2.py).
@@ -97,7 +76,6 @@ REAL-TIME BARCODE ANOMALY DETECTION SYSTEM OPERATIONAL (2025-07-19):
 - ✅ SVM-based detection: 5 One-Class SVM models with sophisticated preprocessing pipeline
 - ✅ Multi-file processing: Both systems support multiple file_ids in single API request
 - ✅ Academic evaluation: tt.txt compliant train/eval data splitting system
-- ⚠️ CURRENT CHALLENGE: SVM zero performance issue - EPC groupby approach loses 90% temporal information
 - 📋 NEXT PHASE: Row-level multi-label SVM implementation to preserve temporal patterns
 
 ### API Endpoints:
