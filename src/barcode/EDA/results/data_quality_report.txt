@@ -2,4 +2,4 @@ Data Quality Assessment Report
 ===================================
 
 Issues Found:
-- Found 8,795 events with future timestamps
+- Found 383,800 events with future timestamps

@@ -1,0 +1,38 @@
+{
+  "location_id": {
+    "mean": 18.728558695652175,
+    "median": 9.0,
+    "std": 29.091352486898547,
+    "skewness": 3.1499879903262933,
+    "kurtosis": 10.142618689889115,
+    "shapiro_p_value": 1.7806209997364895e-77,
+    "is_normal": "False"
+  },
+  "operator_id": {
+    "mean": 18.728558695652175,
+    "median": 9.0,
+    "std": 29.091352486898547,
+    "skewness": 3.1499879903262933,
+    "kurtosis": 10.142618689889115,
+    "shapiro_p_value": 1.7806209997364895e-77,
+    "is_normal": "False"
+  },
+  "device_id": {
+    "mean": 18.728558695652175,
+    "median": 9.0,
+    "std": 29.091352486898547,
+    "skewness": 3.1499879903262933,
+    "kurtosis": 10.142618689889115,
+    "shapiro_p_value": 1.7806209997364895e-77,
+    "is_normal": "False"
+  },
+  "epc_product": {
+    "mean": 2090882.2376739131,
+    "median": 1424444.0,
+    "std": 1237972.6590105514,
+    "skewness": 0.5413322286399231,
+    "kurtosis": -1.048814109763657,
+    "shapiro_p_value": 1.0145139906819582e-56,
+    "is_normal": "False"
+  }
+}

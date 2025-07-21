@@ -1,21 +1,21 @@
 BARCODE ANOMALY DETECTION DATASET - EDA REPORT
 ==================================================
-Generated on: 2025-07-20 21:02:15
+Generated on: 2025-07-20 22:50:21
 
 DATASET OVERVIEW:
-  Total Records: 20,000
+  Total Records: 920,000
   Total Columns: 21
   Source Files: hws, icn, kum, ygs
-  Date Range: 2025-07-01 10:23:39 to 2025-12-13 03:52:39
+  Date Range: 2025-07-01 10:23:38 to 2025-12-16 14:02:39
 
 KEY METRICS:
-  Unique EPCs: 18,609
+  Unique EPCs: 200,000
   Unique Locations: 58
   Unique Products: 15
 
 DATA QUALITY:
   Issues Found: 1
-    - Found 8,795 events with future timestamps
+    - Found 383,800 events with future timestamps
 
 RECOMMENDATIONS:
   1. Monitor data quality continuously

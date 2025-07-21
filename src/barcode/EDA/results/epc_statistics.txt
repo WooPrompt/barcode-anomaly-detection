@@ -1,5 +1,5 @@
-Total EPCs: 18609
-Total Events: 20000
-Avg Events per EPC: 1.0747487774732656
-EPCs with 1 Event: 17312
-Max Events per EPC: 4
+Total EPCs: 200000
+Total Events: 920000
+Avg Events per EPC: 4.6
+EPCs with 1 Event: 0
+Max Events per EPC: 10

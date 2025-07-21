@@ -1,0 +1,13 @@
+{
+  "total_events": 920000,
+  "future_events": 383800,
+  "future_percentage": 41.71739130434783,
+  "timeline_span_days": 168,
+  "min_date": "2025-07-01 10:23:38",
+  "max_date": "2025-12-16 14:02:39",
+  "simulation_characteristics": {
+    "has_future_data": "True",
+    "timeline_realistic": true,
+    "hourly_distribution_uniform": "False"
+  }
+}

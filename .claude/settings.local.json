@@ -5,7 +5,8 @@
       "Bash(mv:*)",
       "Bash(python test:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(python:*)"
     ],
     "deny": []
   }

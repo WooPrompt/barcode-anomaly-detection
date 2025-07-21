@@ -1,0 +1,85 @@
+{
+  "statistical_analysis": {
+    "location_id": {
+      "mean": 18.728558695652175,
+      "median": 9.0,
+      "std": 29.091352486898547,
+      "skewness": 3.1499879903262933,
+      "kurtosis": 10.142618689889115,
+      "shapiro_p_value": 1.7806209997364895e-77,
+      "is_normal": "False",
+      "unique_values": 58
+    },
+    "epc_product": {
+      "mean": 2090882.2376739131,
+      "median": 1424444.0,
+      "std": 1237972.6590105514,
+      "skewness": 0.5413322286399231,
+      "kurtosis": -1.048814109763657,
+      "shapiro_p_value": 1.0145139906819582e-56,
+      "is_normal": "False",
+      "unique_values": 15
+    },
+    "epc_serial": {
+      "mean": 23469.17391304348,
+      "median": 15364.0,
+      "std": 22968.406072724716,
+      "skewness": 1.4222019723419028,
+      "kurtosis": 1.4254467587563964,
+      "shapiro_p_value": 1.3767362182561277e-56,
+      "is_normal": "False",
+      "unique_values": 100000
+    }
+  },
+  "pca_analysis": {
+    "explained_variance_ratio": [
+      0.4682731949355501,
+      0.2105352217218072,
+      0.1703950841242002,
+      0.07924875649982341,
+      0.07154774271861913,
+      6.203496961668547e-17,
+      0.0,
+      0.0
+    ],
+    "cumulative_variance": [
+      0.4682731949355501,
+      0.6788084166573572,
+      0.8492035007815575,
+      0.9284522572813809,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "components_for_80_percent": 3,
+    "total_features": 8
+  },
+  "temporal_analysis": {
+    "future_percentage": 41.71739130434783,
+    "timeline_span_days": 168,
+    "hourly_uniformity": 0.6869489528141806
+  },
+  "file_statistics": {
+    "hws": {
+      "rows": 220800,
+      "columns": 19,
+      "memory_mb": 143.64006996154785
+    },
+    "icn": {
+      "rows": 437200,
+      "columns": 19,
+      "memory_mb": 284.98337745666504
+    },
+    "kum": {
+      "rows": 129800,
+      "columns": 19,
+      "memory_mb": 85.09867477416992
+    },
+    "ygs": {
+      "rows": 132200,
+      "columns": 19,
+      "memory_mb": 86.15573120117188
+    }
+  }
+}
