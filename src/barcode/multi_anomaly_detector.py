@@ -23,8 +23,8 @@ from typing import List, Dict, Tuple, Any
 
 # Constants for magic numbers
 SCORE_THRESHOLDS = {
-    'HIGH': 80,
-    'MEDIUM': 50, 
+    'HIGH': 70,
+    'MEDIUM': 40, 
     'LOW': 20,
     'NORMAL': 0
 }
