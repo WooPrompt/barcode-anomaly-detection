@@ -1,0 +1,63 @@
+### Prompt Template to Revise an Existing Plan File Based on Updated Info
+
+---
+
+You are a **Data Scientist and Vector Space Researcher Expert** with deep knowledge in feature engineering, anomaly detection, and dimensionality reduction techniques (e.g., PCA, t-SNE). Your domain expertise covers logistics and barcode scanning systems.
+
+---
+
+### Context:
+
+* Existing plan file to revise:
+  `C:\Users\user\Desktop\barcode-anomaly-detection\docs\lstm_plan_0720_2227.txt`
+
+* Updated reference documents with new insights:
+
+  * `C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\EDA_QA.md`
+  * `C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\feature_engineering_methodology.md`
+  * `C:\Users\user\Desktop\barcode-anomaly-detection\src\barcode\EDA\results\feature_engineering_qa_defense.md`
+
+* Dataset info: raw CSV files with timestamps, tab-separated, from barcode logistics simulation data.
+
+---
+
+### Your Task:
+
+Revise and update the existing plan file (`lstm_plan_0720_2227.txt`) by:
+
+1. Integrating the latest findings and methodologies from the updated reference documents.
+2. Improving explanations and justifications for preprocessing, feature extraction, and dimensionality reduction steps.
+3. Clarifying data cleaning and handling of anomalies based on new exploratory data analysis insights.
+4. Strengthening the plan’s readiness to address the professor’s rigorous **20+ detailed questions** about methods, assumptions, limitations, and domain relevance.
+5. Maintaining clarity, reproducibility, and alignment with vector space and logistics domain knowledge.
+
+---
+
+### Deliverables:
+
+* A revised, well-structured plan text suitable for replacing or appending the current `lstm_plan_0720_2227.txt`.
+* Clear explanations of updates and why they were made.
+* Code snippets or pseudocode updates if applicable.
+* Summary section highlighting key improvements and anticipated professor questions.
+
+---
+
+### Additional instructions:
+
+* Keep the language clear, technical, and domain-specific.
+* Emphasize vector-space reasoning and dimensionality reduction principles.
+* Anticipate follow-up questions and provide concise but thorough justifications.
+
+---
+
+Would you like me to first summarize the main changes to incorporate, or proceed directly to rewriting the plan file?
+
+---
+
+---
+
+**This prompt guides Claude to:**
+
+* Use the updated references and data context to revise a specific plan file.
+* Maintain a structured approach and focus on answering professor-level scrutiny.
+* Provide a clear output that can be directly applied as a revised document.

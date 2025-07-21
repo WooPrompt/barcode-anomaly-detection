@@ -1,0 +1,87 @@
+### **LSTM Implementation Plan - REV 2.0 (Academic & Production Ready)**
+
+**✅ STATUS UPDATE [2025-07-20]:** LSTM implementation is now **STRATEGICALLY IMPERATIVE** based on deep EDA and feature engineering insights. This revised plan integrates advanced methodologies to address the limitations of static models and prepare for rigorous academic and operational validation.
+
+**Strategic Context:**
+Our comprehensive EDA (`EDA_QA.md`) has confirmed that while SVM and rule-based systems provide a solid baseline, they are fundamentally incapable of capturing the rich temporal dependencies inherent in our supply chain data. The high prevalence of sequential and time-dependent anomalies necessitates a move to a more sophisticated architecture. LSTMs are the logical next step to unlock predictive capabilities that static models miss, directly addressing the temporal patterns identified in our `feature_engineering_methodology.md`.
+
+---
+
+### **Phase 1: Advanced Data Pipeline & Vector Space Construction**
+
+1.  **Data Aggregation & Enrichment (Script: `src/barcode/lstm_data_preprocessor.py`):**
+    *   Merge raw training data (`data/raw/*.csv`).
+    *   Enrich with `data/processed/location_id_withGeospatial.csv` and `data/processed/business_step_transition_avg_v2.csv`.
+    *   Sort chronologically by `event_time`.
+
+2.  **Advanced Feature Engineering (Leveraging `feature_engineering_methodology.md`):**
+    *   **Temporal Features:**
+        *   Extract cyclical time features (`hour`, `day_of_week`).
+        *   Implement detailed **Time Gap Analysis**: Calculate `time_gap_seconds`, and create `time_gap_log` and `time_gap_zscore` to handle heavy-tailed distributions.
+        *   Add velocity features (`events_per_hour`, `events_per_day`).
+    *   **Spatial Features:**
+        *   Implement **Location Transition Analysis**: `prev_location_id`, `location_changed`, and `location_backtrack` detection.
+        *   Validate **Business Process Progression**: Ensure adherence to the defined business step order (e.g., Factory -> WMS -> Logistics).
+        *   Calculate **Transition Probabilities** to identify rare and potentially anomalous movements.
+    *   **Behavioral Features:**
+        *   Generate **EPC-Level Aggregates**: `nunique` locations, `mean`/`std` of time gaps.
+        *   Calculate **Shannon Entropy** (`location_entropy`, `time_entropy`) to quantify pattern unpredictability.
+
+3.  **Dimensionality Reduction (PCA):**
+    *   Apply `StandardScaler` to the engineered features.
+    *   Use Principal Component Analysis (PCA) to reduce dimensionality, retaining components that explain **80% of the variance**. This is critical for computational efficiency and mitigating the curse of dimensionality, as justified in our `EDA_QA.md`.
+
+4.  **Rule-Based Labeling & Sequence Generation:**
+    *   Use `MultiAnomalyDetector` to generate the 5 ground-truth labels.
+    *   Group data by `epc_code` and generate sequences of a fixed length (e.g., 15). Use zero-padding for shorter sequences. The target label will be the 5-dimensional vector of the *last* event in the sequence.
+
+5.  **Data Splitting with Temporal Integrity:**
+    *   To prevent data leakage from future timestamps (a key issue identified in `EDA_QA.md`), implement a **strict chronological train/evaluation split (80/20)** based on the timestamp of the last event in each sequence.
+    *   Save the final processed sequences, labels, and PCA-transformed vectors to `data/lstm_training/`.
+
+---
+
+### **Phase 2: LSTM Model Architecture & Training**
+
+1.  **Model Definition (`src/barcode/lstm_detector.py`):**
+    *   Define a `torch`-based LSTM model.
+    *   **Architecture:**
+        *   Input Layer (accepting sequences of shape `(batch_size, sequence_length, num_pca_components)`)
+        *   Two stacked `nn.LSTM` layers.
+        *   `nn.Dropout` for regularization.
+        *   `nn.Linear` output layer with 5 neurons.
+        *   `nn.Sigmoid` activation for multi-label probabilities.
+
+2.  **Training Script (`train_lstm_model.py`):**
+    *   Load the prepared data from `data/lstm_training/`.
+    *   **Loss Function:** Implement **Focal Loss** to address the class imbalance of rare anomalies (e.g., 'jump'), a critical point from our internal research.
+    *   Use the `Adam` optimizer.
+    *   Save the trained model to `models/lstm/lstm_model_YYYYMMDD.pt`.
+
+---
+
+### **Phase 3: API Integration & Real-Time Inference**
+
+1.  **New Endpoint (`POST /api/manager/export-and-analyze-async/lstm`):**
+    *   Add a new, separate endpoint in `fastapi_server.py`.
+
+2.  **Real-time Inference Logic:**
+    *   The endpoint will need to perform the same feature engineering, PCA transformation, and sequencing in real-time. This is a significant challenge.
+    *   **Solution for Cold Start:** For new EPCs with no history, the system will fall back to the rule-based and SVM detectors. A confidence score will be generated, and only after a minimum number of events (e.g., 5) will the LSTM be used.
+    *   **Model Explainability:** For each prediction, use **SHAP (SHapley Additive exPlanations)** to generate feature importance scores. This is non-negotiable for providing the interpretability required in a regulated supply chain environment.
+
+---
+
+### **Phase 4: Rigorous Evaluation & Monitoring**
+
+1.  **Evaluation Script (`evaluate_lstm_model.py`):**
+    *   Load the evaluation dataset from `data/lstm_training/`.
+    *   **Business-Aligned Metrics:** In addition to standard metrics, calculate **cost-weighted F-beta scores**. For example, `locErr` might have a higher cost for false negatives (missed shipment errors), while `epcDup` might have a higher cost for false positives (unnecessary investigations).
+    *   Compare LSTM performance against both the rule-based system and the SVM models.
+    *   Log results to `logs/lstm_models/lstm_performance_log.csv`.
+
+2.  **Concept Drift Monitoring:**
+    *   Implement monitoring to detect drift in input feature distributions (e.g., using Kolmogorov-Smirnov tests).
+    *   Set up alerts to trigger model retraining when significant drift is detected, ensuring the model remains adapted to evolving supply chain dynamics.
+
+---
