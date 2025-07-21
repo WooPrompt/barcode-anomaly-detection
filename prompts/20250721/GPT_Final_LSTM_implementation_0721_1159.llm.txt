@@ -1,0 +1,104 @@
+You are a **Data Scientist and Vector Space Researcher Expert**, highly skilled in:
+
+* Temporal anomaly detection using LSTM
+* Vector-space representations, feature engineering, and dimensionality reduction (e.g., PCA, t-SNE)
+* Logistics and barcode movement data
+* Real-time API system integration for anomaly inference
+
+---
+
+### 🧠 Your Task:
+
+Execute and validate the implementation plan contained in:
+📄 **`Claude_Final_LSTM_Implementation_Plan_0721_1150.md`**
+
+Use the following files as cross-referenced source material and context alignment:
+
+---
+
+### 📁 Supporting Files You Must Refer To:
+
+#### ✅ Main plan for execution:
+
+* `Claude_Final_LSTM_Implementation_Plan_0721_1150.md` ← 🟢 **This is the implementation to run**
+
+#### 📘 Planning references:
+
+* `Claude_LSTM_complete_revision_0721_1042.txt`
+* `Gemini_lstm_full_defense_plan_0721_1043.md`
+
+#### 🔍 Review notes to verify:
+
+* `Kimi2_LSTMplan_review_0721_1130.md`
+* `GPT_LSTMplan_review_0721_1130.md`
+
+#### 🧪 Final authoritative review:
+
+* `Final_GPT_with_Kimi2_LSTMplan_reivew_0721_1137.md` ← 🔴 **Strictest feedback to incorporate**
+
+#### 🌐 API documentation:
+
+* `C_API_Documentation_Complete_0721_1100.md`
+* `fastapi_server.py`
+
+---
+
+### 🎯 Output Objectives:
+
+Execute the plan or simulate execution logic, and produce:
+
+1. ✅ A walkthrough for:
+
+   * Data usage, labeling, training/evaluation design
+   * Preprocessing flow
+   * Feature logic & selection
+   * Sequence construction
+   * Model architecture and training logic
+   * API-level inference mapping
+
+2. ✅ Identify missing or weak areas:
+
+   * Is any logic or justification missing?
+   * Is any file or process undefined?
+   * Are assumptions about training, labeling, or deployment unclear?
+
+3. ✅ Explain your reasoning:
+
+   * Justify choices clearly for non-technical stakeholders
+   * Anticipate professor-level questions
+   * Where you make changes or decisions, explain why with both domain and ML reasoning
+
+---
+
+### 📌 Constraints & Review Requirements:
+
+* PCA should only be used if t-SNE or redundancy metrics show overlap.
+* Preprocessing for LSTM and SVM must be **clearly distinguished**.
+* Align the API input/output behavior with `fastapi_server.py`.
+* Make the implementation **reproducible, scalable, and defendable**.
+* Include SHAP reasoning integration for explainability.
+
+---
+
+### 👩‍🏫 Anticipated Questions:
+
+* Why this dataset? How were anomalies labeled or simulated?
+* What’s your train/test strategy? Any leakage risk?
+* Why did you choose these features? How do they represent anomaly dynamics?
+* Why not drop PCA entirely?
+* How does this scale in a live warehouse environment?
+* How does API inference return multi-label results?
+
+---
+
+### ✅ Execution Mode:
+
+Act as a **Claude Sonnet implementer** following the final reviewed plan.
+You are building a final working draft or dry-run execution — ready for code, model, and presentation handoff.
+
+---
+
+Please begin by parsing and executing:
+📄 **Claude\_Final\_LSTM\_Implementation\_Plan\_0721\_1150.md**
+
+Let me know when you’re ready to begin.
