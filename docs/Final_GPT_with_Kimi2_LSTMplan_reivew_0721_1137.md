@@ -241,3 +241,41 @@ Your Claude and Gemini drafts show **engineering brilliance**, but thesis defens
 | **Start with Claude + Fix with Gemini+Kimi2** | ✅✅ Gold-standard, professor-level thesis     |
 
 ---
+
+## 🚨 **CRITICAL UPDATE: Google Analyst Review Integration (0721_1235)**
+
+Following the comprehensive Google data analyst critique (`Claude_critique_0721_1221.md`) and Kimi2's production-focused response (`Kimi2_answer_for_Claude_critique_0721_1235.md`), the following **4 critical gaps** have been identified and MUST be addressed:
+
+### **Gap 1: PCA Decision Ambiguity** 
+- **Risk:** Methodological inconsistency causing implementation failures
+- **Google Solution:** Conditional AutoML framework with data-driven PCA decisions
+- **Action Required:** Implement `AdaptiveDimensionalityReducer` class with unit-tested VIF/correlation thresholds
+
+### **Gap 2: Real-Time Feature Engineering Architecture**
+- **Risk:** Cold-start latency >10ms violating production SLOs  
+- **Google Solution:** 3-tier hierarchical similarity engine with ScaNN indexing
+- **Action Required:** Build pre-computed embeddings with O(log n) similarity search
+
+### **Gap 3: Production Memory Management**
+- **Risk:** Unbounded EPC cache causing OOM kills in production
+- **Google Solution:** Multi-tier caching (Hot/Warm/Cold) with TTL and LRU eviction
+- **Action Required:** Implement bounded cache with `/varz` monitoring and Borgmon alerts
+
+### **Gap 4: Statistical Drift Detection Assumptions**
+- **Risk:** KS test missing 40% of drift events on heavy-tailed data
+- **Google Solution:** Distribution-agnostic EMD and permutation tests
+- **Action Required:** Replace KS with Earth Mover's Distance for robust drift detection
+
+### **📅 Production Timeline (Next 10 Days)**
+Following Kimi2's immediate action plan:
+- Days 1-2: Conditional PCA gate + ScaNN similarity service
+- Days 3-4: Memory-bounded cache + EMD drift detector  
+- Days 5-7: End-to-end integration testing
+- Days 8-10: Canary rollout preparation + design review
+
+### **🎯 Updated Final Recommendation**
+**Status:** HOLD implementation until all 4 critical gaps are resolved
+**Next Action:** Address Google analyst concerns before proceeding with any production deployment
+**Academic Impact:** These fixes are essential for thesis defense credibility
+
+---
