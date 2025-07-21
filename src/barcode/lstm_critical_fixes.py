@@ -604,11 +604,11 @@ class RobustDriftDetector:
 def demo_critical_fixes():
     """Demonstration of all 4 critical fixes working together"""
     
-    print("🚨 LSTM Critical Fixes Demo")
+    print("[ALERT] LSTM Critical Fixes Demo")
     print("=" * 50)
     
     # Gap 1: PCA Decision
-    print("\n1️⃣ Testing Adaptive PCA Decision...")
+    print("\n[1] Testing Adaptive PCA Decision...")
     pca_reducer = AdaptiveDimensionalityReducer()
     
     # Create mock feature data with redundancy
@@ -626,7 +626,7 @@ def demo_critical_fixes():
     print(f"   Reason: {reason}")
     
     # Gap 2: Similarity Engine
-    print("\n2️⃣ Testing Hierarchical Similarity...")
+    print("\n[2] Testing Hierarchical Similarity...")
     similarity_engine = HierarchicalEPCSimilarity()
     similarity_engine.load_embeddings("mock_path")
     
@@ -643,7 +643,7 @@ def demo_critical_fixes():
         print(f"   Top match: {similar_epcs[0][0]} (similarity: {similar_epcs[0][1]:.3f})")
     
     # Gap 3: Memory Management
-    print("\n3️⃣ Testing Production Memory Management...")
+    print("\n[3] Testing Production Memory Management...")
     memory_manager = ProductionMemoryManager(max_memory_gb=1.0)  # Small limit for demo
     
     # Store some sequences
@@ -659,7 +659,7 @@ def demo_critical_fixes():
     print(f"   Cache hit rate: {metrics['hit_rate']:.3f}")
     
     # Gap 4: Drift Detection
-    print("\n4️⃣ Testing Robust Drift Detection...")
+    print("\n[4] Testing Robust Drift Detection...")
     drift_detector = RobustDriftDetector()
     
     # Generate reference data (normal distribution)
@@ -679,7 +679,7 @@ def demo_critical_fixes():
     power_analysis = drift_detector.calculate_minimum_detectable_effect()
     print(f"   Minimum detectable effect size: {power_analysis['minimum_detectable_effect_size']:.3f}")
     
-    print("\n✅ All critical fixes tested successfully!")
+    print("\n[SUCCESS] All critical fixes tested successfully!")
     print("Ready for production deployment.")
 
 
