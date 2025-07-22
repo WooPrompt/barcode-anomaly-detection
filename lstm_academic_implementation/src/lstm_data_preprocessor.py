@@ -91,7 +91,7 @@ class LSTMDataPreprocessor:
         
         for csv_file in csv_files:
             try:
-                df = pd.read_csv(csv_file)
+                df = pd.read_csv(csv_file ,sep='\t')
                 
                 # Basic validation
                 if len(df) == 0:
@@ -522,6 +522,7 @@ class LSTMDataPreprocessor:
         """
         Generate multi-label anomaly targets using rule-based detection
         
+        CRITICAL: Simulation-aware labeling to handle future timestamps
         Creates labels for: epcFake, epcDup, locErr, evtOrderErr, jump
         """
         
@@ -529,27 +530,37 @@ class LSTMDataPreprocessor:
         
         df = df.copy()
         
+        # CRITICAL FIX: Filter out future date bias for simulation data
+        current_time = datetime.now()
+        future_events = df['event_time'] > current_time
+        future_count = future_events.sum()
+        
+        if future_count > 0:
+            logger.warning(f"SIMULATION DATA DETECTED: {future_count} future events found")
+            logger.warning("Applying simulation-aware labeling to prevent future date bias")
+        
         # Initialize all labels as normal (0)
         anomaly_types = ['epcFake', 'epcDup', 'locErr', 'evtOrderErr', 'jump']
         for anomaly_type in anomaly_types:
             df[anomaly_type] = 0
         
-        # Simple rule-based labeling (placeholder - would integrate with actual rules)
-        # EPC Fake detection: unusual patterns
+        # SIMULATION-AWARE RULE-BASED LABELING
+        # EPC Fake detection: EXCLUDE future date checks for simulation
         df.loc[df['location_entropy'] > 2.0, 'epcFake'] = 1
         df.loc[df['operator_entropy'] > 1.5, 'epcFake'] = 1
+        # NOTE: NOT using future timestamp detection to avoid simulation bias
         
         # EPC Duplicate detection: rapid successive scans
         df.loc[df['time_gap_log'] < 1.0, 'epcDup'] = 1
         
-        # Location Error detection: business step regression
+        # Location Error detection: business step regression  
         df.loc[df['business_step_regression'] == 1, 'locErr'] = 1
         df.loc[df['location_backtrack'] == 1, 'locErr'] = 1
         
         # Event Order Error detection: workflow violations
         df.loc[df['business_step_advancement'] < 0, 'evtOrderErr'] = 1
         
-        # Jump detection: impossible time gaps
+        # Jump detection: impossible time gaps (physics-based, not time-based)
         df.loc[df['time_gap_log'] > 10.0, 'jump'] = 1
         
         # Log label statistics

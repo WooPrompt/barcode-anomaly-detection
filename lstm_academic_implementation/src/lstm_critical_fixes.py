@@ -21,7 +21,8 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from scipy import stats
-from scipy.spatial.distance import wasserstein_distance
+#from scipy.spatial.distance import wasserstein_distance
+from scipy.stats import wasserstein_distance
 import time
 import threading
 import logging
