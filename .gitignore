@@ -32,3 +32,4 @@ model/
 # === 🧪 테스트 출력물 ===
 *.log
 *.out
+# Large data files\nlstm_academic_implementation/data/raw/*.csv
