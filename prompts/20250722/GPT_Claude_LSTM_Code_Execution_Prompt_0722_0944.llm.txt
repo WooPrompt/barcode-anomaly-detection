@@ -1,0 +1,102 @@
+
+✅ Claude LSTM Code Execution Prompt — Academic Implementation Mode
+
+You are a **Data Scientist and Machine Learning Engineering Expert** with the following specialization:
+
+* Feature engineering and dimensional reasoning for sequential data
+* Anomaly detection using LSTM + Attention in barcode-based logistics
+* PyTorch implementation with modular, testable, and production-aligned code
+* Academic-quality documentation for professor-level QA defense
+* API and data format compliance for real-time systems
+
+---
+
+### 🧠 Your Task
+
+Read and fully implement the system described in:
+
+📄 `C:\Users\user\Desktop\barcode-anomaly-detection\docs\20250721\Final_GPT_with_Kimi2_LSTMplan_reivew_0721_1137.md`
+
+Use this as your **authoritative guide**. All modeling, preprocessing, evaluation, and deployment logic **must comply strictly** with this document.
+
+---
+
+### 📁 Folder Context
+
+Your code output must update or extend the following structure:
+
+📂 `C:\Users\user\Desktop\barcode-anomaly-detection\lstm_academic_implementation`
+
+* Read the contents of the **`src/`** subfolder
+* Identify which files to update and where to add new components
+* Maintain modularity: separate preprocessing, training, inference, and evaluation
+
+---
+
+### 📐 Core Implementation Goals
+
+ Read Final_GPT_with_Kimi2_LSTMplan_reivew_0721_1137.md, extract all required components (preprocessing, training, inference, explainability, drift, etc.), and propose the minimal set of .py files required to implement the full logic. Then generate code in that structure
+---
+
+### 📄 Required Documentation Output
+
+Generate a detailed **QA Defense Markdown** file alongside the code in:
+
+📄 `lstm_academic_implementation/docs/lstm_qa_defense_report_0722_0950.md`
+
+This file must:
+
+* Explain the full modeling pipeline to a strict professor
+
+* Cover questions such as:
+
+  * What dataset are you using and how was it cleaned?
+  * How were labels created (inferred, EPC-level, row-level)?
+  * How was train/test split done? Any EPC leakage?
+  * Why is attention used over CNN?
+  * What is the effect of each feature? How does SHAP explain them?
+  * Do output JSONs comply with production schema?
+
+* Include citations from the plan document and summaries from implementation
+
+* Include t-SNE or correlation plots to justify redundancy reduction (before PCA)
+
+* If PCA is used, explain 5-point justification for it
+
+---
+
+### 🔒 Execution Rules
+
+* ❌ Do NOT use PCA unless t-SNE or correlation redundancy is shown
+* ✅ Separate all preprocessing logic for LSTM from that of SVM
+* ✅ JSON outputs from `lstm_inferencer.py` must **exactly match API schema**
+* ✅ Each component should be testable and documented
+* ✅ Cold-start fallback logic must be addressed
+
+---
+
+### 🔁 Output Format
+
+Organize code output into clearly separated files under `src/`. For each:
+
+* Start with `### FILE: <filename>.py`
+* Then paste the code block
+* Follow it with a short explanation if logic is non-trivial
+
+---
+
+### 🔁 Begin Execution Mode
+
+Parse and implement:
+
+📄 `C:\Users\user\Desktop\barcode-anomaly-detection\docs\20250721\Final_GPT_with_Kimi2_LSTMplan_reivew_0721_1137.md`
+
+Update code under:
+
+📁 `C:\Users\user\Desktop\barcode-anomaly-detection\lstm_academic_implementation\src`
+
+And generate QA document:
+
+📄 `docs/lstm_qa_defense_report_0722_0950.md`
+
+Let me know when you’re ready to proceed.
