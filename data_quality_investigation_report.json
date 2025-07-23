@@ -1,0 +1,718 @@
+{
+  "investigation_results": {
+    "icn": {
+      "epc_patterns": {
+        "total_epcs": 5000,
+        "unique_epcs": 4860,
+        "epc_samples": [
+          "001.8805843.3812382.010003.20250701.000003884",
+          "001.8804823.4282032.010007.20250701.000011654",
+          "001.8809437.1240424.010050.20250701.000097033",
+          "001.8804823.1293291.010004.20250701.000004169",
+          "001.8809437.1240424.010005.20250701.000006493",
+          "001.8805843.0102313.010025.20250701.000046118",
+          "001.8805843.3842332.010006.20250701.000008591",
+          "001.8805843.3842332.010051.20250701.000098062",
+          "001.8809437.1239213.010030.20250701.000056201",
+          "001.8809437.1239213.010015.20250701.000026114",
+          "001.8804823.4282032.010007.20250701.000011558",
+          "001.8805843.3842332.010021.20250701.000039168",
+          "001.8805843.3842332.010006.20250701.000009965",
+          "001.8809437.1059560.010039.20250701.000074676",
+          "001.8805843.3842332.010006.20250701.000008680",
+          "001.8804823.4282032.010037.20250701.000070470",
+          "001.8809437.1240424.010035.20250701.000066756",
+          "001.8804823.2031921.010014.20250701.000024219",
+          "001.8805843.2932031.010031.20250701.000058327",
+          "001.8805843.3812382.010018.20250701.000033112"
+        ],
+        "format_analysis": {
+          "valid_structures": 20,
+          "unique_headers": 1,
+          "unique_companies": 3,
+          "unique_dates": 1,
+          "headers": [
+            "001"
+          ],
+          "companies": [
+            "8804823",
+            "8809437",
+            "8805843"
+          ]
+        },
+        "fake_scores_distribution": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "temporal_patterns": {
+        "date_range": {
+          "start": "2025-07-01 10:23:43",
+          "end": "2025-11-11 07:27:38",
+          "span_days": 132
+        },
+        "time_gaps_analysis": {
+          "mean_gap_hours": 544.9919246031747,
+          "min_gap_hours": 1.7266666666666666,
+          "max_gap_hours": 1124.8333333333333,
+          "suspicious_gaps": 0
+        },
+        "duplicate_timestamps": 0,
+        "suspicious_patterns": []
+      },
+      "location_patterns": {
+        "unique_locations": 37,
+        "unique_business_steps": 8,
+        "location_samples": {
+          "\uc778\ucc9c\uacf5\uc7a5\ucc3d\uace0": 1837,
+          "\uc778\ucc9c\uacf5\uc7a5": 1151,
+          "\uc218\ub3c4\uad8c\ubb3c\ub958\uc13c\ud130": 565,
+          "\uc804\ubd81\ubb3c\ub958\uc13c\ud130": 351,
+          "\uc218\ub3c4\uad8c_\ub3c4\ub9e4\uc0c11": 228,
+          "\uc804\ub0a8\ubb3c\ub958\uc13c\ud130": 132,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c12": 121,
+          "\uc218\ub3c4\uad8c_\ub3c4\ub9e4\uc0c12": 119,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c13": 75,
+          "\uc804\ubd81_\ub3c4\ub9e4\uc0c13": 52
+        },
+        "business_step_samples": {
+          "WMS": 1837,
+          "Factory": 1151,
+          "Logistics_HUB": 1048,
+          "W_Stock_Inbound": 377,
+          "R_Stock_Inbound": 245,
+          "W_Stock_Outbound": 243,
+          "POS_Sell": 51,
+          "R_Stock_Outbound": 48
+        },
+        "location_transitions": {},
+        "hierarchy_violations_found": 0
+      },
+      "anomaly_scores": {
+        "epcFake": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "epcDup": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "locErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "jump": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        }
+      }
+    },
+    "kum": {
+      "epc_patterns": {
+        "total_epcs": 5000,
+        "unique_epcs": 4427,
+        "epc_samples": [
+          "001.8804823.2031932.150011.20250701.000019439",
+          "001.8804823.4282032.150007.20250701.000011065",
+          "001.8805843.3842332.150006.20250701.000008097",
+          "001.8809437.1059560.150009.20250701.000015847",
+          "001.8809437.1059560.150009.20250701.000014448",
+          "001.8804823.1293291.150004.20250701.000005578",
+          "001.8809437.1059560.150009.20250701.000015523",
+          "001.8809437.1059560.150009.20250701.000015090",
+          "001.8804823.1293291.150004.20250701.000004056",
+          "001.8805843.3842332.150006.20250701.000008711",
+          "001.8809437.1059560.150009.20250701.000014550",
+          "001.8805843.0102313.150010.20250701.000017842",
+          "001.8805843.3812382.150003.20250701.000003257",
+          "001.8804823.1293291.150004.20250701.000004827",
+          "001.8809437.1240424.150005.20250701.000007150",
+          "001.8805843.3812382.150003.20250701.000002571",
+          "001.8804823.1293291.150004.20250701.000005669",
+          "001.8804823.1293291.150004.20250701.000005513",
+          "001.8809437.1059560.150009.20250701.000015157",
+          "001.8805843.2190354.150008.20250701.000012571"
+        ],
+        "format_analysis": {
+          "valid_structures": 20,
+          "unique_headers": 1,
+          "unique_companies": 3,
+          "unique_dates": 1,
+          "headers": [
+            "001"
+          ],
+          "companies": [
+            "8809437",
+            "8804823",
+            "8805843"
+          ]
+        },
+        "fake_scores_distribution": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "temporal_patterns": {
+        "date_range": {
+          "start": "2025-07-01 10:23:39",
+          "end": "2025-12-13 03:52:39",
+          "span_days": 164
+        },
+        "time_gaps_analysis": {
+          "mean_gap_hours": 866.7312962962963,
+          "min_gap_hours": 2.2333333333333334,
+          "max_gap_hours": 1601.6833333333334,
+          "suspicious_gaps": 0
+        },
+        "duplicate_timestamps": 0,
+        "suspicious_patterns": []
+      },
+      "location_patterns": {
+        "unique_locations": 14,
+        "unique_business_steps": 8,
+        "location_samples": {
+          "\uad6c\ubbf8\uacf5\uc7a5\ucc3d\uace0": 1513,
+          "\uacbd\ubd81\ubb3c\ub958\uc13c\ud130": 1119,
+          "\uad6c\ubbf8\uacf5\uc7a5": 795,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c11": 757,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c11_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 98,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c12_\uad8c\uc5ed_\uc18c\ub9e4\uc0c12": 96,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c11_\uad8c\uc5ed_\uc18c\ub9e4\uc0c13": 95,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c12_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 93,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c12": 92,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 91
+        },
+        "business_step_samples": {
+          "WMS": 1513,
+          "Logistics_HUB": 1119,
+          "Factory": 795,
+          "W_Stock_Inbound": 434,
+          "R_Stock_Inbound": 351,
+          "W_Stock_Outbound": 342,
+          "POS_Sell": 230,
+          "R_Stock_Outbound": 216
+        },
+        "location_transitions": {},
+        "hierarchy_violations_found": 0
+      },
+      "anomaly_scores": {
+        "epcFake": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "epcDup": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "locErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "jump": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        }
+      }
+    },
+    "ygs": {
+      "epc_patterns": {
+        "total_epcs": 5000,
+        "unique_epcs": 4583,
+        "epc_samples": [
+          "001.8805843.3842332.100006.20250701.000008528",
+          "001.8809437.1240424.100005.20250701.000006848",
+          "001.8805843.3812382.100003.20250701.000003393",
+          "001.8804823.2031932.100011.20250701.000018833",
+          "001.8809437.1232127.100013.20250701.000023980",
+          "001.8805843.3812382.100003.20250701.000003984",
+          "001.8809437.1240424.100005.20250701.000006662",
+          "001.8809437.1059560.100009.20250701.000015695",
+          "001.8804823.2031932.100011.20250701.000018497",
+          "001.8804823.2031921.100014.20250701.000025857",
+          "001.8804823.4282032.100007.20250701.000011341",
+          "001.8805843.3812382.100003.20250701.000002330",
+          "001.8809437.1240424.100005.20250701.000006087",
+          "001.8809437.1059560.100009.20250701.000014592",
+          "001.8804823.2031921.100014.20250701.000024469",
+          "001.8809437.1203199.100002.20250701.000001031",
+          "001.8804823.2031932.100011.20250701.000019046",
+          "001.8809437.1203199.100002.20250701.000001205",
+          "001.8805843.3842332.100006.20250701.000009591",
+          "001.8805843.3812382.100003.20250701.000002719"
+        ],
+        "format_analysis": {
+          "valid_structures": 20,
+          "unique_headers": 1,
+          "unique_companies": 3,
+          "unique_dates": 1,
+          "headers": [
+            "001"
+          ],
+          "companies": [
+            "8804823",
+            "8809437",
+            "8805843"
+          ]
+        },
+        "fake_scores_distribution": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "temporal_patterns": {
+        "date_range": {
+          "start": "2025-07-01 10:23:45",
+          "end": "2025-09-04 19:33:39",
+          "span_days": 65
+        },
+        "time_gaps_analysis": {
+          "mean_gap_hours": 388.239384057971,
+          "min_gap_hours": 0.27361111111111114,
+          "max_gap_hours": 1283.0,
+          "suspicious_gaps": 0
+        },
+        "duplicate_timestamps": 0,
+        "suspicious_patterns": []
+      },
+      "location_patterns": {
+        "unique_locations": 13,
+        "unique_business_steps": 6,
+        "location_samples": {
+          "\uc591\uc0b0\uacf5\uc7a5\ucc3d\uace0": 1715,
+          "\uc591\uc0b0\uacf5\uc7a5": 1120,
+          "\uc804\ub0a8\ubb3c\ub958\uc13c\ud130": 1094,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c11": 766,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c13": 39,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c11_\uad8c\uc5ed_\uc18c\ub9e4\uc0c13": 39,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c12": 37,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c12_\uad8c\uc5ed_\uc18c\ub9e4\uc0c13": 37,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 36,
+          "\uc804\ub0a8_\ub3c4\ub9e4\uc0c11_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 32
+        },
+        "business_step_samples": {
+          "WMS": 1715,
+          "Factory": 1120,
+          "Logistics_HUB": 1094,
+          "W_Stock_Inbound": 427,
+          "W_Stock_Outbound": 339,
+          "R_Stock_Inbound": 305
+        },
+        "location_transitions": {},
+        "hierarchy_violations_found": 0
+      },
+      "anomaly_scores": {
+        "epcFake": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "epcDup": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "locErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "jump": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        }
+      }
+    },
+    "hws": {
+      "epc_patterns": {
+        "total_epcs": 5000,
+        "unique_epcs": 4739,
+        "epc_samples": [
+          "001.8804823.1293291.050019.20250701.000034224",
+          "001.8805843.3842332.050021.20250701.000038239",
+          "001.8804823.1293291.050004.20250701.000005128",
+          "001.8805843.3812382.050003.20250701.000002770",
+          "001.8804823.2031921.050014.20250701.000025995",
+          "001.8805843.2190354.050023.20250701.000042011",
+          "001.8804823.4282032.050007.20250701.000011681",
+          "001.8805843.2190354.050008.20250701.000012494",
+          "001.8809437.1240424.050005.20250701.000007094",
+          "001.8804823.2031932.050011.20250701.000018290",
+          "001.8805843.3812382.050018.20250701.000032461",
+          "001.8809437.1232127.050013.20250701.000023049",
+          "001.8805843.3812382.050018.20250701.000033466",
+          "001.8805843.3812382.050003.20250701.000002921",
+          "001.8805843.3842332.050021.20250701.000039722",
+          "001.8809437.1059560.050024.20250701.000044293",
+          "001.8804823.2031921.050014.20250701.000024299",
+          "001.8804823.2031921.050014.20250701.000024320",
+          "001.8805843.3842332.050006.20250701.000008635",
+          "001.8804823.4282032.050022.20250701.000040940"
+        ],
+        "format_analysis": {
+          "valid_structures": 20,
+          "unique_headers": 1,
+          "unique_companies": 3,
+          "unique_dates": 1,
+          "headers": [
+            "001"
+          ],
+          "companies": [
+            "8809437",
+            "8804823",
+            "8805843"
+          ]
+        },
+        "fake_scores_distribution": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "temporal_patterns": {
+        "date_range": {
+          "start": "2025-07-01 10:23:44",
+          "end": "2025-09-24 03:45:39",
+          "span_days": 84
+        },
+        "time_gaps_analysis": {
+          "mean_gap_hours": 495.8299853801169,
+          "min_gap_hours": 1.4666666666666666,
+          "max_gap_hours": 1236.5427777777777,
+          "suspicious_gaps": 0
+        },
+        "duplicate_timestamps": 0,
+        "suspicious_patterns": []
+      },
+      "location_patterns": {
+        "unique_locations": 25,
+        "unique_business_steps": 6,
+        "location_samples": {
+          "\ud654\uc131\uacf5\uc7a5\ucc3d\uace0": 1878,
+          "\ud654\uc131\uacf5\uc7a5": 1149,
+          "\uc804\ubd81\ubb3c\ub958\uc13c\ud130": 817,
+          "\uc804\ubd81_\ub3c4\ub9e4\uc0c11": 452,
+          "\uacbd\ubd81\ubb3c\ub958\uc13c\ud130": 233,
+          "\uacbd\ubd81_\ub3c4\ub9e4\uc0c11": 128,
+          "\uc804\ub0a8\ubb3c\ub958\uc13c\ud130": 87,
+          "\uc804\ubd81_\ub3c4\ub9e4\uc0c12_\uad8c\uc5ed_\uc18c\ub9e4\uc0c12": 31,
+          "\uc804\ubd81_\ub3c4\ub9e4\uc0c11_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 28,
+          "\uc804\ubd81_\ub3c4\ub9e4\uc0c13_\uad8c\uc5ed_\uc18c\ub9e4\uc0c11": 26
+        },
+        "business_step_samples": {
+          "WMS": 1878,
+          "Factory": 1149,
+          "Logistics_HUB": 1137,
+          "W_Stock_Inbound": 345,
+          "R_Stock_Inbound": 256,
+          "W_Stock_Outbound": 235
+        },
+        "location_transitions": {},
+        "hierarchy_violations_found": 0
+      },
+      "anomaly_scores": {
+        "epcFake": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "epcDup": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "locErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        },
+        "jump": {
+          "count": 1000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "non_zero_count": 0,
+          "non_zero_rate": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "99": 0.0
+          }
+        }
+      }
+    }
+  },
+  "recommendations": {
+    "data_characteristics": "EXTREMELY_CLEAN_OR_SYNTHETIC",
+    "recommended_actions": [
+      "1. VERIFY DATA AUTHENTICITY: Check if data is synthetic/simulated",
+      "2. LOWER THRESHOLDS: Reduce business rule thresholds by 50-80%",
+      "3. ADD NOISE: Inject controlled noise to create realistic anomaly rates",
+      "4. USE DIFFERENT DATASETS: Test with production/real-world data"
+    ],
+    "threshold_adjustments": {
+      "epcFake": "Reduce from 60 to 20-30",
+      "epcDup": "Reduce from 30 to 10-15",
+      "locErr": "Reduce from 40 to 15-25",
+      "evtOrderErr": "Reduce from 35 to 10-20",
+      "jump": "Reduce from 50 to 20-30"
+    },
+    "next_steps": [
+      "1. Run with reduced thresholds to generate training data",
+      "2. Manually review sample 'anomalies' to validate quality",
+      "3. Consider using percentile-based thresholds (top 1-5%)",
+      "4. Test LSTM training with available data even if clean"
+    ]
+  }
+}

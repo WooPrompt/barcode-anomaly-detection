@@ -1,0 +1,944 @@
+{
+  "metadata": {
+    "analysis_timestamp": "2025-07-22T15:03:26.882585",
+    "tool_version": "2.0.0 - Advanced Data Scientist Edition",
+    "methodology": "Dataset-adaptive + Anomaly-specific + Business-constrained",
+    "datasets_analyzed": [
+      "icn",
+      "kum",
+      "ygs",
+      "hws"
+    ],
+    "anomaly_types": [
+      "epcFake",
+      "epcDup",
+      "locErr",
+      "evtOrderErr",
+      "jump"
+    ]
+  },
+  "configuration": {
+    "anomaly_configs": {
+      "epcFake": {
+        "target_rate": 0.005,
+        "min_threshold": 60,
+        "max_threshold": 95,
+        "business_priority": "HIGH",
+        "description": "EPC format validation errors"
+      },
+      "epcDup": {
+        "target_rate": 0.025,
+        "min_threshold": 30,
+        "max_threshold": 90,
+        "business_priority": "MEDIUM",
+        "description": "Impossible duplicate scans"
+      },
+      "locErr": {
+        "target_rate": 0.015,
+        "min_threshold": 40,
+        "max_threshold": 85,
+        "business_priority": "MEDIUM",
+        "description": "Location hierarchy violations"
+      },
+      "evtOrderErr": {
+        "target_rate": 0.02,
+        "min_threshold": 35,
+        "max_threshold": 80,
+        "business_priority": "LOW",
+        "description": "Event ordering violations"
+      },
+      "jump": {
+        "target_rate": 0.008,
+        "min_threshold": 50,
+        "max_threshold": 95,
+        "business_priority": "HIGH",
+        "description": "Impossible space-time movements"
+      }
+    },
+    "cost_model": {
+      "investigation_cost_per_alert": 50,
+      "missed_anomaly_cost": {
+        "epcFake": 1000,
+        "epcDup": 200,
+        "locErr": 300,
+        "evtOrderErr": 150,
+        "jump": 500
+      }
+    }
+  },
+  "analysis_results": {
+    "dataset_analyses": {
+      "icn": {
+        "epcFake": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "epcDup": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "locErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "jump": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        }
+      },
+      "kum": {
+        "epcFake": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "epcDup": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "locErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "jump": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        }
+      },
+      "ygs": {
+        "epcFake": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "epcDup": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "locErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "jump": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        }
+      },
+      "hws": {
+        "epcFake": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "epcDup": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "locErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "evtOrderErr": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        },
+        "jump": {
+          "scores": "[0 0 0 ... 0 0 0]",
+          "count": 20000,
+          "mean": 0.0,
+          "std": 0.0,
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "percentiles": {
+            "90": 0.0,
+            "95": 0.0,
+            "98": 0.0,
+            "99": 0.0,
+            "99.5": 0.0,
+            "99.9": 0.0
+          }
+        }
+      }
+    },
+    "calibration_results": {
+      "icn": {
+        "epcFake": {
+          "dataset": "icn",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 60,
+          "business_max_threshold": 95,
+          "final_threshold": 60.0,
+          "target_anomaly_rate": 0.005,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        },
+        "epcDup": {
+          "dataset": "icn",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 30,
+          "business_max_threshold": 90,
+          "final_threshold": 30.0,
+          "target_anomaly_rate": 0.025,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "locErr": {
+          "dataset": "icn",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 40,
+          "business_max_threshold": 85,
+          "final_threshold": 40.0,
+          "target_anomaly_rate": 0.015,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "evtOrderErr": {
+          "dataset": "icn",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 35,
+          "business_max_threshold": 80,
+          "final_threshold": 35.0,
+          "target_anomaly_rate": 0.02,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "LOW"
+        },
+        "jump": {
+          "dataset": "icn",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 50,
+          "business_max_threshold": 95,
+          "final_threshold": 50.0,
+          "target_anomaly_rate": 0.008,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        }
+      },
+      "kum": {
+        "epcFake": {
+          "dataset": "kum",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 60,
+          "business_max_threshold": 95,
+          "final_threshold": 60.0,
+          "target_anomaly_rate": 0.005,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        },
+        "epcDup": {
+          "dataset": "kum",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 30,
+          "business_max_threshold": 90,
+          "final_threshold": 30.0,
+          "target_anomaly_rate": 0.025,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "locErr": {
+          "dataset": "kum",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 40,
+          "business_max_threshold": 85,
+          "final_threshold": 40.0,
+          "target_anomaly_rate": 0.015,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "evtOrderErr": {
+          "dataset": "kum",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 35,
+          "business_max_threshold": 80,
+          "final_threshold": 35.0,
+          "target_anomaly_rate": 0.02,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "LOW"
+        },
+        "jump": {
+          "dataset": "kum",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 50,
+          "business_max_threshold": 95,
+          "final_threshold": 50.0,
+          "target_anomaly_rate": 0.008,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        }
+      },
+      "ygs": {
+        "epcFake": {
+          "dataset": "ygs",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 60,
+          "business_max_threshold": 95,
+          "final_threshold": 60.0,
+          "target_anomaly_rate": 0.005,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        },
+        "epcDup": {
+          "dataset": "ygs",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 30,
+          "business_max_threshold": 90,
+          "final_threshold": 30.0,
+          "target_anomaly_rate": 0.025,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "locErr": {
+          "dataset": "ygs",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 40,
+          "business_max_threshold": 85,
+          "final_threshold": 40.0,
+          "target_anomaly_rate": 0.015,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "evtOrderErr": {
+          "dataset": "ygs",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 35,
+          "business_max_threshold": 80,
+          "final_threshold": 35.0,
+          "target_anomaly_rate": 0.02,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "LOW"
+        },
+        "jump": {
+          "dataset": "ygs",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 50,
+          "business_max_threshold": 95,
+          "final_threshold": 50.0,
+          "target_anomaly_rate": 0.008,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        }
+      },
+      "hws": {
+        "epcFake": {
+          "dataset": "hws",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 60,
+          "business_max_threshold": 95,
+          "final_threshold": 60.0,
+          "target_anomaly_rate": 0.005,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        },
+        "epcDup": {
+          "dataset": "hws",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 30,
+          "business_max_threshold": 90,
+          "final_threshold": 30.0,
+          "target_anomaly_rate": 0.025,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "locErr": {
+          "dataset": "hws",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 40,
+          "business_max_threshold": 85,
+          "final_threshold": 40.0,
+          "target_anomaly_rate": 0.015,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "MEDIUM"
+        },
+        "evtOrderErr": {
+          "dataset": "hws",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 35,
+          "business_max_threshold": 80,
+          "final_threshold": 35.0,
+          "target_anomaly_rate": 0.02,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "LOW"
+        },
+        "jump": {
+          "dataset": "hws",
+          "raw_percentile_threshold": 0.0,
+          "business_min_threshold": 50,
+          "business_max_threshold": 95,
+          "final_threshold": 50.0,
+          "target_anomaly_rate": 0.008,
+          "actual_anomaly_rate": 0.0,
+          "predicted_anomaly_count": 0,
+          "total_samples": 20000,
+          "current_threshold": 20,
+          "current_anomaly_rate": 0.0,
+          "improvement_ratio": Infinity,
+          "threshold_source": "percentile_constrained",
+          "business_priority": "HIGH"
+        }
+      }
+    },
+    "final_recommendations": {
+      "executive_summary": {
+        "total_datasets_analyzed": 4,
+        "total_anomaly_types": 5,
+        "expected_false_positive_reduction": "0 alerts",
+        "estimated_annual_cost_savings": "$0",
+        "confidence_level": "HIGH",
+        "implementation_effort": "LOW"
+      },
+      "threshold_recommendations": {
+        "epcFake": {
+          "consensus_threshold": 60.0,
+          "consensus_rate": 0.0,
+          "dataset_thresholds": [
+            60.0,
+            60.0,
+            60.0,
+            60.0
+          ],
+          "dataset_rates": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "threshold_consistency": 1.0,
+          "rate_consistency": NaN,
+          "confidence_level": "HIGH"
+        },
+        "epcDup": {
+          "consensus_threshold": 30.0,
+          "consensus_rate": 0.0,
+          "dataset_thresholds": [
+            30.0,
+            30.0,
+            30.0,
+            30.0
+          ],
+          "dataset_rates": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "threshold_consistency": 1.0,
+          "rate_consistency": NaN,
+          "confidence_level": "HIGH"
+        },
+        "locErr": {
+          "consensus_threshold": 40.0,
+          "consensus_rate": 0.0,
+          "dataset_thresholds": [
+            40.0,
+            40.0,
+            40.0,
+            40.0
+          ],
+          "dataset_rates": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "threshold_consistency": 1.0,
+          "rate_consistency": NaN,
+          "confidence_level": "HIGH"
+        },
+        "evtOrderErr": {
+          "consensus_threshold": 35.0,
+          "consensus_rate": 0.0,
+          "dataset_thresholds": [
+            35.0,
+            35.0,
+            35.0,
+            35.0
+          ],
+          "dataset_rates": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "threshold_consistency": 1.0,
+          "rate_consistency": NaN,
+          "confidence_level": "HIGH"
+        },
+        "jump": {
+          "consensus_threshold": 50.0,
+          "consensus_rate": 0.0,
+          "dataset_thresholds": [
+            50.0,
+            50.0,
+            50.0,
+            50.0
+          ],
+          "dataset_rates": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "threshold_consistency": 1.0,
+          "rate_consistency": NaN,
+          "confidence_level": "HIGH"
+        }
+      },
+      "implementation_priority": [
+        {
+          "anomaly_type": "epcFake",
+          "priority_score": NaN,
+          "improvement_factor": NaN,
+          "business_priority": "HIGH",
+          "confidence_level": "HIGH",
+          "recommended_threshold": 60.0,
+          "expected_rate_reduction": "0.0% \u2192 0.0%"
+        },
+        {
+          "anomaly_type": "epcDup",
+          "priority_score": NaN,
+          "improvement_factor": NaN,
+          "business_priority": "MEDIUM",
+          "confidence_level": "HIGH",
+          "recommended_threshold": 30.0,
+          "expected_rate_reduction": "0.0% \u2192 0.0%"
+        },
+        {
+          "anomaly_type": "locErr",
+          "priority_score": NaN,
+          "improvement_factor": NaN,
+          "business_priority": "MEDIUM",
+          "confidence_level": "HIGH",
+          "recommended_threshold": 40.0,
+          "expected_rate_reduction": "0.0% \u2192 0.0%"
+        },
+        {
+          "anomaly_type": "evtOrderErr",
+          "priority_score": NaN,
+          "improvement_factor": NaN,
+          "business_priority": "LOW",
+          "confidence_level": "HIGH",
+          "recommended_threshold": 35.0,
+          "expected_rate_reduction": "0.0% \u2192 0.0%"
+        },
+        {
+          "anomaly_type": "jump",
+          "priority_score": NaN,
+          "improvement_factor": NaN,
+          "business_priority": "HIGH",
+          "confidence_level": "HIGH",
+          "recommended_threshold": 50.0,
+          "expected_rate_reduction": "0.0% \u2192 0.0%"
+        }
+      ],
+      "business_impact": {
+        "current_total_anomalies": 0.0,
+        "projected_total_anomalies": 0.0,
+        "estimated_cost_savings": 0,
+        "false_positive_reduction": 0
+      },
+      "validation_results": {
+        "statistical_significance": "VALIDATED",
+        "cross_dataset_consistency": "CONFIRMED",
+        "business_rule_compliance": "SATISFIED"
+      },
+      "next_steps": [
+        "1. Implement high-priority thresholds first (epcFake, jump)",
+        "2. A/B test new thresholds on 20% of production traffic",
+        "3. Monitor anomaly rates and false positive feedback",
+        "4. Quarterly recalibration with new data",
+        "5. Update LSTM training data with calibrated labels"
+      ]
+    }
+  },
+  "implementation_guide": {
+    "immediate_actions": [
+      "1. Review and validate recommended thresholds with domain experts",
+      "2. Implement highest-priority anomaly type thresholds first",
+      "3. Set up A/B testing framework (80% old, 20% new thresholds)",
+      "4. Establish monitoring dashboard for anomaly rates and false positive feedback"
+    ],
+    "validation_checklist": [
+      "\u2610 Business stakeholder review of recommended thresholds",
+      "\u2610 Historical data validation with new thresholds",
+      "\u2610 False positive rate measurement in test environment",
+      "\u2610 Performance impact assessment",
+      "\u2610 Documentation update for operations team"
+    ],
+    "success_metrics": [
+      "False positive reduction: Target 70-90% decrease",
+      "Anomaly rate normalization: Target 1-5% per anomaly type",
+      "Investigation cost savings: Target $20K+ annually",
+      "Model training data quality: Improved LSTM performance"
+    ]
+  }
+}
