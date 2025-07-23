@@ -174,7 +174,7 @@ def prepare_lstm_data():
         
         print(f"Feature Analysis Results:")
         print(f"   Total features: {analysis_results['total_features']}")
-        print(f"   High VIF features: {analysis_results['high_vif_features_count']}")
+        print(f"   High VIF features: {analysis_results['high_vif_features']}")
         print(f"   PCA recommended: {analysis_results['pca_recommended']}")
         print(f"   Decision: {analysis_results['decision_rationale']}")
     
